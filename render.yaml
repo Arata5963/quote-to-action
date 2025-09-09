@@ -1,0 +1,24 @@
+databases:
+  - name: mvp-postgres
+    databaseName: mvp_production
+    user: mvp_user
+    plan: free
+
+services:
+  - type: web
+    name: mvp-hello-world
+    runtime: ruby
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mvp-postgres
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: RAILS_ENV
+        value: production
+      - key: BUNDLE_WITHOUT
+        value: "development:test"

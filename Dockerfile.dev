@@ -1,0 +1,32 @@
+# 開発環境用 Dockerfile
+FROM ruby:3.3.9-slim
+
+# 必要なパッケージをインストール
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    git \
+    libpq-dev \
+    libvips \
+    pkg-config \
+    curl \
+    libjemalloc2 \
+    libyaml-dev \
+
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# 作業ディレクトリを設定
+WORKDIR /rails
+
+# Gemfileをコピーしてbundle install
+COPY Gemfile ./
+RUN bundle install
+
+# アプリケーションコードをコピー
+COPY . .
+
+# ポート3000を公開
+EXPOSE 3000
+
+# Railsサーバーを起動
+CMD ["bin/rails", "server", "-b", "0.0.0.0"]
