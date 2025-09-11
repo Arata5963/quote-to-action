@@ -1,0 +1,35 @@
+<!-- app/views/photos/edit.html.erb -->
+<h1>写真を編集</h1>
+
+<%= form_with(model: @photo, local: true, html: { multipart: true }) do |form| %>
+  <% if @photo.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@photo.errors.count, "error") %> prohibited this photo from being saved:</h2>
+      <ul>
+        <% @photo.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :title %>
+    <%= form.text_field :title %>
+  </div>
+
+  <div class="field">
+    <%= form.label :image %>
+    <%= form.file_field :image %>
+    <% if @photo.image.present? %>
+      <p>現在の画像: <%= image_tag @photo.image.thumb.url, width: 100 %></p>
+    <% end %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit %>
+  </div>
+<% end %>
+
+<%= link_to 'Show', @photo %> |
+<%= link_to 'Back', photos_path %>

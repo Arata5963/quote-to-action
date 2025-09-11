@@ -1,25 +1,33 @@
 # 開発環境用 Dockerfile
 FROM ruby:3.3.9-slim
 
-# 必要なパッケージをインストール
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
+    # Cコンパイラやmakeなど。Gemの中にはC言語のコードを含むものがあり、それをビルドするために必要
     build-essential \
+    # GemをインストールするときにGitHubなどから直接取得する場合があるので必要
     git \
+    # PostgreSQLに接続するための開発用ライブラリ（pg gemが動くために必要）
     libpq-dev \
+    # 画像処理を超高速に行うライブラリ（ActiveStorageやimage_processingで利用）
     libvips \
+    # 画像をリサイズ・変換するためのツール（mini_magick gemが依存）
+    imagemagick \
+    # インストール済みライブラリの場所や設定をまとめて教えてくれるツール
     pkg-config \
+    # インターネットからファイルをダウンロードしたりAPIにアクセスしたりするために必要
     curl \
+    # Railsのメモリ管理を効率化してパフォーマンスを上げるためのライブラリ
     libjemalloc2 \
+    # Railsの設定ファイル（YAML形式）を正しく読み込むために必要
     libyaml-dev \
-
     && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # 作業ディレクトリを設定
 WORKDIR /rails
 
 # Gemfileをコピーしてbundle install
-COPY Gemfile ./
+COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
 # アプリケーションコードをコピー

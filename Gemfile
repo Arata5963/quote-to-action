@@ -16,6 +16,9 @@ gem "solid_queue"
 gem "solid_cable"
 
 gem "bootsnap", require: false
+gem 'carrierwave'
+gem 'fog-aws'
+gem 'mini_magick'
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
