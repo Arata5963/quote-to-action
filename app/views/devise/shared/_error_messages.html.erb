@@ -1,0 +1,12 @@
+<% if resource.errors.any? %>
+  <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+    <div class="text-sm text-red-800">
+      <strong><%= resource.errors.count %>個のエラーがあります:</strong>
+      <ul class="mt-2 list-disc list-inside">
+        <% resource.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+<% end %>

@@ -49,3 +49,4 @@ group :test do
   gem "capybara"                   # ブラウザ操作の自動テスト
   gem "selenium-webdriver"         # Webブラウザ自動操作ドライバー
 end
+gem "tailwindcss-rails", "~> 4.3"

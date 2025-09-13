@@ -11,5 +11,8 @@ module Mvp
 
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # 日本語をデフォルトロケールに設定
+    config.i18n.default_locale = :ja
+
   end
 end

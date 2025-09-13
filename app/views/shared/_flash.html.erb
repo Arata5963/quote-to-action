@@ -1,0 +1,13 @@
+<%# app/views/shared/_flash.html.erb %>
+<% flash.each do |type, msg| %>
+  <% next if msg.blank? %>
+  <% css =
+      case type.to_sym
+      when :notice then "bg-green-50 text-green-700"
+      when :alert, :error then "bg-red-50 text-red-700"
+      else "bg-gray-50 text-gray-700"
+      end %>
+  <div class="mx-auto max-w-3xl my-3 rounded p-3 text-sm <%= css %>">
+    <%= msg %>
+  </div>
+<% end %>

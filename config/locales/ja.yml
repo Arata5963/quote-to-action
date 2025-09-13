@@ -1,0 +1,31 @@
+ja:
+  errors:
+    messages:
+      blank: "を入力してください"
+      too_short: "は%{count}文字以上で入力してください"
+      invalid: "は不正な値です"
+      taken: "はすでに使用されています"
+      confirmation: "が一致しません"
+      not_saved:
+        one: "1個のエラーがあります:"
+        other: "%{count}個のエラーがあります:"
+        
+  activerecord:
+    attributes:
+      user:
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認用）"
+        
+    errors:
+      models:
+        user:
+          attributes:
+            email:
+              blank: "メールアドレスを入力してください"
+              invalid: "メールアドレスの形式が正しくありません"
+            password:
+              blank: "パスワードを入力してください"
+              too_short: "パスワードは%{count}文字以上で入力してください"
+            password_confirmation:
+              confirmation: "パスワードが一致しません"

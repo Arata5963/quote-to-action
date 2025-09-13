@@ -1,50 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
-    <!-- ページタイトル（各ビューで content_for(:title) があればそちらを使用、なければ "Mvp"） -->
+    <meta charset="utf-8">
     <title><%= content_for(:title) || "Mvp" %></title>
-
-    <!-- スマホやタブレット対応の表示設定 -->
     <meta name="viewport" content="width=device-width,initial-scale=1">
-
-    <!-- iPhoneやAndroidでホーム画面に追加できるようにする設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-
-    <!-- CSRF攻撃対策用のトークンを埋め込む -->
     <%= csrf_meta_tags %>
-
-    <!-- コンテンツセキュリティポリシー（CSP）を設定 -->
     <%= csp_meta_tag %>
-
-    <!-- 各ビューから head 内に追記できる領域 -->
     <%= yield :head %>
-
-    <!-- （コメントアウト中）PWA 用の manifest ファイルの読み込み設定 -->
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <!-- ファビコンやアプリアイコンを指定 -->
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <!-- CSSファイルの読み込み（app/assets/stylesheets 内の app.css など） -->
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-
-    <!-- JavaScript の読み込み（Importmap 経由） -->
+    <%= stylesheet_link_tag "application", data_turbo_track: "reload" %>
+    <%= stylesheet_link_tag "tailwind",    data_turbo_track: "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <!-- Deviseのフラッシュメッセージ（成功や失敗の通知） -->
-    <% if notice %>
-      <p class="notice"><%= notice %></p>
-    <% end %>
-    <% if alert %>
-      <p class="alert"><%= alert %></p>
-    <% end %>
+  <body class="min-h-screen bg-gray-50 flex flex-col">
+    <%= render "shared/header" %>
+    <%= render "shared/flash" %>
 
-    <!-- 各ページごとの内容がここに差し込まれる -->
-    <%= yield %>
+    <main class="flex-1">
+      <%= yield %>
+    </main>
+
+    <%= render "shared/footer" %>
   </body>
 </html>
