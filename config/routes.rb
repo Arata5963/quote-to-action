@@ -4,6 +4,5 @@ Rails.application.routes.draw do
 
   root "home#index"
 
-  resources :photos, only: [:index, :new, :create, :show, :edit, :update]
-
+  resources :photos, only: [ :index, :new, :create, :show, :edit, :update ]
 end

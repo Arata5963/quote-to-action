@@ -28,9 +28,9 @@ gem "solid_cable"                  # WebSocket通信（リアルタイム機能�
 gem "bootsnap", require: false     # Rails起動高速化
 
 # ===== 画像アップロード機能 =====
-gem 'carrierwave'                  # ファイルアップロード管理
-gem 'fog-aws'                      # AWS S3との連携
-gem 'mini_magick'                  # 画像リサイズ・変換処理
+gem "carrierwave"                  # ファイルアップロード管理
+gem "fog-aws"                      # AWS S3との連携
+gem "mini_magick"                  # 画像リサイズ・変換処理
 
 # ===== 開発・テスト環境専用 =====
 group :development, :test do
@@ -49,3 +49,4 @@ group :test do
   gem "capybara"                   # ブラウザ操作の自動テスト
   gem "selenium-webdriver"         # Webブラウザ自動操作ドライバー
 end
+gem "tailwindcss-rails", "~> 4.3"

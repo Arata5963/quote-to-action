@@ -19,18 +19,18 @@ class ImageUploader < CarrierWave::Uploader::Base
   # アップロード可能なファイル拡張子を制限
   # セキュリティ対策として画像ファイルのみを許可
   def extension_allowlist
-    %w(jpg jpeg gif png)  # 配列形式で許可する拡張子を列挙
+    %w[jpg jpeg gif png]  # 配列形式で許可する拡張子を列挙
   end
 
   # アップロード時に自動実行される画像処理
   # 元画像が巨大すぎる場合の安全装置として最大サイズを制限
-  process resize_to_limit: [2000, 2000]  # 幅2000px、高さ2000pxを上限に自動リサイズ
+  process resize_to_limit: [ 2000, 2000 ]  # 幅2000px、高さ2000pxを上限に自動リサイズ
 
   # 元画像とは別にサムネイル版を自動生成
   # ユーザーリスト表示やプレビュー用途で使用
   version :thumb do
     # resize_to_fit: アスペクト比を保持しつつ指定サイズ内に収める
-    process resize_to_fit: [300, 300]  # 300x300px以内のサムネイルを生成
+    process resize_to_fit: [ 300, 300 ]  # 300x300px以内のサムネイルを生成
   end
   # 使用例: @user.avatar.thumb.url でサムネイルURLを取得可能
 end

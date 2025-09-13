@@ -1,0 +1,23 @@
+<header class="bg-white border-b shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="h-16 flex items-center justify-between">
+      <%= link_to root_path, class: "flex items-center gap-2" do %>
+        <span class="text-2xl">🎯</span>
+        <span class="text-xl font-bold text-gray-900">きっかけ→行動アプリ</span>
+      <% end %>
+      <nav class="flex items-center gap-3">
+        <% if user_signed_in? %>
+          <%= link_to "マイページ", "#",
+               class: "px-4 py-2 rounded-full text-sm bg-gray-200 hover:bg-gray-300 text-gray-700" %>
+          <%= button_to "ログアウト", destroy_user_session_path, method: :delete,
+               class: "px-4 py-2 rounded-full text-sm bg-gray-200 hover:bg-gray-300 text-gray-700" %>
+        <% else %>
+          <%= link_to "新規登録", new_user_registration_path,
+              class: "px-4 py-2 rounded-full text-sm bg-gray-200 hover:bg-gray-300 text-gray-700" %>
+          <%= link_to "ログイン", new_user_session_path,
+              class: "px-4 py-2 rounded-full text-sm bg-gray-200 hover:bg-gray-300 text-gray-700" %>
+        <% end %>
+      </nav>
+    </div>
+  </div>
+</header>

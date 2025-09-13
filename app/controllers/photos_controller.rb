@@ -1,6 +1,6 @@
 # app/controllers/photos_controller.rb
 class PhotosController < ApplicationController
-  before_action :set_photo, only: [:show, :edit, :update]
+  before_action :set_photo, only: [ :show, :edit, :update ]
 
   def index
     @photos = Photo.all
@@ -14,7 +14,7 @@ class PhotosController < ApplicationController
     @photo = Photo.new(photo_params)
 
     if @photo.save
-      redirect_to @photo, notice: '写真がアップロードされました'
+      redirect_to @photo, notice: "写真がアップロードされました"
     else
       render :new, status: :unprocessable_entity
     end
@@ -28,7 +28,7 @@ class PhotosController < ApplicationController
 
   def update
     if @photo.update(photo_params)
-      redirect_to @photo, notice: '写真が更新されました'
+      redirect_to @photo, notice: "写真が更新されました"
     else
       render :edit, status: :unprocessable_entity
     end
