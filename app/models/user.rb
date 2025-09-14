@@ -5,4 +5,10 @@ class User < ApplicationRecord
          :recoverable,              # パスワードリセット機能
          :rememberable,             # ログイン状態を保持する機能
          :validatable               # メール形式・パスワードの自動バリデーション
+
+  # Postモデルとの関連付け
+  # 1人のUserは複数のPostを持つ（1対多の関係）
+  # dependent: :destroy = ユーザー削除時に関連する投稿も自動削除
+  # これによりデータの整合性を保つ
+  has_many :posts, dependent: :destroy
 end

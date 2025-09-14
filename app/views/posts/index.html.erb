@@ -1,0 +1,56 @@
+<%# app/views/posts/index.html.erb %>
+<%# 投稿一覧表示ページ - アプリのメイン画面 %>
+<% content_for :title, "投稿一覧" %>
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <%# ページヘッダー部分 %>
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">きっかけ一覧</h1>
+    <%# 新規投稿ボタン - Tailwind CSSでスタイリング %>
+    <%= link_to "新しいきっかけを投稿", new_post_path,
+          class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors" %>
+  </div>
+
+  <%# 投稿がない場合の表示 %>
+  <% if @posts.empty? %>
+    <div class="text-center py-12">
+      <div class="text-gray-500 text-lg mb-4">まだ投稿がありません</div>
+      <%= link_to "最初のきっかけを投稿してみましょう", new_post_path,
+            class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition-colors" %>
+    </div>
+  <% else %>
+    <%# 投稿一覧表示 %>
+    <div class="space-y-6">
+      <% @posts.each do |post| %>
+        <%# 各投稿のカード表示 %>
+        <div class="bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+          <%# きっかけ内容（タイトル的な扱い） %>
+          <h2 class="text-xl font-semibold mb-2">
+            <%= link_to post.trigger_content.truncate(50), post, 
+                  class: "text-blue-600 hover:text-blue-800 transition-colors" %>
+          </h2>
+          <%# アクションプラン（要約表示） %>
+          <p class="text-gray-600 mb-4"><%= post.action_plan.truncate(100) %></p>
+          
+          <%# フッター部分（日付と操作ボタン） %>
+          <div class="flex justify-between items-center text-sm text-gray-500">
+            <%# 投稿日時の表示 %>
+            <span><%= post.created_at.strftime("%Y年%m月%d日") %></span>
+            
+            <%# 操作ボタン（編集・削除） %>
+            <div class="space-x-2">
+              <%= link_to "編集", edit_post_path(post), 
+                    class: "text-blue-600 hover:text-blue-800 transition-colors" %>
+              <%= link_to "削除", post_path(post), 
+                    data: { 
+                      turbo_method: :delete,
+                      turbo_confirm: "本当に削除しますか？" 
+                    }, 
+                    class: "text-red-600 hover:text-red-800 transition-colors" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

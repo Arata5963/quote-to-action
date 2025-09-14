@@ -1,0 +1,16 @@
+<%# app/views/posts/new.html.erb %>
+<% content_for :title, "新規投稿" %>
+
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">新しいきっかけを投稿</h1>
+  
+  <%# 共通エラーメッセージコンポーネントを使用 %>
+  <%= render 'shared/error_messages', object: @post %>
+  
+  <%= render 'form', post: @post %>
+  
+  <div class="mt-6">
+    <%= link_to "一覧に戻る", posts_path, 
+          class: "text-blue-600 hover:text-blue-800 transition-colors" %>
+  </div>
+</div>

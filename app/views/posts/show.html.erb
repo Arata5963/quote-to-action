@@ -1,0 +1,74 @@
+<%# app/views/posts/show.html.erb %>
+<%# 投稿詳細表示ページ - 個別投稿の全内容を表示 %>
+
+<%# ページタイトルの設定（ブラウザタブに表示される） %>
+<%# trigger_contentの最初の30文字をタイトルとして使用 %>
+<% content_for :title, @post.trigger_content.truncate(30) %>
+
+<%# メインコンテンツエリア - レスポンシブ対応の最大幅設定 %>
+<div class="max-w-3xl mx-auto px-4 py-8">
+  
+  <%# ページヘッダー部分 - タイトルと投稿日時を表示 %>
+  <div class="mb-8">
+    <%# ページのメインタイトル %>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">投稿詳細</h1>
+    <%# 投稿日時の表示（年月日 時分形式） %>
+    <div class="text-sm text-gray-500">
+      <span><%= @post.created_at.strftime("%Y年%m月%d日 %H:%M") %></span>
+    </div>
+  </div>
+
+  <%# 投稿内容表示エリア - カード形式のデザイン %>
+  <div class="bg-white border rounded-lg p-6 shadow-sm mb-6">
+    
+    <%# きっかけ内容の表示セクション %>
+    <div class="mb-6">
+      <%# きっかけのセクションタイトル %>
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">きっかけ</h2>
+      <%# prose: Tailwind CSSの文章読みやすさスタイル %>
+      <%# max-w-none: 最大幅制限を解除 %>
+      <div class="prose max-w-none">
+        <%# whitespace-pre-line: 改行を保持して表示 %>
+        <%# leading-relaxed: 行間をゆったりと設定 %>
+        <p class="text-gray-700 leading-relaxed whitespace-pre-line"><%= @post.trigger_content %></p>
+      </div>
+    </div>
+
+    <%# アクションプラン内容の表示セクション %>
+    <%# border-t: 上部にボーダーを追加してセクション分け %>
+    <div class="border-t pt-6">
+      <%# アクションプランのセクションタイトル %>
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">アクションプラン</h2>
+      <div class="prose max-w-none">
+        <%# アクションプランの内容を改行保持で表示 %>
+        <p class="text-gray-700 leading-relaxed whitespace-pre-line"><%= @post.action_plan %></p>
+      </div>
+    </div>
+  </div>
+
+  <%# 操作ボタン群 - 編集・削除・戻るボタン %>
+  <%# flex-wrap: 画面幅が狭い時にボタンを折り返し %>
+  <%# gap-3: ボタン間にスペースを設定 %>
+  <div class="flex flex-wrap gap-3">
+    
+    <%# 編集ボタン - 青色系のスタイル %>
+    <%# edit_post_path: RESTfulルーティングで編集ページへ %>
+    <%= link_to "編集", edit_post_path(@post),
+          class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors" %>
+    
+    <%# 削除ボタン - 赤色系のスタイル + 確認ダイアログ %>
+    <%# turbo_method: :delete - HTTPのDELETEメソッドを使用 %>
+    <%# turbo_confirm: 削除前にJavaScript確認ダイアログを表示 %>
+    <%= link_to "削除", post_path(@post),
+          data: {
+            turbo_method: :delete,
+            turbo_confirm: "本当に削除しますか？"
+          },
+          class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors" %>
+    
+    <%# 一覧戻りボタン - グレー系のスタイル %>
+    <%# posts_path: 投稿一覧ページへのルーティング %>
+    <%= link_to "一覧に戻る", posts_path,
+          class: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors" %>
+  </div>
+</div>
