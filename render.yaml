@@ -11,6 +11,8 @@ services:
     buildCommand: "./bin/render-build.sh"
     startCommand: "bundle exec puma -C config/puma.rb"
     plan: free
+    postDeploy:
+      - bundle exec rails db:migrate
     envVars:
       - key: DATABASE_URL
         fromDatabase:
