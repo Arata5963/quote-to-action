@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+/* ← Tailwind に “この辺のファイルを見てクラスを拾ってね” と教える */
+@source "./app/views/**/*.html.erb"
+        "./app/helpers/**/*.rb"
+        "./app/assets/**/*.erb"
+        "./app/assets/**/*.css"
+        "./app/javascript/**/*.{js,ts}";
