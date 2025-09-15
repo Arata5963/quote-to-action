@@ -11,4 +11,9 @@ class User < ApplicationRecord
   # dependent: :destroy = ユーザー削除時に関連する投稿も自動削除
   # これによりデータの整合性を保つ
   has_many :posts, dependent: :destroy
+
+  # Achievementモデルとの関連付け
+  # 1人のUserは複数のAchievementを持つ（1対多の関係）
+  # dependent: :destroy = ユーザー削除時に関連する達成記録も自動削除
+  has_many :achievements, dependent: :destroy
 end
