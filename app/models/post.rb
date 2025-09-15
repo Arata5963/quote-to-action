@@ -1,8 +1,11 @@
-# app/models/post.rb
 class Post < ApplicationRecord
   # ユーザーとの関連付け（1つのPostは1人のUserに属する）
   # Railsが自動的にuser_idを使ってUserモデルと関連付け
   belongs_to :user
+  
+  # 達成記録との関連付け（1つのPostは複数のAchievementを持つ）
+  # 投稿が削除されたら、関連する達成記録も全て削除
+  has_many :achievements, dependent: :destroy
 
   # i18n（国際化）を活用したバリデーション設定
   # エラーメッセージは config/locales/ja.yml で管理
