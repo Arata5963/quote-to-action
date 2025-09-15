@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   # ログインユーザーが最初に見るページ（アプリのメイン機能）
   root "posts#index"
   
+  # マイページ機能：GET /mypage (ユーザーの投稿・達成状況一覧)
+  get :mypage, to: "users#show"
+  
   # Posts機能のRESTfulルーティング + 達成機能のネスト
   resources :posts do
     # 達成機能：POST /posts/:post_id/achievements (達成記録作成)
