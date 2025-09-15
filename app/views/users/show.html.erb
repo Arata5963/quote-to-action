@@ -1,0 +1,83 @@
+<%# app/views/users/show.html.erb %>
+<%# マイページ - ユーザーの投稿・達成状況の一覧表示 %>
+<% content_for :title, "マイページ" %>
+
+<div class="max-w-4xl mx-auto px-4 py-8 space-y-6">
+  
+  <%# ユーザー情報・統計サマリー %>
+  <div class="bg-white border rounded-lg p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-4">マイページ</h1>
+    <p class="text-gray-600 mb-6"><%= @user.email %></p>
+    
+    <%# 統計情報をカード形式で表示 %>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <%# 総投稿数 %>
+      <div class="bg-blue-50 rounded-lg p-4 text-center">
+        <div class="text-sm text-blue-600">総投稿数</div>
+        <div class="text-2xl font-bold text-blue-700"><%= @total_posts %> 件</div>
+      </div>
+      
+      <%# 累計達成回数 %>
+      <div class="bg-emerald-50 rounded-lg p-4 text-center">
+        <div class="text-sm text-emerald-600">累計達成回数</div>
+        <div class="text-2xl font-bold text-emerald-700"><%= @total_achievements %> 回</div>
+      </div>
+      
+      <%# 今日の達成数 %>
+      <div class="bg-amber-50 rounded-lg p-4 text-center">
+        <div class="text-sm text-amber-600">今日の達成</div>
+        <div class="text-2xl font-bold text-amber-700"><%= @today_achievements %> 回</div>
+      </div>
+    </div>
+  </div>
+
+  <%# 投稿一覧セクション %>
+  <div class="bg-white border rounded-lg p-6">
+    <h2 class="text-xl font-semibold text-gray-900 mb-4">あなたの投稿</h2>
+    
+    <% if @posts.any? %>
+      <div class="space-y-4">
+        <% @posts.each do |post| %>
+          <div class="border rounded-lg p-4">
+            <%# 投稿タイトル部分 %>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold text-gray-800">
+                <%= link_to truncate(post.trigger_content, length: 36), post_path(post), 
+                      class: "hover:text-blue-600 transition-colors" %>
+              </h3>
+              <div class="text-sm text-gray-500">
+                累計 <%= post.achievements.where(user_id: current_user.id).count %> 回
+              </div>
+            </div>
+            
+            <%# 投稿日時とアクション %>
+            <div class="flex items-center justify-between">
+              <div class="text-sm text-gray-500">
+                <%= post.created_at.strftime("%Y年%m月%d日") %>
+              </div>
+              <div class="flex gap-2">
+                <%= link_to "詳細", post_path(post), 
+                      class: "px-3 py-1 rounded bg-gray-800 text-white text-sm hover:bg-gray-700 transition-colors" %>
+                <%= link_to "編集", edit_post_path(post), 
+                      class: "px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <%# 投稿がない場合のメッセージ %>
+      <div class="text-center py-8 text-gray-500">
+        <p class="mb-4">まだ投稿がありません</p>
+        <%= link_to "最初の投稿を作成", new_post_path, 
+              class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors" %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ナビゲーション %>
+  <div class="text-center">
+    <%= link_to "投稿一覧に戻る", posts_path, 
+          class: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors" %>
+  </div>
+</div>
