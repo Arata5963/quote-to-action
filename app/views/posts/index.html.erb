@@ -1,14 +1,12 @@
 <%# app/views/posts/index.html.erb %>
-<%# 投稿一覧表示ページ - アプリのメイン画面 %>
 <% content_for :title, "投稿一覧" %>
 
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8">
   <%# ページヘッダー部分 %>
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">きっかけ一覧</h1>
-    <%# 新規投稿ボタン - Tailwind CSSでスタイリング %>
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">きっかけ一覧</h1>
     <%= link_to "新しいきっかけを投稿", new_post_path,
-          class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors" %>
+          class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors text-center" %>
   </div>
 
   <%# 投稿がない場合の表示 %>
@@ -19,37 +17,38 @@
             class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition-colors" %>
     </div>
   <% else %>
-    <%# 投稿一覧表示 %>
-    <div class="space-y-6">
+    <%# 投稿一覧表示 - レスポンシブグリッド %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
       <% @posts.each do |post| %>
-        <%# 各投稿のカード表示 %>
-        <div class="bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-          <%# きっかけ内容（タイトル的な扱い） %>
-          <h2 class="text-xl font-semibold mb-2">
-            <%= link_to post.trigger_content.truncate(50), post, 
-                  class: "text-blue-600 hover:text-blue-800 transition-colors" %>
-          </h2>
-          <%# アクションプラン（要約表示） %>
-          <p class="text-gray-600 mb-4"><%= post.action_plan.truncate(100) %></p>
-          
-          <%# フッター部分（日付と操作ボタン） %>
-          <div class="flex justify-between items-center text-sm text-gray-500">
-            <%# 投稿日時の表示 %>
-            <span><%= post.created_at.strftime("%Y年%m月%d日") %></span>
+        <%# カード本体 %>
+        <%= link_to post, class: "group relative block bg-black rounded-lg overflow-hidden" do %>
+          <img
+            alt=""
+            src="https://images.unsplash.com/photo-1603871165848-0aa92c869fa1?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=772&q=80"
+            class="absolute inset-0 h-full w-full object-cover opacity-50"
+          />
+
+          <div class="relative p-4 lg:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col justify-between">
+            <%# 上部コンテンツ: 達成回数 + アクションプラン %>
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs sm:text-sm text-pink-300 font-semibold">
+                  達成 <%= post.achievements.where(user_id: current_user.id).count %> 回
+                </span>
+              </div>
+              <h3 class="text-lg sm:text-xl font-bold text-white leading-tight">
+                <%= post.action_plan.truncate(50) %>
+              </h3>
+            </div>
             
-            <%# 操作ボタン（編集・削除） %>
-            <div class="space-x-2">
-              <%= link_to "編集", edit_post_path(post), 
-                    class: "text-blue-600 hover:text-blue-800 transition-colors" %>
-              <%= link_to "削除", post_path(post), 
-                    data: { 
-                      turbo_method: :delete,
-                      turbo_confirm: "本当に削除しますか？" 
-                    }, 
-                    class: "text-red-600 hover:text-red-800 transition-colors" %>
+            <%# 下部コンテンツ: きっかけ %>
+            <div class="mt-auto">
+              <p class="text-xs sm:text-sm text-white opacity-90 leading-relaxed">
+                <%= post.trigger_content.truncate(80) %>
+              </p>
             </div>
           </div>
-        </div>
+        <% end %>
       <% end %>
     </div>
   <% end %>

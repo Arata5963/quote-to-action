@@ -1,21 +1,19 @@
 # app/controllers/posts_controller.rb
 class PostsController < ApplicationController
-  # Deviseの認証必須（ログインユーザーのみアクセス可能）
   before_action :authenticate_user!
-  # 共通処理：該当PostをセットしてUserの所有権チェック
-  before_action :set_post, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_post, only: [:show, :edit, :update, :destroy]
+  before_action :check_owner, only: [:edit, :update, :destroy]
 
   def index
-    # ログインユーザーの投稿を新しい順で取得
-    @posts = current_user.posts.recent
+    # 全ユーザーの投稿を表示（パフォーマンス最適化でincludesを使用）
+    @posts = Post.includes(:user, :achievements).recent
   end
 
   def show
-    # set_postで@postは設定済み
+    # 誰でも閲覧可能
   end
 
   def new
-    # 新規投稿オブジェクトを作成（ログインユーザーに関連付け）
     @post = current_user.posts.build
   end
 
@@ -23,7 +21,6 @@ class PostsController < ApplicationController
     @post = current_user.posts.build(post_params)
 
     if @post.save
-      # i18n対応：config/locales/ja.ymlで管理
       redirect_to @post, notice: t("posts.create.success")
     else
       render :new, status: :unprocessable_entity
@@ -31,7 +28,7 @@ class PostsController < ApplicationController
   end
 
   def edit
-    # set_postで@postは設定済み
+    # check_ownerで所有者チェック済み
   end
 
   def update
@@ -50,14 +47,20 @@ class PostsController < ApplicationController
   private
 
   def set_post
-    # セキュリティ：ログインユーザーの投稿のみ取得
-    @post = current_user.posts.find(params[:id])
+    # 全ての投稿から検索（閲覧は誰でも可能）
+    @post = Post.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to posts_path, alert: t("posts.not_found")
   end
 
+  def check_owner
+    # 編集・削除は所有者のみ
+    unless @post.user == current_user
+      redirect_to @post, alert: "他のユーザーの投稿は編集・削除できません"
+    end
+  end
+
   def post_params
-    # Strong Parameters：許可するパラメータを制限
-    params.require(:post).permit(:trigger_content, :action_plan)
+    params.require(:post).permit(:trigger_content, :action_plan, :image)
   end
 end

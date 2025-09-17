@@ -27,6 +27,7 @@ ja:
         trigger_content: "きっかけ"
         action_plan: "アクションプラン"
         user: "投稿者"
+        image: "画像"  # 追加
       achievement:
         awarded_at: "達成日"
         post: "投稿"
@@ -55,6 +56,8 @@ ja:
               blank: "アクションプランを入力してください"
               too_short: "アクションプランは%{count}文字以上で入力してください"
               too_long: "アクションプランは%{count}文字以内で入力してください"
+            image:  # 追加
+              invalid: "画像ファイルが正しくありません"
         achievement:
           attributes:
             post_id:
@@ -63,6 +66,7 @@ ja:
   # PostsController関連のメッセージ
   posts:
     not_found: "投稿が見つかりません"
+    unauthorized: "他のユーザーの投稿は編集・削除できません"  # 追加
     create:
       success: "きっかけが投稿されました"
     update:
@@ -72,6 +76,7 @@ ja:
       
   # AchievementsController関連のメッセージ  
   achievements:
+    unauthorized: "他のユーザーの投稿には達成記録できません"  # 追加
     create:
       success: "今日の達成を記録しました"
       failed: "達成記録に失敗しました"

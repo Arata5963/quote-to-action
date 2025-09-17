@@ -32,52 +32,78 @@
   </div>
 
   <%# 投稿一覧セクション %>
-  <div class="bg-white border rounded-lg p-6">
-    <h2 class="text-xl font-semibold text-gray-900 mb-4">あなたの投稿</h2>
-    
-    <% if @posts.any? %>
-      <div class="space-y-4">
-        <% @posts.each do |post| %>
-          <div class="border rounded-lg p-4">
-            <%# 投稿タイトル部分 %>
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="font-semibold text-gray-800">
-                <%= link_to truncate(post.trigger_content, length: 36), post_path(post), 
-                      class: "hover:text-blue-600 transition-colors" %>
-              </h3>
-              <div class="text-sm text-gray-500">
-                累計 <%= post.achievements.where(user_id: current_user.id).count %> 回
-              </div>
-            </div>
+  <% if @posts.empty? %>
+    <div class="text-center py-12">
+      <div class="text-gray-500 text-lg mb-4">まだ投稿がありません</div>
+      <%= link_to "最初のきっかけを投稿してみましょう", new_post_path,
+            class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition-colors" %>
+    </div>
+  <% else %>
+    <%# 投稿一覧タブ風メニュー %>
+    <div class="flex overflow-x-auto overflow-y-hidden border-b border-gray-200 whitespace-nowrap">
+      <button class="inline-flex items-center h-10 px-4 -mb-px text-sm text-center 
+                    text-blue-600 bg-transparent border-b-2 border-blue-500 
+                    sm:text-base whitespace-nowrap focus:outline-none">
+        Profile
+      </button>
+
+      <button class="inline-flex items-center h-10 px-4 -mb-px text-sm text-center 
+                    text-gray-500 bg-transparent border-b-2 border-transparent 
+                    sm:text-base whitespace-nowrap cursor-pointer 
+                    focus:outline-none hover:border-gray-400">
+        Account
+      </button>
+
+      <button class="inline-flex items-center h-10 px-4 -mb-px text-sm text-center 
+                    text-gray-500 bg-transparent border-b-2 border-transparent 
+                    sm:text-base whitespace-nowrap cursor-pointer 
+                    focus:outline-none hover:border-gray-400">
+        Notification
+      </button>
+    </div>
+
+    <%# 投稿一覧表示（左：画像／右：テキスト） %>
+    <div class="grid grid-cols-1 gap-4 md:gap-6">
+      <% @posts.each do |post| %>
+        <%= link_to post, class: "block bg-white border rounded-lg hover:shadow-md transition" do %>
+          <div class="flex flex-col sm:flex-row">
             
-            <%# 投稿日時とアクション %>
-            <div class="flex items-center justify-between">
-              <div class="text-sm text-gray-500">
-                <%= post.created_at.strftime("%Y年%m月%d日") %>
+            <!-- 左：画像 -->
+            <div class="sm:w-48 sm:flex-shrink-0">
+              <img
+                alt=""
+                src="https://images.unsplash.com/photo-1603871165848-0aa92c869fa1?ixlib=rb-1.2.1&auto=format&fit=crop&w=772&q=80"
+                class="h-48 w-full sm:h-full sm:w-48 object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
+              />
+            </div>
+
+            <!-- 右：本文 -->
+            <div class="flex-1 p-4 sm:p-6">
+              <!-- 達成回数 -->
+              <div class="mb-2 text-xs text-pink-600 font-semibold">
+                達成 <%= post.achievements.where(user_id: current_user.id).count %> 回
               </div>
-              <div class="flex gap-2">
-                <%= link_to "詳細", post_path(post), 
-                      class: "px-3 py-1 rounded bg-gray-800 text-white text-sm hover:bg-gray-700 transition-colors" %>
-                <%= link_to "編集", edit_post_path(post), 
-                      class: "px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors" %>
+
+              <!-- アクションプラン -->
+              <div class="mb-3">
+                <div class="text-xs text-gray-500">アクションプラン</div>
+                <h3 class="text-lg font-bold text-gray-900 leading-snug">
+                  <%= post.action_plan %>
+                </h3>
+              </div>
+
+              <!-- きっかけ -->
+              <div>
+                <div class="text-xs text-gray-500">きっかけ</div>
+                <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                  <%= post.trigger_content %>
+                </p>
               </div>
             </div>
+
           </div>
         <% end %>
-      </div>
-    <% else %>
-      <%# 投稿がない場合のメッセージ %>
-      <div class="text-center py-8 text-gray-500">
-        <p class="mb-4">まだ投稿がありません</p>
-        <%= link_to "最初の投稿を作成", new_post_path, 
-              class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors" %>
-      </div>
-    <% end %>
-  </div>
-
-  <%# ナビゲーション %>
-  <div class="text-center">
-    <%= link_to "投稿一覧に戻る", posts_path, 
-          class: "bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors" %>
-  </div>
+      <% end %>
+    </div>
+  <% end %>
 </div>
