@@ -1,6 +1,5 @@
 <%# app/views/posts/index.html.erb %>
 <% content_for :title, "投稿一覧" %>
-
 <div class="max-w-7xl mx-auto px-4 py-8">
   <%# ページヘッダー部分 %>
   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
@@ -8,7 +7,7 @@
     <%= link_to "新しいきっかけを投稿", new_post_path,
           class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors text-center" %>
   </div>
-
+  
   <%# 投稿がない場合の表示 %>
   <% if @posts.empty? %>
     <div class="text-center py-12">
@@ -22,28 +21,50 @@
       <% @posts.each do |post| %>
         <%# カード本体 %>
         <%= link_to post, class: "group relative block bg-black rounded-lg overflow-hidden" do %>
-          <img
-            alt=""
-            src="https://images.unsplash.com/photo-1603871165848-0aa92c869fa1?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=772&q=80"
-            class="absolute inset-0 h-full w-full object-cover opacity-50"
-          />
-
+          
+          <%# 🆕 画像表示ロジック %>
+          <% if post.image.present? %>
+            <%# アップロードされた画像を表示 %>
+            <img
+              alt="投稿画像"
+              src="<%= post.image.url %>"
+              class="absolute inset-0 h-full w-full object-cover opacity-75 transition-opacity group-hover:opacity-85"
+            />
+          <% else %>
+            <%# 画像がない場合はグラデーション背景 %>
+            <div class="absolute inset-0 h-full w-full bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 opacity-80"></div>
+          <% end %>
+          
+          <%# オーバーレイグラデーション（テキストの可読性向上） %>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+          
           <div class="relative p-4 lg:p-6 min-h-[250px] sm:min-h-[300px] flex flex-col justify-between">
             <%# 上部コンテンツ: 達成回数 + アクションプラン %>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <span class="text-xs sm:text-sm text-pink-300 font-semibold">
+                <span class="text-xs sm:text-sm text-yellow-300 font-semibold bg-black/30 px-2 py-1 rounded-full">
                   達成 <%= post.achievements.where(user_id: current_user.id).count %> 回
                 </span>
+                
+                <%# 🆕 画像有無インジケーター %>
+                <% if post.image.present? %>
+                  <span class="text-xs text-green-300 bg-black/30 px-2 py-1 rounded-full">
+                    <svg class="inline w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                    </svg>
+                    画像
+                  </span>
+                <% end %>
               </div>
-              <h3 class="text-lg sm:text-xl font-bold text-white leading-tight">
+              
+              <h3 class="text-lg sm:text-xl font-bold text-white leading-tight drop-shadow-lg">
                 <%= post.action_plan.truncate(50) %>
               </h3>
             </div>
             
             <%# 下部コンテンツ: きっかけ %>
             <div class="mt-auto">
-              <p class="text-xs sm:text-sm text-white opacity-90 leading-relaxed">
+              <p class="text-xs sm:text-sm text-white opacity-90 leading-relaxed drop-shadow">
                 <%= post.trigger_content.truncate(80) %>
               </p>
             </div>

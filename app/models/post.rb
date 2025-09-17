@@ -7,6 +7,9 @@ class Post < ApplicationRecord
   # 投稿が削除されたら、関連する達成記録も全て削除
   has_many :achievements, dependent: :destroy
 
+  # ✅ CarrierWave画像マウント設定を追加
+  mount_uploader :image, ImageUploader
+
   # i18n（国際化）を活用したバリデーション設定
   # エラーメッセージは config/locales/ja.yml で管理
   # presenceとlengthのエラーメッセージが自動的に日本語化される
