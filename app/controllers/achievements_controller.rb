@@ -16,6 +16,18 @@ class AchievementsController < ApplicationController
     end
   end
 
+  def destroy
+    # 今日の達成記録を検索
+    @achievement = current_user.achievements.today.find_by(post: @post)
+    
+    if @achievement
+      @achievement.destroy
+      redirect_to @post, notice: t("achievements.destroy.success")
+    else
+      redirect_to @post, alert: t("achievements.destroy.not_found")
+    end
+  end
+
   private
   
   def set_post

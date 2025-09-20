@@ -1,0 +1,52 @@
+<%# app/views/shared/_profile_dropdown.html.erb %>
+<div x-data="{ open: false }" class="relative">
+  <button
+    type="button"
+    class="overflow-hidden rounded-full border border-gray-300 shadow-inner"
+    @click="open = !open"
+    :aria-expanded="open.toString()"
+    aria-haspopup="menu"
+  >
+    <span class="sr-only">Toggle dashboard menu</span>
+    
+    <%# プロフィール画像の表示 %>
+    <% if user_signed_in? %>
+      <%# ログイン時：アバター画像またはメールアドレスの頭文字 %>
+      <% if current_user.avatar.present? %>
+        <%# アップロードされたアバター画像を表示 %>
+        <img src="<%= current_user.avatar.url %>" alt="<%= current_user.email %>" 
+             class="size-10 object-cover">
+      <% else %>
+        <%# アバター未設定時：メールアドレスの頭文字でアバター生成 %>
+        <div class="size-10 bg-blue-500 flex items-center justify-center text-white font-semibold">
+          <%= current_user.email.first.upcase %>
+        </div>
+      <% end %>
+    <% else %>
+      <%# ログアウト時：汎用アイコン %>
+      <div class="size-10 bg-gray-400 flex items-center justify-center text-white">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
+        </svg>
+      </div>
+    <% end %>
+  </button>
+
+  <%# ドロップダウンメニュー本体 %>
+  <div
+    x-cloak
+    x-show="open"
+    x-transition.origin.top.right
+    @click.outside="open = false"
+    @keydown.escape.window="open = false"
+    class="absolute end-0 z-50 mt-0.5 w-56 divide-y divide-gray-100 rounded-md border border-gray-100 bg-white shadow-lg"
+    role="menu"
+  >
+    <%# ログイン状態によってメニュー内容を切り替え %>
+    <% if user_signed_in? %>
+      <%= render 'shared/logged_in_menu' %>
+    <% else %>
+      <%= render 'shared/logged_out_menu' %>
+    <% end %>
+  </div>
+</div>

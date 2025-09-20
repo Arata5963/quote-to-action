@@ -23,6 +23,7 @@ ja:
         email: "メールアドレス"
         password: "パスワード"
         password_confirmation: "パスワード（確認用）"
+        avatar: "プロフィール画像"
       post:
         trigger_content: "きっかけ"
         action_plan: "アクションプラン"
@@ -80,3 +81,14 @@ ja:
     create:
       success: "今日の達成を記録しました"
       failed: "達成記録に失敗しました"
+    destroy:
+      success: "今日の達成記録を取り消しました"
+      not_found: "取り消す達成記録が見つかりません"
+  # UsersController関連のメッセージ
+  users:
+    update:
+      success: "プロフィールを更新しました"
+    edit:
+      title: "プロフィール編集"
+    attributes:
+      avatar: "プロフィール画像"

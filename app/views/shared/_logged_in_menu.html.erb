@@ -1,0 +1,37 @@
+<%# app/views/shared/_logged_in_menu.html.erb %>
+<%# ユーザー情報セクション %>
+<div class="p-2 border-b border-gray-100">
+  <div class="flex items-center space-x-3 px-4 py-2">
+    <%# メールアドレスの頭文字でアバター生成 %>
+    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+      <span class="text-xs text-white font-semibold"><%= current_user.email.first.upcase %></span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <p class="text-sm font-medium text-gray-900 truncate">
+        <%= current_user.email %>
+      </p>
+    </div>
+  </div>
+</div>
+
+<%# メニューアイテム %>
+<div class="p-2">
+  <%= link_to mypage_path, class: "block rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700", role: "menuitem" do %>
+    <div class="flex items-center space-x-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+      <span>マイページ</span>
+    </div>
+  <% end %>
+</div>
+
+<%# ログアウトセクション %>
+<div class="p-2 border-t border-gray-100">
+  <%= button_to destroy_user_session_path, method: :delete, class: "flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm text-red-700 hover:bg-red-50", role: "menuitem" do %>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+    </svg>
+    <span>ログアウト</span>
+  <% end %>
+</div>

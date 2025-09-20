@@ -1,122 +1,163 @@
 <%# app/views/users/show.html.erb %>
-<%# マイページ - ユーザーの投稿・達成状況の一覧表示 %>
+<%# マイページ - モノトーンカード形式のメニューレイアウト %>
 <% content_for :title, "マイページ" %>
 
-<div class="max-w-4xl mx-auto px-4 py-8 space-y-6">
+<div class="max-w-6xl mx-auto px-4 py-8 bg-white min-h-screen">
   
-  <%# ユーザー情報・統計サマリー %>
-  <div class="bg-white border rounded-lg p-6">
-    <h1 class="text-2xl font-bold text-gray-900 mb-4">マイページ</h1>
-    <p class="text-gray-600 mb-6"><%= @user.email %></p>
+  <%# ページタイトル %>
+  <div class="text-center mb-12">
+    <div class="flex items-center justify-center gap-3 mb-4">
+      <svg class="w-8 h-8 text-black fill-current" viewBox="0 0 24 24">
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+      </svg>
+      <h1 class="text-4xl font-bold text-black">マイページ</h1>
+    </div>
+    <div class="w-24 h-1 bg-black mx-auto mb-4"></div>
+    <p class="text-black font-medium"><%= @user.email %></p>
+  </div>
+
+  <%# メインカードエリア %>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
     
-    <%# 統計情報をカード形式で表示 %>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <%# 総投稿数 %>
-      <div class="bg-blue-50 rounded-lg p-4 text-center">
-        <div class="text-sm text-blue-600">総投稿数</div>
-        <div class="text-2xl font-bold text-blue-700"><%= @total_posts %> 件</div>
+    <%# カード1: 自分の投稿 %>
+    <%= link_to posts_path, class: "group" do %>
+      <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
+        <div class="p-8 text-center">
+          <%# アイコン %>
+          <div class="w-20 h-20 mx-auto mb-4 bg-black flex items-center justify-center">
+            <svg class="w-10 h-10 text-white fill-current" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+          </div>
+          <%# テキスト %>
+          <h3 class="text-xl font-bold text-black mb-2">自分の投稿</h3>
+          <div class="flex items-center justify-center gap-1">
+            <svg class="w-4 h-4 text-black fill-current" viewBox="0 0 24 24">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+            <span class="text-black text-sm font-bold"><%= @total_posts %> 件</span>
+          </div>
+        </div>
       </div>
-      
-      <%# 累計達成回数 %>
-      <div class="bg-emerald-50 rounded-lg p-4 text-center">
-        <div class="text-sm text-emerald-600">累計達成回数</div>
-        <div class="text-2xl font-bold text-emerald-700"><%= @total_achievements %> 回</div>
+    <% end %>
+
+    <%# カード2: 達成記録 %>
+    <%= link_to "#", class: "group" do %>
+      <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
+        <div class="p-8 text-center">
+          <%# アイコン %>
+          <div class="w-20 h-20 mx-auto mb-4 bg-black flex items-center justify-center">
+            <svg class="w-10 h-10 text-white fill-current" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <%# テキスト %>
+          <h3 class="text-xl font-bold text-black mb-2">達成記録</h3>
+          <div class="flex items-center justify-center gap-1">
+            <svg class="w-4 h-4 text-black fill-current" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            <span class="text-black text-sm font-bold"><%= @total_achievements %> 回</span>
+          </div>
+        </div>
       </div>
+    <% end %>
+
+    <%# カード3: プロフィール %>
+    <%= link_to "#", class: "group" do %>
+      <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
+        <div class="p-8 text-center">
+          <%# アイコン %>
+          <div class="w-20 h-20 mx-auto mb-4 bg-black flex items-center justify-center">
+            <% if current_user.avatar.present? %>
+              <img src="<%= current_user.avatar.url %>" alt="プロフィール画像" 
+                   class="w-16 h-16 object-cover grayscale">
+            <% else %>
+              <div class="w-16 h-16 bg-white text-black flex items-center justify-center text-xl font-bold">
+                <%= current_user.email.first.upcase %>
+              </div>
+            <% end %>
+          </div>
+          <%# テキスト %>
+          <h3 class="text-xl font-bold text-black mb-2">プロフィール</h3>
+          <div class="flex items-center justify-center gap-1">
+            <svg class="w-4 h-4 text-black fill-current" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span class="text-black text-sm font-bold">アカウント情報</span>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <%# カード4: 設定 %>
+    <%= link_to edit_profile_path, class: "group" do %>
+      <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
+        <div class="p-8 text-center">
+          <%# アイコン %>
+          <div class="w-20 h-20 mx-auto mb-4 bg-black flex items-center justify-center">
+            <svg class="w-10 h-10 text-white fill-current" viewBox="0 0 24 24">
+              <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+            </svg>
+          </div>
+          <%# テキスト %>
+          <h3 class="text-xl font-bold text-black mb-2">個人情報変更</h3>
+          <div class="flex items-center justify-center gap-1">
+            <svg class="w-4 h-4 text-black fill-current" viewBox="0 0 24 24">
+              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+            <span class="text-black text-sm font-bold">プロフィール編集</span>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+  </div>
+
+  <%# 統計情報エリア %>
+  <div class="bg-white border-2 border-black p-6">
+    <div class="flex items-center justify-center gap-2 mb-6">
+      <svg class="w-6 h-6 text-black fill-current" viewBox="0 0 24 24">
+        <path d="M16,6L18.29,8.29L13.41,13.17L9.41,9.17L2,16.59L3.41,18L9.41,12L13.41,16L19.71,9.71L22,12V6H16Z"/>
+      </svg>
+      <h2 class="text-2xl font-bold text-black">今日の活動</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       
       <%# 今日の達成数 %>
-      <div class="bg-amber-50 rounded-lg p-4 text-center">
-        <div class="text-sm text-amber-600">今日の達成</div>
-        <div class="text-2xl font-bold text-amber-700"><%= @today_achievements %> 回</div>
+      <div class="text-center border border-black p-4">
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <div class="text-3xl font-bold text-black"><%= @today_achievements %></div>
+        </div>
+        <div class="text-black font-bold text-sm">今日の達成</div>
       </div>
+      
+      <%# 総投稿数 %>
+      <div class="text-center border border-black p-4">
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+          <div class="text-3xl font-bold text-black"><%= @total_posts %></div>
+        </div>
+        <div class="text-black font-bold text-sm">総投稿数</div>
+      </div>
+      
+      <%# 累計達成 %>
+      <div class="text-center border border-black p-4">
+        <div class="flex items-center justify-center gap-2 mb-2">
+          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div class="text-3xl font-bold text-black"><%= @total_achievements %></div>
+        </div>
+        <div class="text-black font-bold text-sm">累計達成</div>
+      </div>
+      
     </div>
   </div>
 
-  <%# 投稿一覧セクション %>
-  <% if @posts.empty? %>
-    <div class="text-center py-12">
-      <div class="text-gray-500 text-lg mb-4">まだ投稿がありません</div>
-      <%= link_to "最初のきっかけを投稿してみましょう", new_post_path,
-            class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md transition-colors" %>
-    </div>
-  <% else %>
-    <%# 投稿一覧タブ風メニュー %>
-    <div class="flex overflow-x-auto overflow-y-hidden border-b border-gray-200 whitespace-nowrap">
-      <button class="inline-flex items-center h-10 px-4 -mb-px text-sm text-center 
-                    text-blue-600 bg-transparent border-b-2 border-blue-500 
-                    sm:text-base whitespace-nowrap focus:outline-none">
-        Profile
-      </button>
-
-      <button class="inline-flex items-center h-10 px-4 -mb-px text-sm text-center 
-                    text-gray-500 bg-transparent border-b-2 border-transparent 
-                    sm:text-base whitespace-nowrap cursor-pointer 
-                    focus:outline-none hover:border-gray-400">
-        Account
-      </button>
-
-      <button class="inline-flex items-center h-10 px-4 -mb-px text-sm text-center 
-                    text-gray-500 bg-transparent border-b-2 border-transparent 
-                    sm:text-base whitespace-nowrap cursor-pointer 
-                    focus:outline-none hover:border-gray-400">
-        Notification
-      </button>
-    </div>
-
-    <%# 投稿一覧表示（左：画像／右：テキスト） %>
-    <div class="grid grid-cols-1 gap-4 md:gap-6">
-      <% @posts.each do |post| %>
-        <%= link_to post, class: "block bg-white border rounded-lg hover:shadow-md transition" do %>
-          <div class="flex flex-col sm:flex-row">
-            
-            <%# 🆕 左：画像表示ロジック %>
-            <div class="sm:w-48 sm:flex-shrink-0">
-              <% if post.image.present? %>
-                <%# アップロードされた画像を表示 %>
-                <img
-                  alt="投稿画像"
-                  src="<%= post.image.url %>"
-                  class="h-48 w-full sm:h-full sm:w-48 object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
-                />
-              <% else %>
-                <%# 画像がない場合はグラデーション背景 %>
-                <div class="h-48 w-full sm:h-full sm:w-48 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none flex items-center justify-center">
-                  <div class="text-center text-white">
-                    <svg class="mx-auto h-8 w-8 mb-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <p class="text-xs opacity-70">画像なし</p>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-
-            <%# 右：本文 %>
-            <div class="flex-1 p-4 sm:p-6">
-              <%# 達成回数 %>
-              <div class="mb-2 text-xs text-pink-600 font-semibold">
-                達成 <%= post.achievements.where(user_id: current_user.id).count %> 回
-              </div>
-
-              <%# アクションプラン %>
-              <div class="mb-3">
-                <div class="text-xs text-gray-500">アクションプラン</div>
-                <h3 class="text-lg font-bold text-gray-900 leading-snug">
-                  <%= post.action_plan %>
-                </h3>
-              </div>
-
-              <%# きっかけ %>
-              <div>
-                <div class="text-xs text-gray-500">きっかけ</div>
-                <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                  <%= post.trigger_content.truncate(100) %>
-                </p>
-              </div>
-            </div>
-
-          </div>
-        <% end %>
-      <% end %>
-    </div>
-  <% end %>
 </div>

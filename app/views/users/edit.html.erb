@@ -1,0 +1,60 @@
+<%# app/views/users/edit.html.erb %>
+<% content_for :title, "プロフィール編集" %>
+
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">プロフィール編集</h1>
+
+  <%= form_with(model: @user, url: update_profile_path, local: true, html: { multipart: true }) do |form| %>
+    <% if @user.errors.any? %>
+      <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+        <h2 class="text-red-800 font-semibold mb-2"><%= pluralize(@user.errors.count, "個") %>のエラーがあります:</h2>
+        <ul class="text-red-700 text-sm">
+          <% @user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="space-y-6">
+      <!-- アバター画像アップロード -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">プロフィール画像</label>
+        
+        <!-- 現在の画像表示 -->
+        <div class="mb-4">
+          <% if @user.avatar.present? %>
+            <img src="<%= @user.avatar.url %>" alt="現在のプロフィール画像" 
+                 class="h-24 w-24 rounded-full object-cover border-2 border-gray-300">
+          <% else %>
+            <div class="h-24 w-24 bg-gray-200 rounded-full flex items-center justify-center border-2 border-gray-300">
+              <svg class="h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- ファイル選択 -->
+        <%= form.file_field :avatar, 
+              class: "block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100",
+              accept: "image/*" %>
+        
+        <%= form.hidden_field :avatar_cache %>
+        
+        <p class="text-sm text-gray-500 mt-2">
+          JPG、PNG、GIF形式のファイルをアップロードできます（最大2MB）
+        </p>
+      </div>
+
+      <!-- 送信ボタン -->
+      <div class="flex items-center gap-4">
+        <%= form.submit "更新する", 
+              class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors font-medium" %>
+        
+        <%= link_to "キャンセル", mypage_path, 
+              class: "text-gray-600 hover:text-gray-900 px-4 py-2" %>
+      </div>
+    </div>
+  <% end %>
+</div>
