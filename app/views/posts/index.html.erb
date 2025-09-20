@@ -41,7 +41,7 @@
           <div class="relative h-48 bg-white border-b-2 border-black overflow-hidden">
             <%= post_badge_tag(
                   post,
-                  class: "w-full h-full object-contain object-center",  # 収まり良く等倍フィット
+                  class: "w-full h-full object-cover object-center",  # ← coverに変更
                   loading: "lazy"
                 ) %>
 
@@ -55,7 +55,6 @@
               </div>
             </div>
           </div>
-          <%# ===== ここまで画像部分 ===== %>
 
           <%# テキスト部分 %>
           <div class="p-4">
