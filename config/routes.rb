@@ -12,6 +12,9 @@ Rails.application.routes.draw do
   get :edit_profile, to: "users#edit"
   patch :update_profile, to: "users#update"
   
+  # バッジ一覧追加
+  resources :user_badges, only: [:index], path: 'badges'
+  
   resources :posts do
     resources :achievements, only: [:create, :destroy]
   end
