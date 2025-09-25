@@ -4,20 +4,6 @@
 <div class="max-w-4xl mx-auto px-4 py-8 bg-white min-h-screen">
   <div class="mb-8 text-center">
     <h1 class="text-3xl font-bold text-black mb-4">マイバッジ</h1>
-    <div class="w-24 h-1 bg-black mx-auto"></div>
-  </div>
-
-  <div class="mb-8 text-center">
-    <div class="inline-flex gap-8">
-      <div class="text-center">
-        <div class="text-2xl font-bold text-black"><%= @total_badges %></div>
-        <div class="text-sm text-gray-600">獲得済み</div>
-      </div>
-      <div class="text-center">
-        <div class="text-2xl font-bold text-black"><%= @available_count %></div>
-        <div class="text-sm text-gray-600">未獲得</div>
-      </div>
-    </div>
   </div>
 
   <% if @user_badges.empty? %>
@@ -35,13 +21,10 @@
   <% else %>
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <% @user_badges.each do |user_badge| %>
-        <div class="bg-white border-2 border-black p-4 text-center hover:bg-gray-50 transition-colors">
+        <div class="bg-white border-2 border-black p-2 text-center hover:bg-gray-50 transition-colors">
           <%= image_tag "user_badges/#{user_badge.badge_image_path}", alt: user_badge.badge_name, class: "w-16 h-16 mx-auto object-contain mb-3" %>
           <h3 class="font-bold text-black mb-1"><%= user_badge.badge_name %></h3>
           <p class="text-xs text-gray-600 mb-2"><%= user_badge.description %></p>
-          <div class="text-xs text-gray-500">
-            <%= user_badge.awarded_at.strftime("%Y.%m.%d") %>
-          </div>
         </div>
       <% end %>
     </div>

@@ -3,8 +3,6 @@
 <% content_for :title, "投稿編集" %>
 
 <div class="max-w-2xl mx-auto px-4 py-8">
-  <h1 class="text-3xl font-bold text-gray-900 mb-8">きっかけを編集</h1>
-  
   <%# 共通エラーメッセージコンポーネントを使用 %>
   <%= render 'shared/error_messages', object: @post %>
   
@@ -12,11 +10,4 @@
   <%# post.persisted? = true なので「更新する」ボタンが表示される %>
   <%= render 'form', post: @post %>
   
-  <%# ナビゲーションリンク %>
-  <div class="mt-6 space-x-4">
-    <%= link_to "詳細に戻る", @post, 
-          class: "text-blue-600 hover:text-blue-800 transition-colors" %>
-    <%= link_to "一覧に戻る", posts_path, 
-          class: "text-blue-600 hover:text-blue-800 transition-colors" %>
-  </div>
 </div>
