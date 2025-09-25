@@ -1,13 +1,5 @@
-<%# app/views/posts/edit.html.erb %>
-<%# 投稿編集ページ %>
 <% content_for :title, "投稿編集" %>
-
 <div class="max-w-2xl mx-auto px-4 py-8">
-  <%# 共通エラーメッセージコンポーネントを使用 %>
   <%= render 'shared/error_messages', object: @post %>
-  
-  <%# 既存のフォームパーシャルを再利用 %>
-  <%# post.persisted? = true なので「更新する」ボタンが表示される %>
   <%= render 'form', post: @post %>
-  
 </div>

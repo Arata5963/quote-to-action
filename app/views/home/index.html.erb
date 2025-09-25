@@ -14,14 +14,12 @@
     </p>
   </div>
   
-  <div class="mb-16">
-    <% if user_signed_in? %>
-      <%= link_to "投稿を見る", posts_path, 
-            class: "inline-block bg-gray-800 hover:bg-gray-900 text-white px-12 py-4 rounded-full text-lg font-medium transition-colors" %>
-    <% else %>
-      <%= link_to "使ってみる", new_user_registration_path, 
-            class: "inline-block bg-gray-800 hover:bg-gray-900 text-white px-12 py-4 rounded-full text-lg font-medium transition-colors" %>
-    <% end %>
+  <div class="mb-16 flex justify-center gap-6">
+    <%= link_to "投稿を見る", posts_path, 
+          class: "inline-block bg-gray-800 hover:bg-gray-900 text-white px-12 py-4 rounded-full text-lg font-medium transition-colors" %>
+
+    <%= link_to "使ってみる", new_user_registration_path, 
+          class: "inline-block bg-white hover:bg-gray-100 text-gray-900 px-12 py-4 rounded-full text-lg font-medium border-2 border-gray-800 transition-colors" %>
   </div>
   
 </div>
