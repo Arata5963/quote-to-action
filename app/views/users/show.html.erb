@@ -16,29 +16,6 @@
 
   <%# メインカードエリア %>
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-    
-    <%# カード1: 自分の投稿 %>
-    <%= link_to posts_path, class: "group" do %>
-      <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
-        <div class="p-8 text-center">
-          <%# アイコン %>
-          <div class="w-20 h-20 mx-auto mb-4 bg-black flex items-center justify-center">
-            <svg class="w-10 h-10 text-white fill-current" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-            </svg>
-          </div>
-          <%# テキスト %>
-          <h3 class="text-xl font-bold text-black mb-2">自分の投稿</h3>
-          <div class="flex items-center justify-center gap-1">
-            <svg class="w-4 h-4 text-black fill-current" viewBox="0 0 24 24">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-            </svg>
-            <span class="text-black text-sm font-bold"><%= @total_posts %> 件</span>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
     <%# カード2: マイバッジ %>
     <%= link_to user_badges_path, class: "group" do %>
       <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
