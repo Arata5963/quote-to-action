@@ -28,11 +28,13 @@ Rails.application.configure do
   # アップロードファイルはローカルに保存（config/storage.yml を参照）
   config.active_storage.service = :local
 
-  # メール送信失敗時にエラーを無視
-  config.action_mailer.raise_delivery_errors = false
+  # メール送信失敗時にエラーを表示する（開発中はエラーを把握するため true にする）
+  config.action_mailer.raise_delivery_errors = true
 
   # メール送信結果をキャッシュしない
   config.action_mailer.perform_caching = false
+  config.action_mailer.delivery_method = :letter_opener_web
+
 
   # 開発用メールリンクのホスト名とポート番号を指定
   config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
@@ -58,6 +60,4 @@ Rails.application.configure do
   # コントローラのbefore_actionで存在しないアクション指定があればエラー
   config.action_controller.raise_on_missing_callback_actions = true
 
-  # Devise用のメール設定
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
 end

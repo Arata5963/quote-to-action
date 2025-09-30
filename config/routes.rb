@@ -1,5 +1,11 @@
 Rails.application.routes.draw do
   devise_for :users
+
+  # 開発環境でメールをブラウザで確認できるようにする
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   root "posts#index"

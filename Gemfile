@@ -42,6 +42,7 @@ end
 # ===== 開発環境専用 =====
 group :development do
   gem "web-console"                # ブラウザ上でのデバッグコンソール
+  gem "letter_opener_web", "~> 2.0"  # 開発環境でメールをブラウザで確認
 end
 
 # ===== テスト環境専用 =====
