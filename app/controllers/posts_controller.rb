@@ -4,7 +4,12 @@ class PostsController < ApplicationController
   before_action :check_owner, only: [ :edit, :update, :destroy ]
 
   def index
-    @posts = Post.includes(:user, :achievements).recent.page(params[:page]).per(20)
+    @q = Post.ransack(params[:q])
+    @posts = @q
+      .result(distinct: true)
+      .includes(:user, :achievements)
+      .recent
+      .page(params[:page]).per(20)
   end
 
   def show
