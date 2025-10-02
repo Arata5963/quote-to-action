@@ -32,6 +32,8 @@ gem "carrierwave"                  # ファイルアップロード管理
 gem "fog-aws"                      # AWS S3との連携
 gem "mini_magick"                  # 画像リサイズ・変換処理
 gem "kaminari", "~> 1.2"           # ページネーション機能
+gem "ransack", "~> 4.0"            # 検索機能
+
 
 
 # ===== 開発・テスト環境専用 =====
