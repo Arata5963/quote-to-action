@@ -1,0 +1,37 @@
+<%# コメント投稿フォーム %>
+<div class="border-2 border-black p-6 bg-gray-50">
+  <%# フォームタイトル %>
+  <h3 class="text-lg font-bold text-black mb-4 flex items-center gap-2">
+    <%# 編集アイコン（SVG） %>
+    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+    </svg>
+    コメントを投稿
+  </h3>
+  
+  <%# コメント投稿フォーム本体 %>
+  <%# model: [@post, @post.comments.build] でネストしたリソースのフォームを生成 %>
+  <%# local: true で通常のHTMLフォーム送信を使用（Turboを無効化） %>
+  <%# class: "space-y-4" でフォーム要素間に縦方向の余白を追加 %>
+  <%= form_with(model: [@post, @post.comments.build], local: true, class: "space-y-4") do |f| %>
+    
+    <%# テキストエリアの入力欄 %>
+    <div>
+      <%# コメント内容の入力フィールド %>
+      <%# rows: 4 で4行分の高さを確保 %>
+      <%# placeholder で入力欄のヒントを表示 %>
+      <%# Tailwind CSSでスタイリング（枠線、パディング、フォーカス時の挙動など） %>
+      <%= f.text_area :content, 
+                      rows: 4,
+                      placeholder: "コメントを入力してください（最大500文字）",
+                      class: "w-full px-4 py-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-gray-400 text-black" %>
+    </div>
+
+    <%# 送信ボタンエリア（右寄せ） %>
+    <div class="flex justify-end">
+      <%# 送信ボタン %>
+      <%# Tailwind CSSでボタンスタイルを適用（背景色、ホバー効果、パディングなど） %>
+      <%= f.submit "コメントする", class: "px-8 py-3 bg-black text-white hover:bg-gray-800 transition-colors font-bold border-2 border-black cursor-pointer" %>
+    </div>
+  <% end %>
+</div>

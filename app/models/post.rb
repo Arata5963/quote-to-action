@@ -1,6 +1,10 @@
 class Post < ApplicationRecord
   belongs_to :user
   has_many :achievements, dependent: :destroy
+  # 投稿は複数のコメントを持つ
+  # dependent: :destroy = 投稿削除時に関連コメントも全て削除
+  has_many :comments, dependent: :destroy
+
 
   mount_uploader :image, ImageUploader
   scope :recent, -> { order(created_at: :desc) }
