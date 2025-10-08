@@ -20,5 +20,8 @@ Rails.application.routes.draw do
 
   resources :posts do
     resources :achievements, only: [ :create, :destroy ]
+    # posts/:post_id/comments のようなURLになる
+    # only: [:create, :destroy] = 作成と削除のみ実装
+    resources :comments, only: [:create, :destroy]
   end
 end
