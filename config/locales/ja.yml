@@ -31,6 +31,7 @@ ja:
       post: "投稿"
       achievement: "達成記録"
       comment: "コメント"
+      like: "いいね"  # ← 【追加1】ここに追加
     
     # 属性名の日本語表示設定
     attributes:
@@ -51,6 +52,9 @@ ja:
       comment:
         content: "コメント内容"
         user: "投稿者"
+        post: "投稿"
+      like:  # ← 【追加2】ここから3行追加
+        user: "ユーザー"
         post: "投稿"
         
     # エラーメッセージの詳細設定
@@ -88,6 +92,10 @@ ja:
               blank: "コメントを入力してください"
               too_short: "コメントは%{count}文字以上で入力してください"
               too_long: "コメントは%{count}文字以内で入力してください"
+        like:  # ← 【追加3】ここから4行追加
+          attributes:
+            user_id:
+              taken: "既にいいね済みです"
               
   # PostsController関連のメッセージ
   posts:
@@ -128,3 +136,12 @@ ja:
     destroy:
       success: "コメントを削除しました"
       confirm: "本当に削除しますか？"
+
+  # LikesController関連のメッセージ  # ← 【追加4】ここから最後まで追加
+  likes:
+    not_found: "いいねが見つかりません"
+    create:
+      success: "いいねしました"
+      already_liked: "既にいいね済みです"
+    destroy:
+      success: "いいねを取り消しました"

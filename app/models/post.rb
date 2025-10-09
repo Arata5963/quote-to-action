@@ -1,9 +1,8 @@
 class Post < ApplicationRecord
   belongs_to :user
   has_many :achievements, dependent: :destroy
-  # 投稿は複数のコメントを持つ
-  # dependent: :destroy = 投稿削除時に関連コメントも全て削除
   has_many :comments, dependent: :destroy
+  has_many :likes, dependent: :destroy
 
 
   mount_uploader :image, ImageUploader
@@ -18,6 +17,10 @@ class Post < ApplicationRecord
 
   def self.ransackable_associations(_auth_object = nil)
     %w[user achievements]
+  end
+  # ユーザーがいいね済みかを判定するメソッド
+  def liked_by?(user)
+    likes.exists?(user_id: user.id)
   end
 
 end
