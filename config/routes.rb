@@ -23,5 +23,6 @@ Rails.application.routes.draw do
     # posts/:post_id/comments のようなURLになる
     # only: [:create, :destroy] = 作成と削除のみ実装
     resources :comments, only: [:create, :destroy]
+    resources :likes, only: [:create, :destroy]
   end
 end

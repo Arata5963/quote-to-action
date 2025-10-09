@@ -1,0 +1,77 @@
+<%# いいねボタン全体のコンテナ %>
+<%# id属性で各投稿のいいねボタンを一意に識別（Turbo Streamで部分更新するため） %>
+<div id="like_button_<%= post.id %>" class="flex items-center gap-2">
+  
+  <%# ログイン済みユーザーのみボタンを表示 %>
+  <% if user_signed_in? %>
+    
+    <%# 現在のユーザーが既にこの投稿にいいねしているか判定 %>
+    <% if post.liked_by?(current_user) %>
+      
+      <%# === いいね済みの場合: 取り消しボタンを表示 === %>
+      
+      <%# 現在のユーザーのいいねレコードを取得 %>
+      <%# このlikeオブジェクトのIDがDELETEリクエストのパスに必要 %>
+      <% like = post.likes.find_by(user: current_user) %>
+
+      <%# いいね取り消しボタン（フォーム形式） %>
+      <%# post_like_path(post, like) = /posts/:post_id/likes/:id %>
+      <%# method: :delete = DELETEリクエストを送信 %>
+      <%# data: { turbo_frame: "_top" } = Turbo Driveで非同期処理を有効化 %>
+      <%= button_to post_like_path(post, like), 
+                    method: :delete,
+                    data: { turbo_frame: "_top" },
+                    class: "inline-flex items-center gap-1 px-3 py-1 bg-red-600 text-white hover:bg-red-700 transition-colors text-sm font-bold border-2 border-red-600 rounded" do %>
+
+        <%# ハートアイコン（塗りつぶし） %>
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        
+        <%# いいね数を表示 %>
+        <span><%= post.likes.count %></span>
+      <% end %>
+      
+    <% else %>
+      
+      <%# === 未いいねの場合: いいねボタンを表示 === %>
+      
+      <%# いいねボタン（フォーム形式） %>
+      <%# post_likes_path(post) = /posts/:post_id/likes %>
+      <%# method: :post = POSTリクエストを送信（新規作成） %>
+      <%# data: { turbo_frame: "_top" } = Turbo Driveで非同期処理を有効化 %>
+      <%= button_to post_likes_path(post), 
+                    method: :post,
+                    data: { turbo_frame: "_top" },
+                    class: "inline-flex items-center gap-1 px-3 py-1 bg-white text-black hover:bg-gray-100 transition-colors text-sm font-bold border-2 border-black rounded" do %>
+        
+        <%# ハートアイコン（アウトライン） %>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        
+        <%# いいね数を表示 %>
+        <span><%= post.likes.count %></span>
+      <% end %>
+      
+    <% end %>
+    
+  <% else %>
+    
+    <%# === 未ログインの場合: いいね数のみ表示（ボタンなし） === %>
+    
+    <%# 読み取り専用の表示 %>
+    <%# ログインしていないユーザーはいいね操作ができない %>
+    <div class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-600 text-sm font-bold border-2 border-gray-300 rounded">
+      
+      <%# ハートアイコン（アウトライン・グレー） %>
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+      </svg>
+      
+      <%# いいね数を表示 %>
+      <span><%= post.likes.count %></span>
+    </div>
+    
+  <% end %>
+</div>
