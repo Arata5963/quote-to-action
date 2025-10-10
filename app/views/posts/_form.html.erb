@@ -15,6 +15,19 @@
     </div>
 
     <%= form_with(model: post, local: true, html: { class: "space-y-8" }) do |form| %>
+      <%# エラーメッセージ表示 %>
+      <% if post.errors.any? %>
+        <div class="border-2 border-red-600 bg-red-50 p-4">
+          <h2 class="font-bold text-red-600 mb-2">
+            <%= pluralize(post.errors.count, "個") %>のエラーがあります
+          </h2>
+          <ul class="list-disc list-inside text-red-600">
+            <% post.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
 
       <%# きっかけ入力 %>
       <div class="p-4">
@@ -42,6 +55,52 @@
               class: "w-full px-3 py-2 border-2 border-black text-black placeholder-gray-500 focus:outline-none focus:border-gray-600 bg-white" %>
       </div>
 
+      <%# ===== カテゴリ選択（最もシンプル版） ===== %>
+      <div class="p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+            <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/>
+          </svg>
+          <%= form.label :category, class: "text-sm font-bold text-black uppercase tracking-wide" do %>
+            カテゴリ <span class="text-red-600">*</span>
+          <% end %>
+        </div>
+        
+        <div class="space-y-2">
+          <% Post.categories.keys.each do |category_key| %>
+            <label class="flex items-center gap-3 p-3 border-2 border-black cursor-pointer hover:bg-gray-100">
+              <%= form.radio_button :category, category_key, class: "w-5 h-5" %>
+              <span class="text-2xl"><%= category_icon(category_key) %></span>
+              <span class="font-bold text-black"><%= category_name_without_icon(category_key) %></span>
+            </label>
+          <% end %>
+        </div>
+        
+        <p class="mt-2 text-sm text-gray-600">
+          きっかけをどのように得たかを選択してください
+        </p>
+      </div>
+      <%# ===== カテゴリ選択（ここまで） ===== %>
+
+      <%# 画像アップロード %>
+      <div class="p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+          </svg>
+          <%= form.label :image, "画像（任意）", class: "text-sm font-bold text-black uppercase tracking-wide" %>
+        </div>
+        <%= form.file_field :image,
+            accept: "image/*",
+            class: "w-full px-3 py-2 border-2 border-black text-black bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-black file:text-white file:font-bold file:cursor-pointer hover:file:bg-gray-800" %>
+        
+        <% if post.image? %>
+          <div class="mt-3 border-2 border-black inline-block">
+            <%= image_tag post.image.thumb.url, class: "h-20 w-20 object-cover" %>
+          </div>
+        <% end %>
+      </div>
+
       <%# ボタンエリア - 左右配置 %>
       <div class="pt-4 flex justify-between items-center">
         <%# 左側：キャンセルボタン %>
@@ -64,7 +123,6 @@
           </svg>
         </div>
       </div>
-      
 
     <% end %>
   </div>

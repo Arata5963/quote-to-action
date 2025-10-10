@@ -38,6 +38,15 @@
       <% end %>
     </div>
 
+    <%# ===== カテゴリ表示（追加部分） ===== %>
+    <div class="mb-6 flex justify-center">
+      <div class="inline-flex items-center gap-2 px-4 py-2 border-2 border-black bg-gray-50">
+        <span class="text-2xl"><%= category_icon(@post.category) %></span>
+        <span class="font-bold text-black"><%= category_name_without_icon(@post.category) %></span>
+      </div>
+    </div>
+    <%# ===== カテゴリ表示（ここまで） ===== %>
+
     <%# きっかけ表示 %>
     <div class="p-4">
       <div class="flex items-center gap-2 mb-3">
