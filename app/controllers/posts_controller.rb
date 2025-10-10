@@ -1,15 +1,24 @@
+# app/controllers/posts_controller.rb
 class PostsController < ApplicationController
-  before_action :authenticate_user!, except: [ :index, :show ]
-  before_action :set_post, only: [ :show, :edit, :update, :destroy ]
-  before_action :check_owner, only: [ :edit, :update, :destroy ]
+  before_action :authenticate_user!, except: [:index, :show]
+  before_action :set_post, only: [:show, :edit, :update, :destroy]
+  before_action :check_owner, only: [:edit, :update, :destroy]
 
   def index
     @q = Post.ransack(params[:q])
-    @posts = @q
-      .result(distinct: true)
-      .includes(:user, :achievements)
-      .recent
-      .page(params[:page]).per(20)
+    @posts = @q.result(distinct: true).includes(:user, :achievements, :likes, :comments)
+    
+    # ===== タブ絞り込み =====
+    if params[:tab] == 'mine' && user_signed_in?
+      @posts = @posts.where(user: current_user)
+    end
+    
+    # ===== カテゴリ絞り込み =====
+    if params[:category].present? && Post.categories.key?(params[:category])
+      @posts = @posts.where(category: params[:category])
+    end
+    
+    @posts = @posts.recent.page(params[:page]).per(20)
   end
 
   def show
@@ -60,6 +69,6 @@ class PostsController < ApplicationController
   end
 
   def post_params
-    params.require(:post).permit(:trigger_content, :action_plan, :image)
+    params.require(:post).permit(:trigger_content, :action_plan, :image, :category)
   end
 end

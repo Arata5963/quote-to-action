@@ -1,3 +1,4 @@
+# config/locales/ja.yml
 ja:
   # ===== 日時フォーマット設定 ===== 
   time:
@@ -31,7 +32,7 @@ ja:
       post: "投稿"
       achievement: "達成記録"
       comment: "コメント"
-      like: "いいね"  # ← 【追加1】ここに追加
+      like: "いいね"
     
     # 属性名の日本語表示設定
     attributes:
@@ -45,6 +46,17 @@ ja:
         action_plan: "アクションプラン"
         user: "投稿者"
         image: "画像"
+        category: "カテゴリ"
+        # ===== ここから追加：カテゴリの日本語表示 =====
+        categories:
+          text: "📝 テキスト"
+          video: "🎥 映像"
+          audio: "🎧 音声"
+          conversation: "💬 対話"
+          experience: "✨ 体験"
+          observation: "👀 日常"
+          other: "📁 その他"
+        # ===== ここまで追加 =====
       achievement:
         awarded_at: "達成日"
         post: "投稿"
@@ -53,7 +65,7 @@ ja:
         content: "コメント内容"
         user: "投稿者"
         post: "投稿"
-      like:  # ← 【追加2】ここから3行追加
+      like:
         user: "ユーザー"
         post: "投稿"
         
@@ -82,6 +94,8 @@ ja:
               too_long: "アクションプランは%{count}文字以内で入力してください"
             image:
               invalid: "画像ファイルが正しくありません"
+            category:
+              blank: "を選択してください"
         achievement:
           attributes:
             post_id:
@@ -92,7 +106,7 @@ ja:
               blank: "コメントを入力してください"
               too_short: "コメントは%{count}文字以上で入力してください"
               too_long: "コメントは%{count}文字以内で入力してください"
-        like:  # ← 【追加3】ここから4行追加
+        like:
           attributes:
             user_id:
               taken: "既にいいね済みです"
@@ -137,7 +151,7 @@ ja:
       success: "コメントを削除しました"
       confirm: "本当に削除しますか？"
 
-  # LikesController関連のメッセージ  # ← 【追加4】ここから最後まで追加
+  # LikesController関連のメッセージ
   likes:
     not_found: "いいねが見つかりません"
     create:
