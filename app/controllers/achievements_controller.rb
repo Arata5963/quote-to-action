@@ -3,7 +3,7 @@ class AchievementsController < ApplicationController
   before_action :set_post
 
   def create
-    @achievement = current_user.achievements.new(post: @post,awarded_at: Date.current)
+    @achievement = current_user.achievements.new(post: @post, awarded_at: Date.current)
 
     awarded_badge = nil
 

@@ -59,5 +59,4 @@ Rails.application.configure do
 
   # コントローラのbefore_actionで存在しないアクション指定があればエラー
   config.action_controller.raise_on_missing_callback_actions = true
-
 end

@@ -1,10 +1,10 @@
 # app/controllers/likes_controller.rb
 class LikesController < ApplicationController
   # ==== フィルター設定（共通処理）====
-  
+
   # ログインしていないユーザーはいいねできないようにする
   before_action :authenticate_user!
-  
+
   # 各アクションで、対象の投稿（@post）を特定する
   before_action :set_post
 
@@ -16,11 +16,11 @@ class LikesController < ApplicationController
     if @post.liked_by?(current_user)
       respond_to do |format|
         # 通常のHTMLリクエスト: 投稿一覧ページにリダイレクト
-        format.html { redirect_to posts_path, alert: t('likes.create.already_liked') }
-        
+        format.html { redirect_to posts_path, alert: t("likes.create.already_liked") }
+
         # Turbo Streamリクエスト: いいねボタン部分だけを更新（非同期）
         # "like_button_#{@post.id}" のIDを持つ要素を、_like_button.html.erb で置き換える
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: 'likes/like_button', locals: { post: @post }) }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: "likes/like_button", locals: { post: @post }) }
       end
       # 処理を終了（以降のコードは実行しない）
       return
@@ -34,20 +34,20 @@ class LikesController < ApplicationController
     if @like.save
       respond_to do |format|
         # 通常のHTMLリクエスト: 投稿一覧ページにリダイレクト、成功メッセージを表示
-        format.html { redirect_to posts_path, notice: t('likes.create.success') }
-        
+        format.html { redirect_to posts_path, notice: t("likes.create.success") }
+
         # Turbo Streamリクエスト: いいねボタン部分だけを更新（非同期）
         # いいね数が増え、ボタンが「いいね済み」状態に変わる
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: 'likes/like_button', locals: { post: @post }) }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: "likes/like_button", locals: { post: @post }) }
       end
     else
       # 保存に失敗した場合
       respond_to do |format|
         # 通常のHTMLリクエスト: 投稿一覧ページにリダイレクト、エラーメッセージを表示
         format.html { redirect_to posts_path, alert: @like.errors.full_messages.first }
-        
+
         # Turbo Streamリクエスト: いいねボタン部分を元の状態で更新
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: 'likes/like_button', locals: { post: @post }) }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: "likes/like_button", locals: { post: @post }) }
       end
     end
   end
@@ -62,23 +62,23 @@ class LikesController < ApplicationController
     if @like
       # いいねを削除
       @like.destroy
-      
+
       respond_to do |format|
         # 通常のHTMLリクエスト: 投稿一覧ページにリダイレクト、成功メッセージを表示
-        format.html { redirect_to posts_path, notice: t('likes.destroy.success') }
-        
+        format.html { redirect_to posts_path, notice: t("likes.destroy.success") }
+
         # Turbo Streamリクエスト: いいねボタン部分だけを更新（非同期）
         # いいね数が減り、ボタンが「いいね」状態に戻る
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: 'likes/like_button', locals: { post: @post }) }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: "likes/like_button", locals: { post: @post }) }
       end
     else
       # いいねが見つからなかった場合（既に削除済み、または自分のいいねではない）
       respond_to do |format|
         # 通常のHTMLリクエスト: 投稿一覧ページにリダイレクト、エラーメッセージを表示
-        format.html { redirect_to posts_path, alert: t('likes.not_found') }
-        
+        format.html { redirect_to posts_path, alert: t("likes.not_found") }
+
         # Turbo Streamリクエスト: いいねボタン部分を現在の状態で更新
-        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: 'likes/like_button', locals: { post: @post }) }
+        format.turbo_stream { render turbo_stream: turbo_stream.replace("like_button_#{@post.id}", partial: "likes/like_button", locals: { post: @post }) }
       end
     end
   end
@@ -93,6 +93,6 @@ class LikesController < ApplicationController
   rescue ActiveRecord::RecordNotFound
     # 投稿が見つからない場合（削除済み、または存在しないIDなど）
     # 投稿一覧ページにリダイレクトし、エラーメッセージを表示
-    redirect_to posts_path, alert: t('posts.not_found')
+    redirect_to posts_path, alert: t("posts.not_found")
   end
 end

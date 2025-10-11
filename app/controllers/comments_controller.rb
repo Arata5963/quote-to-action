@@ -9,10 +9,10 @@ class CommentsController < ApplicationController
   before_action :set_post
 
   # destroyアクション（削除）のみ、対象コメントを特定する
-  before_action :set_comment, only: [:destroy]
+  before_action :set_comment, only: [ :destroy ]
 
   # destroyアクション（削除）のみ、自分のコメントか確認する
-  before_action :check_owner, only: [:destroy]
+  before_action :check_owner, only: [ :destroy ]
 
   # ==== アクション定義 ====
 
@@ -27,7 +27,7 @@ class CommentsController < ApplicationController
 
     # バリデーションを通過すれば保存してリダイレクト
     if @comment.save
-      redirect_to @post, notice: t('comments.create.success')
+      redirect_to @post, notice: t("comments.create.success")
     else
       # 保存に失敗した場合は、エラーメッセージを表示して投稿詳細に戻す
       redirect_to @post, alert: @comment.errors.full_messages.first
@@ -40,7 +40,7 @@ class CommentsController < ApplicationController
     @comment.destroy
 
     # 投稿詳細ページにリダイレクトし、削除成功メッセージを表示
-    redirect_to @post, notice: t('comments.destroy.success')
+    redirect_to @post, notice: t("comments.destroy.success")
   end
 
   private  # === 以下はコントローラ内部でしか使わないメソッド ===
@@ -51,7 +51,7 @@ class CommentsController < ApplicationController
     @post = Post.find(params[:post_id])
   rescue ActiveRecord::RecordNotFound
     # 見つからない場合は一覧ページへリダイレクト
-    redirect_to posts_path, alert: t('posts.not_found')
+    redirect_to posts_path, alert: t("posts.not_found")
   end
 
   # コメントを取得（削除時のみ使用）
@@ -60,13 +60,13 @@ class CommentsController < ApplicationController
     @comment = @post.comments.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     # 見つからない場合は投稿詳細へリダイレクト
-    redirect_to @post, alert: t('comments.not_found')
+    redirect_to @post, alert: t("comments.not_found")
   end
 
   # 自分以外のコメントを削除できないようにする
   def check_owner
     unless @comment.user == current_user
-      redirect_to @post, alert: t('comments.unauthorized')
+      redirect_to @post, alert: t("comments.unauthorized")
     end
   end
 
