@@ -13,6 +13,8 @@ gem "jbuilder"                     # JSON API構築ツール
 
 # ===== 認証機能 =====
 gem "devise"                       # ユーザー認証システム（ログイン・新規登録など）
+gem "omniauth-google-oauth2"              # （SNSログイン）
+gem "omniauth-rails_csrf_protection"      # （セキュリティ）
 
 # ===== データベース・サーバー =====
 gem "pg", "~> 1.1"                # PostgreSQLデータベース接続
