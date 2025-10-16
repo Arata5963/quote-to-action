@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   devise_for :users, controllers: {
-    omniauth_callbacks: 'users/omniauth_callbacks'
+    omniauth_callbacks: "users/omniauth_callbacks"
   }
 
   # 開発環境でメールをブラウザで確認できるようにする
@@ -28,4 +28,5 @@ Rails.application.routes.draw do
 
   get :terms, to: "pages#terms"
   get :privacy, to: "pages#privacy"
+  get :usage, to: "pages#usage"
 end

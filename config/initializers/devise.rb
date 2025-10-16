@@ -311,12 +311,12 @@ Devise.setup do |config|
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
   config.omniauth :google_oauth2,              # Google OAuth2を使う
-                ENV['GOOGLE_CLIENT_ID'],      # クライアントID（環境変数から取得）
-                ENV['GOOGLE_CLIENT_SECRET'],  # クライアントシークレット（環境変数から取得）
+                ENV["GOOGLE_CLIENT_ID"],      # クライアントID（環境変数から取得）
+                ENV["GOOGLE_CLIENT_SECRET"],  # クライアントシークレット（環境変数から取得）
                 {
-                  scope: 'email,profile',     # 取得する情報（メールとプロフィール）
-                  prompt: 'select_account',   # アカウント選択画面を表示
-                  image_aspect_ratio: 'square', # プロフィール画像を正方形に
+                  scope: "email,profile",     # 取得する情報（メールとプロフィール）
+                  prompt: "select_account",   # アカウント選択画面を表示
+                  image_aspect_ratio: "square", # プロフィール画像を正方形に
                   image_size: 50              # 画像サイズ50px
                 }
 end
