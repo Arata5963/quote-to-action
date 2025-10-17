@@ -11,6 +11,14 @@ class Post < ApplicationRecord
   validates :trigger_content, presence: true, length: { minimum: 1, maximum: 100 }
   validates :action_plan,    presence: true, length: { minimum: 1, maximum: 100 }
 
+  validates :related_url,
+  format: {
+    with: /\Ahttps?:\/\/.+\z/,
+    message: "正しいURL形式で入力してください（例: https://example.com）"
+  },
+  length: { maximum: 500 },
+  allow_blank: true
+
   # ===== カテゴリEnum定義（修正版） =====
   enum :category, {
     text: 0,         # 📝 テキスト（本・記事・SNS・メモ）

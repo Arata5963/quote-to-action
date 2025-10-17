@@ -73,6 +73,49 @@
       </div>
     </div>
 
+    <%# ===== ★ ここから追加：画像表示 ★ ===== %>
+    <% if @post.image.present? %>
+      <div class="p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+          </svg>
+          <h2 class="text-sm font-bold text-black uppercase tracking-wide">画像</h2>
+        </div>
+        <div class="border-2 border-black">
+          <%= image_tag @post.image.url, class: "w-full object-cover" %>
+        </div>
+      </div>
+    <% end %>
+    <%# ===== ★ 画像表示（ここまで） ★ ===== %>
+
+    <%# ===== ★ 関連URL表示（修正版） ★ ===== %>
+    <% if @post.related_url.present? %>
+      <div class="p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+            <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+          <h2 class="text-sm font-bold text-black uppercase tracking-wide">関連URL</h2>
+        </div>
+        <div class="w-full px-3 py-2 border-2 border-black bg-gray-50 break-all">
+          <%= link_to @post.related_url,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                class: "text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1" do %>
+            <%= @post.related_url %>
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7z"/>
+            </svg>
+          <% end %>
+        </div>
+        <p class="mt-2 text-sm text-gray-600 pl-3">
+          新しいタブで開きます
+        </p>
+      </div>
+    <% end %>
+    <%# ===== ★ 関連URL表示（ここまで） ★ ===== %>
+
     <%# ボタンエリア - 左右配置 %>
     <div class="pt-4 flex justify-between items-center">
       <%# 左側：一覧に戻るボタン %>
