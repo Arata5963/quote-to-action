@@ -40,4 +40,4 @@ class User < ApplicationRecord
   def available_badges_count
     BADGE_POOL.size - user_badges.count
   end
-end
+end 
