@@ -51,7 +51,7 @@ end
 # ===== 開発環境専用 =====
 group :development do
   gem "web-console"                # ブラウザ上でのデバッグコンソール
-  gem "letter_opener_web", "~> 2.0"  # 開発環境でメールをブラウザで確認
+  gem "letter_opener_web", "~> 3.0"  # 開発環境でメールをブラウザで確認
   gem "ruby-lsp", require: false          # LSP本体
   gem "ruby-lsp-rails", require: false    # Rails向け拡張（ActiveRecordの推論が強くなる）
 end
