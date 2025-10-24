@@ -9,7 +9,7 @@ class Post < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
 
   validates :trigger_content, presence: true, length: { minimum: 1, maximum: 100 }
-  validates :action_plan,    presence: true, length: { minimum: 1, maximum: 100 }
+  validates :action_plan, presence: true, length: { minimum: 1, maximum: 100 }
 
   validates :related_url,
   format: {

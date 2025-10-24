@@ -43,6 +43,9 @@ group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"  # デバッグツール
   gem "brakeman", require: false                                        # セキュリティ脆弱性チェック
   gem "rubocop-rails-omakase", require: false                         # コード品質チェック
+  gem "rspec-rails", "~> 7.1"           # RSpec 本体（Rails 統合）
+  gem "factory_bot_rails", "~> 6.4"    # テストデータ作成（Fixture の代替）
+  gem "faker", "~> 3.5"                # ダミーデータ生成
 end
 
 # ===== 開発環境専用 =====
@@ -57,5 +60,10 @@ end
 group :test do
   gem "capybara"                   # ブラウザ操作の自動テスト
   gem "selenium-webdriver"         # Webブラウザ自動操作ドライバー
+  gem "shoulda-matchers", "~> 6.4"
+  gem "database_cleaner-active_record"
+  gem "simplecov", require: false
+  gem "webmock"
+  gem "vcr"
 end
 gem "tailwindcss-rails", "~> 4.3"
