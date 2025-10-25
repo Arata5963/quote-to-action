@@ -8,14 +8,14 @@ RSpec.describe "Factory の動作確認", type: :model do
       expect(user).to be_persisted
       expect(user.email).to be_present
     end
-    
+
     it "複数の User を作成するとメールアドレスが重複しない" do
       user1 = create(:user)
       user2 = create(:user)
       expect(user1.email).not_to eq(user2.email)
     end
   end
-  
+
   describe "Post Factory" do
     it "基本的な Post を作成できる" do
       post = create(:post)
@@ -25,7 +25,7 @@ RSpec.describe "Factory の動作確認", type: :model do
       expect(post.action_plan).to be_present
     end
   end
-  
+
   describe "Achievement Factory" do
     it "基本的な Achievement を作成できる" do
       achievement = create(:achievement)
@@ -35,7 +35,7 @@ RSpec.describe "Factory の動作確認", type: :model do
       expect(achievement.awarded_at).to eq(Date.current)
     end
   end
-  
+
   describe "Comment Factory" do
     it "基本的な Comment を作成できる" do
       comment = create(:comment)
@@ -43,7 +43,7 @@ RSpec.describe "Factory の動作確認", type: :model do
       expect(comment.content).to be_present
     end
   end
-  
+
   describe "Like Factory" do
     it "基本的な Like を作成できる" do
       like = create(:like)
