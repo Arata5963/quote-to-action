@@ -40,8 +40,8 @@ RSpec.describe Post, type: :model do
       old_post = create(:post, created_at: 3.days.ago)
       middle_post = create(:post, created_at: 1.day.ago)
       new_post = create(:post, created_at: Time.current)
-      
-      expect(Post.recent).to eq([new_post, middle_post, old_post])
+
+      expect(Post.recent).to eq([ new_post, middle_post, old_post ])
     end
   end
 end
