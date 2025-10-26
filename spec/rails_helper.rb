@@ -29,6 +29,8 @@ end
 # FactoryBot の設定
 RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
+  # Devise のヘルパーメソッド（sign_in, sign_out など）を有効化
+  config.include Devise::Test::IntegrationHelpers, type: :request
 end
 
 # DatabaseCleaner の設定
