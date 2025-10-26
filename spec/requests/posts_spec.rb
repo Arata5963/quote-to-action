@@ -18,9 +18,9 @@ RSpec.describe "Posts", type: :request do
         post1 = create(:post, trigger_content: "投稿1")
         post2 = create(:post, trigger_content: "投稿2")
         post3 = create(:post, trigger_content: "投稿3")
-        
+
         get posts_path
-        
+
         expect(response.body).to include("投稿1")
         expect(response.body).to include("投稿2")
         expect(response.body).to include("投稿3")
@@ -29,13 +29,13 @@ RSpec.describe "Posts", type: :request do
       it "新しい順に表示される" do
         old_post = create(:post, trigger_content: "古い投稿", created_at: 2.days.ago)
         new_post = create(:post, trigger_content: "新しい投稿", created_at: 1.day.ago)
-        
+
         get posts_path
-        
+
         # 新しい投稿が先に表示される（HTML内の出現順）
         old_pos = response.body.index("古い投稿")
         new_pos = response.body.index("新しい投稿")
-        
+
         expect(new_pos).to be < old_pos
       end
     end
@@ -44,9 +44,9 @@ RSpec.describe "Posts", type: :request do
       it "1ページ目に20件まで表示される" do
         # 21件の投稿を作成
         21.times { |i| create(:post, trigger_content: "投稿#{i}") }
-        
+
         get posts_path
-        
+
         # 20件分表示される
         expect(response.body.scan(/投稿\d+/).size).to eq(20)
       end
@@ -54,9 +54,9 @@ RSpec.describe "Posts", type: :request do
       it "2ページ目が存在する" do
         # 21件の投稿を作成
         21.times { |i| create(:post, trigger_content: "投稿#{i}") }
-        
+
         get posts_path, params: { page: 2 }
-        
+
         expect(response).to have_http_status(200)
         # 2ページ目には1件だけ表示される
         expect(response.body.scan(/投稿\d+/).size).to eq(1)
@@ -67,9 +67,9 @@ RSpec.describe "Posts", type: :request do
       it "特定のカテゴリのみ表示される" do
         text_post = create(:post, trigger_content: "テキスト投稿", category: "text")
         video_post = create(:post, trigger_content: "動画投稿", category: "video")
-        
+
         get posts_path, params: { category: "text" }
-        
+
         expect(response.body).to include("テキスト投稿")
         expect(response.body).not_to include("動画投稿")
       end
@@ -86,9 +86,9 @@ RSpec.describe "Posts", type: :request do
       it "「自分」タブで自分の投稿のみ表示される" do
         my_post = create(:post, user: user, trigger_content: "自分の投稿")
         others_post = create(:post, user: other_user, trigger_content: "他人の投稿")
-        
+
         get posts_path, params: { tab: "mine" }
-        
+
         expect(response.body).to include("自分の投稿")
         expect(response.body).not_to include("他人の投稿")
       end
@@ -105,16 +105,16 @@ RSpec.describe "Posts", type: :request do
     context "投稿が存在する場合" do
       it "投稿の詳細が表示される" do
         get post_path(post_record)
-        
+
         expect(response).to have_http_status(200)
         expect(response.body).to include("テスト投稿")
       end
 
       it "コメントが表示される" do
         comment = create(:comment, post: post_record, content: "テストコメント")
-        
+
         get post_path(post_record)
-        
+
         expect(response.body).to include("テストコメント")
       end
 
@@ -123,9 +123,9 @@ RSpec.describe "Posts", type: :request do
         create(:achievement, post: post_record, user: user, awarded_at: 3.days.ago)
         create(:achievement, post: post_record, user: user, awarded_at: 2.days.ago)
         create(:achievement, post: post_record, user: user, awarded_at: 1.day.ago)
-        
+
         get post_path(post_record)
-        
+
         # 達成回数の表示を確認（実際のビューに合わせて調整）
         expect(response.body).to include("3")
       end
@@ -134,7 +134,7 @@ RSpec.describe "Posts", type: :request do
     context "投稿が存在しない場合" do
       it "404エラーにならず一覧ページにリダイレクト" do
         get post_path(id: 99999)
-        
+
         expect(response).to redirect_to(posts_path)
         follow_redirect!
         expect(response.body).to include("投稿が見つかりません")
@@ -155,7 +155,7 @@ RSpec.describe "Posts", type: :request do
 
       it "新規作成フォームが表示される" do
         get new_post_path
-        
+
         expect(response).to have_http_status(200)
         expect(response.body).to include("きっかけ")
         expect(response.body).to include("アクションプラン")
@@ -165,7 +165,7 @@ RSpec.describe "Posts", type: :request do
     context "ログインしていない場合" do
       it "ログインページにリダイレクトされる" do
         get new_post_path
-        
+
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -201,7 +201,7 @@ RSpec.describe "Posts", type: :request do
 
         it "作成した投稿の詳細ページにリダイレクトされる" do
           post posts_path, params: valid_params
-          
+
           expect(response).to redirect_to(post_path(Post.last))
           follow_redirect!
           # 実際のアプリのフラッシュメッセージに合わせる
@@ -210,7 +210,7 @@ RSpec.describe "Posts", type: :request do
 
         it "current_userの投稿として作成される" do
           post posts_path, params: valid_params
-          
+
           expect(Post.last.user).to eq(user)
         end
       end
@@ -232,7 +232,7 @@ RSpec.describe "Posts", type: :request do
           expect {
             post posts_path, params: image_params
           }.to change(Post, :count).by(1)
-          
+
           expect(Post.last.image).to be_present
         end
       end
@@ -256,7 +256,7 @@ RSpec.describe "Posts", type: :request do
 
         it "新規作成フォームが再表示される" do
           post posts_path, params: invalid_params
-          
+
           expect(response).to have_http_status(:unprocessable_entity)
           expect(response.body).to include("きっかけ")
         end
@@ -266,7 +266,7 @@ RSpec.describe "Posts", type: :request do
     context "ログインしていない場合" do
       it "ログインページにリダイレクトされる" do
         post posts_path, params: { post: { trigger_content: "test", action_plan: "test" } }
-        
+
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -287,7 +287,7 @@ RSpec.describe "Posts", type: :request do
 
       it "編集フォームが表示される" do
         get edit_post_path(post_record)
-        
+
         expect(response).to have_http_status(200)
         expect(response.body).to include("編集")
       end
@@ -300,7 +300,7 @@ RSpec.describe "Posts", type: :request do
 
       it "詳細ページにリダイレクトされる" do
         get edit_post_path(post_record)
-        
+
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
         expect(response.body).to include("他のユーザーの投稿は編集・削除できません")
@@ -310,7 +310,7 @@ RSpec.describe "Posts", type: :request do
     context "ログインしていない場合" do
       it "ログインページにリダイレクトされる" do
         get edit_post_path(post_record)
-        
+
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -341,14 +341,14 @@ RSpec.describe "Posts", type: :request do
 
         it "投稿を更新できる" do
           patch post_path(post_record), params: valid_params
-          
+
           post_record.reload
           expect(post_record.trigger_content).to eq("更新されたきっかけ")
         end
 
         it "詳細ページにリダイレクトされる" do
           patch post_path(post_record), params: valid_params
-          
+
           expect(response).to redirect_to(post_path(post_record))
           follow_redirect!
           # 実際のアプリのフラッシュメッセージに合わせる
@@ -368,14 +368,14 @@ RSpec.describe "Posts", type: :request do
 
         it "投稿が更新されない" do
           patch post_path(post_record), params: invalid_params
-          
+
           post_record.reload
           expect(post_record.trigger_content).to eq("元のきっかけ")
         end
 
         it "編集フォームが再表示される" do
           patch post_path(post_record), params: invalid_params
-          
+
           expect(response).to have_http_status(:unprocessable_entity)
           expect(response.body).to include("編集")
         end
@@ -389,14 +389,14 @@ RSpec.describe "Posts", type: :request do
 
       it "投稿を更新できない" do
         patch post_path(post_record), params: { post: { trigger_content: "他人による更新" } }
-        
+
         post_record.reload
         expect(post_record.trigger_content).to eq("元のきっかけ")
       end
 
       it "詳細ページにリダイレクトされる" do
         patch post_path(post_record), params: { post: { trigger_content: "他人による更新" } }
-        
+
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
         expect(response.body).to include("他のユーザーの投稿は編集・削除できません")
@@ -406,7 +406,7 @@ RSpec.describe "Posts", type: :request do
     context "ログインしていない場合" do
       it "ログインページにリダイレクトされる" do
         patch post_path(post_record), params: { post: { trigger_content: "更新" } }
-        
+
         expect(response).to redirect_to(new_user_session_path)
       end
     end
@@ -433,7 +433,7 @@ RSpec.describe "Posts", type: :request do
 
       it "一覧ページにリダイレクトされる" do
         delete post_path(post_record)
-        
+
         expect(response).to redirect_to(posts_path)
         follow_redirect!
         # 実際のアプリのフラッシュメッセージに合わせる
@@ -454,7 +454,7 @@ RSpec.describe "Posts", type: :request do
 
       it "詳細ページにリダイレクトされる" do
         delete post_path(post_record)
-        
+
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
         expect(response.body).to include("他のユーザーの投稿は編集・削除できません")
@@ -464,7 +464,7 @@ RSpec.describe "Posts", type: :request do
     context "ログインしていない場合" do
       it "ログインページにリダイレクトされる" do
         delete post_path(post_record)
-        
+
         expect(response).to redirect_to(new_user_session_path)
       end
     end
