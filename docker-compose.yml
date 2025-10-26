@@ -19,10 +19,6 @@ services:
     env_file:
       - .env.development           # AWS認証情報などの環境変数ファイルを読み込み
 
-    # 直接指定する環境変数
-    environment:
-      - RAILS_ENV=development      # Rails実行環境を開発モードに設定
-
     # サービス依存関係
     depends_on:
       - db                         # dbサービス起動後にwebサービスを起動
