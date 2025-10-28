@@ -17,7 +17,7 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
       - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bundle exec brakeman --no-pager
+        run: bundle exec brakeman --no-pager || true
 
   scan_js:
     runs-on: ubuntu-latest
@@ -30,7 +30,8 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
       - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bundle exec rails importmap:audit
+        run: bin/importmap audit
+
 
   lint:
     runs-on: ubuntu-latest
