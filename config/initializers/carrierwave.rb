@@ -8,10 +8,10 @@ CarrierWave.configure do |config|
   else
     # 本番・開発環境: S3 に保存
     config.storage = :fog
-    
+
     # fogライブラリのAWSサポートを利用する
     config.fog_provider = "fog/aws"
-    
+
     # AWSに接続するための認証情報を設定
     config.fog_credentials = {
       # AWSを利用する場合は固定で "AWS"
@@ -23,15 +23,15 @@ CarrierWave.configure do |config|
       # S3バケットを作成したリージョン（例: ap-southeast-2）
       region:                ENV["AWS_REGION"]
     }
-    
+
     # 保存先となるS3バケット名（環境変数に設定したもの）
     config.fog_directory = ENV["AWS_BUCKET"]
-    
+
     # アップロードしたファイルを「公開」にする設定
     # true → 誰でもアクセス可能
     # false → 署名付きURLでのみアクセス可能
     config.fog_public = false
-    
+
     # ACL設定を無効化（Object Ownership設定との競合を防ぐ）
     config.fog_attributes = {}
   end
