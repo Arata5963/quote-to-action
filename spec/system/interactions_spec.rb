@@ -27,7 +27,7 @@ RSpec.describe "Interactions", type: :system do
         # 達成記録が作成される（バッジ獲得メッセージが含まれる場合がある）
         expect(page).to have_content "達成を記録しました"
         expect(page).to have_button "達成を取り消し"
-        
+
         # 達成回数が表示される（詳細ページで確認）
         # post.achievements.count が 1 になったことを確認
         expect(Achievement.count).to eq(1)
@@ -193,7 +193,7 @@ RSpec.describe "Interactions", type: :system do
       # ログイン促進メッセージが表示される
       expect(page).to have_content "コメントするにはログインが必要です"
       expect(page).to have_link "ログイン"
-      
+
       # コメントフォームは表示されない
       expect(page).not_to have_button "コメントする"
     end

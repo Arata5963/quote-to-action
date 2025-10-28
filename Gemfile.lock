@@ -85,6 +85,9 @@ GEM
     brakeman (7.1.0)
       racc
     builder (3.3.0)
+    bundler-audit (0.9.2)
+      bundler (>= 1.2.0, < 3)
+      thor (~> 1.0)
     capybara (3.40.0)
       addressable
       matrix
@@ -328,7 +331,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (3.1.16)
+    rack (3.1.18)
     rack-protection (4.2.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
@@ -540,6 +543,7 @@ PLATFORMS
 DEPENDENCIES
   bootsnap
   brakeman
+  bundler-audit
   capybara
   carrierwave
   database_cleaner-active_record
