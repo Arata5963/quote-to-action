@@ -44,7 +44,7 @@ group :development, :test do
   gem "brakeman", require: false                                        # セキュリティ脆弱性チェック
   gem "rubocop-rails-omakase", require: false                         # コード品質チェック
   gem "bundler-audit", require: false
-  gem "rspec-rails", "~> 7.1"           # RSpec 本体（Rails 統合）
+  gem "rspec-rails", "~> 8.0"           # RSpec 本体（Rails 統合）
   gem "factory_bot_rails", "~> 6.4"    # テストデータ作成（Fixture の代替）
   gem "faker", "~> 3.5"                # ダミーデータ生成
 end
