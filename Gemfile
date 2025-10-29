@@ -2,7 +2,7 @@
 source "https://rubygems.org"
 
 # ===== Rails基本フレームワーク =====
-gem "rails", "~> 7.2.2"           # Ruby on Railsフレームワーク本体
+gem "rails", "~> 8.1.1"           # Ruby on Railsフレームワーク本体
 
 # ===== アセット管理・フロントエンド =====
 gem "propshaft"                    # 静的ファイル（CSS/JS/画像）の配信ツール
