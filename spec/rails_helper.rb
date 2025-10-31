@@ -15,7 +15,13 @@ SimpleCov.start 'rails' do
   add_filter '/db/'
   add_filter '/spec/'
   add_filter '/config/'
+
+  add_group 'Helpers', 'app/helpers'
+  add_group 'Models', 'app/models'
+  add_group 'Controllers', 'app/controllers'
+  add_group 'Uploaders', 'app/uploaders'
 end
+
 
 # Shoulda Matchers の設定
 require 'shoulda-matchers'
@@ -32,6 +38,7 @@ RSpec.configure do |config|
   # Devise のヘルパーメソッド（sign_in, sign_out など）を有効化
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include Devise::Test::IntegrationHelpers, type: :system
+  config.include ActiveJob::TestHelper, type: :job
 end
 
 # DatabaseCleaner の設定

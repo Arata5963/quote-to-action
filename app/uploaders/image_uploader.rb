@@ -5,7 +5,6 @@ class ImageUploader < CarrierWave::Uploader::Base
 
   # ファイル保存先をfog（クラウドストレージ）に指定
   # config/initializers/carrierwave.rbの設定によりS3に保存される
-  storage :fog
 
   # S3内でのファイル保存ディレクトリを動的に決定
   # 例: uploads/user/avatar/123 (ユーザーID123のアバター画像の場合)

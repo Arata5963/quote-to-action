@@ -222,18 +222,27 @@ RSpec.describe "Posts", type: :request do
               trigger_content: "画像付き投稿",
               action_plan: "画像アクション",
               category: "text",
-              image: fixture_file_upload('spec/fixtures/files/sample_post.jpg', 'image/jpeg')
+              image: fixture_file_upload('spec/fixtures/files/sample_avatar.jpg', 'image/jpeg')
+
             }
           }
         end
-
         # 画像ファイルがない場合はスキップ
-        xit "画像付きで投稿を作成できる" do
+        it "画像付きで投稿を作成できる" do
           expect {
             post posts_path, params: image_params
           }.to change(Post, :count).by(1)
-
-          expect(Post.last.image).to be_present
+        
+          created_post = Post.last
+          expect(created_post.image).to be_present
+          expect(created_post.image.url).to be_present
+        end
+        it "画像がアップロードされてURLが生成される" do
+          post posts_path, params: image_params
+          
+          created_post = Post.last
+          # CarrierWaveのアップロード確認
+          expect(created_post.image_identifier).to be_present
         end
       end
 
