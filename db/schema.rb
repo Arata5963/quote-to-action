@@ -10,18 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_10_16_225706) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_27_091114) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "achievements", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "post_id", null: false
-    t.date "awarded_at", default: -> { "CURRENT_DATE" }, null: false
+    t.date "achieved_at", default: -> { "CURRENT_DATE" }, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["post_id"], name: "index_achievements_on_post_id"
-    t.index ["user_id", "post_id", "awarded_at"], name: "idx_unique_daily_achievements", unique: true
+    t.index ["user_id", "post_id"], name: "idx_unique_achievements", unique: true
     t.index ["user_id"], name: "index_achievements_on_user_id"
   end
 
@@ -52,11 +52,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_16_225706) do
     t.text "action_plan"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "image"
     t.integer "category", default: 6, null: false
-    t.string "related_url"
+    t.string "youtube_url", null: false
+    t.datetime "achieved_at"
     t.index ["category"], name: "index_posts_on_category"
     t.index ["user_id"], name: "index_posts_on_user_id"
+  end
+
+  create_table "reminders", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.boolean "enabled"
+    t.time "time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_reminders_on_user_id"
   end
 
   create_table "user_badges", force: :cascade do |t|
@@ -91,5 +100,6 @@ ActiveRecord::Schema[7.2].define(version: 2025_10_16_225706) do
   add_foreign_key "likes", "posts"
   add_foreign_key "likes", "users"
   add_foreign_key "posts", "users"
+  add_foreign_key "reminders", "users"
   add_foreign_key "user_badges", "users"
 end

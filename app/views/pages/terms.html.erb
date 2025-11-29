@@ -1,19 +1,32 @@
-<!-- app/views/pages/terms.html.erb -->
+<%# app/views/pages/terms.html.erb %>
+<% content_for :title, "利用規約" %>
+
 <div class="min-h-screen bg-gray-50 py-8">
   <div class="max-w-4xl mx-auto px-4">
-    <!-- ページタイトル -->
+
+    <%# 戻るリンク %>
+    <div class="mb-6">
+      <%= link_to root_path, class: "inline-flex items-center gap-2 text-gray-600 hover:text-primary transition-colors" do %>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+        </svg>
+        <span>トップページに戻る</span>
+      <% end %>
+    </div>
+
+    <%# ページタイトル %>
     <h1 class="text-3xl font-bold text-gray-900 mb-8">利用規約</h1>
 
-    <!-- 前文 -->
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 前文 %>
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <p class="text-gray-700 leading-relaxed">
         この利用規約（以下、「本規約」といいます。）は、本サービス（以下、「当サービス」といいます。）の利用条件を定めるものです。
         ユーザーの皆さま（以下、「ユーザー」といいます。）には、本規約に従って、当サービスをご利用いただきます。
       </p>
     </div>
 
-    <!-- 第1条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第1条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第1条（適用）</h2>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
         <li>本規約は、ユーザーと当サービスの利用に関わる一切の関係に適用されるものとします。</li>
@@ -21,8 +34,8 @@
       </ol>
     </section>
 
-    <!-- 第2条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第2条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第2条（利用登録）</h2>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
         <li>当サービスにおいては、登録希望者が本規約に同意の上、当サービスの定める方法によって利用登録を申請し、当サービスがこれを承認することによって、利用登録が完了するものとします。</li>
@@ -36,8 +49,8 @@
       </ol>
     </section>
 
-    <!-- 第3条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第3条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第3条（ユーザーIDおよびパスワードの管理）</h2>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
         <li>ユーザーは、自己の責任において、当サービスのユーザーIDおよびパスワードを適切に管理するものとします。</li>
@@ -46,8 +59,8 @@
       </ol>
     </section>
 
-    <!-- 第4条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第4条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第4条（禁止事項）</h2>
       <p class="text-gray-700 mb-3">ユーザーは、当サービスの利用にあたり、以下の行為をしてはなりません。</p>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
@@ -66,8 +79,8 @@
       </ol>
     </section>
 
-    <!-- 第5条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第5条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第5条（本サービスの提供の停止等）</h2>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
         <li>当サービスは、以下のいずれかの事由があると判断した場合、ユーザーに事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。
@@ -82,8 +95,8 @@
       </ol>
     </section>
 
-    <!-- 第6条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第6条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第6条（利用制限および登録抹消）</h2>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
         <li>当サービスは、ユーザーが以下のいずれかに該当する場合には、事前の通知なく、ユーザーに対して、本サービスの全部もしくは一部の利用を制限し、またはユーザーとしての登録を抹消することができるものとします。
@@ -97,8 +110,8 @@
       </ol>
     </section>
 
-    <!-- 第7条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第7条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第7条（免責事項）</h2>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
         <li>当サービスは、本サービスに事実上または法律上の瑕疵（安全性、信頼性、正確性、完全性、有効性、特定の目的への適合性、セキュリティなどに関する欠陥、エラーやバグ、権利侵害などを含みます。）がないことを明示的にも黙示的にも保証しておりません。</li>
@@ -106,24 +119,24 @@
       </ol>
     </section>
 
-    <!-- 第8条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第8条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第8条（サービス内容の変更等）</h2>
       <p class="text-gray-700">
         当サービスは、ユーザーへの事前の告知をもって、本サービスの内容を変更、追加または廃止することがあり、ユーザーはこれを承諾するものとします。
       </p>
     </section>
 
-    <!-- 第9条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第9条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第9条（利用規約の変更）</h2>
       <p class="text-gray-700">
         当サービスは、必要と判断した場合には、ユーザーに通知することなくいつでも本規約を変更することができるものとします。なお、本規約の変更後、本サービスの利用を開始した場合には、当該ユーザーは変更後の規約に同意したものとみなします。
       </p>
     </section>
 
-    <!-- 第10条 -->
-    <section class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <%# 第10条 %>
+    <section class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-6">
       <h2 class="text-xl font-bold text-gray-900 mb-4">第10条（準拠法・裁判管轄）</h2>
       <ol class="list-decimal list-inside space-y-2 text-gray-700">
         <li>本規約の解釈にあたっては、日本法を準拠法とします。</li>
@@ -131,16 +144,11 @@
       </ol>
     </section>
 
-    <!-- フッター -->
-    <div class="bg-white rounded-lg shadow-sm p-6 mt-8">
+    <%# フッター %>
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mt-8">
       <p class="text-sm text-gray-600 text-right">
         制定日: 2025年10月11日
       </p>
-    </div>
-
-    <!-- 戻るボタン -->
-    <div class="mt-8 text-center">
-      <%= link_to "トップページに戻る", root_path, class: "inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" %>
     </div>
   </div>
 </div>

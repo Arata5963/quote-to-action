@@ -3,32 +3,20 @@ require 'rails_helper'
 
 RSpec.describe ApplicationHelper, type: :helper do
   describe '#category_icon' do
-    it 'text カテゴリのアイコンを返す' do
-      expect(helper.category_icon('text')).to eq('📝')
+    it 'music カテゴリのアイコンを返す' do
+      expect(helper.category_icon('music')).to eq('🎵')
     end
 
-    it 'video カテゴリのアイコンを返す' do
-      expect(helper.category_icon('video')).to eq('🎥')
+    it 'education カテゴリのアイコンを返す' do
+      expect(helper.category_icon('education')).to eq('📚')
     end
 
-    it 'audio カテゴリのアイコンを返す' do
-      expect(helper.category_icon('audio')).to eq('🎧')
+    it 'gaming カテゴリのアイコンを返す' do
+      expect(helper.category_icon('gaming')).to eq('🎮')
     end
 
-    it 'conversation カテゴリのアイコンを返す' do
-      expect(helper.category_icon('conversation')).to eq('💬')
-    end
-
-    it 'experience カテゴリのアイコンを返す' do
-      expect(helper.category_icon('experience')).to eq('✨')
-    end
-
-    it 'observation カテゴリのアイコンを返す' do
-      expect(helper.category_icon('observation')).to eq('👀')
-    end
-
-    it 'other カテゴリのアイコンを返す' do
-      expect(helper.category_icon('other')).to eq('📁')
+    it 'sports カテゴリのアイコンを返す' do
+      expect(helper.category_icon('sports')).to eq('⚽')
     end
 
     it '存在しないカテゴリはデフォルトアイコンを返す' do
@@ -40,36 +28,19 @@ RSpec.describe ApplicationHelper, type: :helper do
     end
 
     it 'シンボルでも正しく動作する' do
-      expect(helper.category_icon(:text)).to eq('📝')
+      expect(helper.category_icon(:music)).to eq('🎵')
     end
   end
 
   describe '#category_name_without_icon' do
-    it 'カテゴリ名から絵文字を除去する' do
-      # Post モデルの i18n 設定に依存するため、実際の値を確認
-      result = helper.category_name_without_icon('text')
-      expect(result).not_to include('📝')
-      expect(result).to be_a(String)
-      expect(result.length).to be > 0
+    it 'カテゴリ名を返す' do
+      result = helper.category_name_without_icon('music')
+      expect(result).to eq('音楽')
     end
 
-    it 'カテゴリ名を正しく取得する' do
-      result = helper.category_name_without_icon('video')
-      expect(result).not_to include('🎥')
-      expect(result).to be_a(String)
-    end
-
-    it '絵文字が含まれていても除去される' do
-      result = helper.category_name_without_icon('experience')
-      expect(result).not_to match(/[📝🎥🎧💬✨👀📁]/)
-    end
-
-    it 'i18nに依存しない振る舞いを単体で検証（stub）' do
-      # helper内で Post.human_attribute_name を通る前提の仕様を固定化
-      allow(Post).to receive(:human_attribute_name)
-        .with('category.text')
-        .and_return('📝 テキスト ')
-      expect(helper.category_name_without_icon('text')).to eq('テキスト')
+    it 'i18nから正しく取得する' do
+      result = helper.category_name_without_icon('education')
+      expect(result).to eq('教育')
     end
   end
 

@@ -1,24 +1,30 @@
 # app/helpers/application_helper.rb
 module ApplicationHelper
-  # カテゴリのアイコンを返す
+  # カテゴリのアイコンを返す（YouTube公式カテゴリ対応）
   def category_icon(category_key)
     icons = {
-      "text" => "📝",
-      "video" => "🎥",
-      "audio" => "🎧",
-      "conversation" => "💬",
-      "experience" => "✨",
-      "observation" => "👀",
-      "other" => "📁"
+      "film_animation" => "🎬",
+      "autos_vehicles" => "🚗",
+      "music" => "🎵",
+      "pets_animals" => "🐾",
+      "sports" => "⚽",
+      "travel_events" => "✈️",
+      "gaming" => "🎮",
+      "people_blogs" => "👤",
+      "comedy" => "😂",
+      "entertainment" => "🎭",
+      "news_politics" => "📰",
+      "howto_style" => "💡",
+      "education" => "📚",
+      "science_technology" => "🔬",
+      "nonprofits_activism" => "🤝"
     }
     icons[category_key.to_s] || "📁"
   end
 
   # カテゴリ名（絵文字なし）を返す
   def category_name_without_icon(category_key)
-    Post.human_attribute_name("category.#{category_key}")
-        .gsub(/[📝🎥🎧💬✨👀📁]/, "")
-        .strip
+    I18n.t("enums.post.category.#{category_key}", default: category_key.to_s.humanize)
   end
 
   # ★★★ OGP・メタタグのデフォルト設定（ここから追加） ★★★

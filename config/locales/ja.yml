@@ -42,22 +42,14 @@ ja:
         password_confirmation: "パスワード（確認用）"
         avatar: "プロフィール画像"
       post:
-        trigger_content: "きっかけ"
+        trigger_content: "響いたポイント"
         action_plan: "アクションプラン"
         user: "投稿者"
-        image: "画像"
         category: "カテゴリ"
-        related_url: "関連URL"  # ← ★ ここを追加 ★
-        categories:
-          text: "📝 テキスト"
-          video: "🎥 映像"
-          audio: "🎧 音声"
-          conversation: "💬 対話"
-          experience: "✨ 体験"
-          observation: "👀 日常"
-          other: "📁 その他"
+        youtube_url: "YouTube URL"
+        achieved_at: "達成日時"
       achievement:
-        awarded_at: "達成日"
+        achieved_at: "達成日"
         post: "投稿"
         user: "達成者"
       comment:
@@ -95,11 +87,9 @@ ja:
               invalid: "画像ファイルが正しくありません"
             category:
               blank: "を選択してください"
-            # ===== ★ ここから追加：関連URLのエラーメッセージ ★ =====
-            related_url:
-              invalid: "正しいURL形式で入力してください（例: https://example.com）"
-              too_long: "は%{count}文字以内で入力してください"
-            # ===== ★ ここまで追加 ★ =====
+            youtube_url:
+              invalid: "は有効なYouTube URLを入力してください"
+              blank: "を入力してください"
         achievement:
           attributes:
             post_id:
@@ -115,6 +105,26 @@ ja:
             user_id:
               taken: "既にいいね済みです"
               
+  # Enum翻訳
+  enums:
+    post:
+      category:
+        film_animation: "映画・アニメ"
+        autos_vehicles: "車・乗り物"
+        music: "音楽"
+        pets_animals: "ペット・動物"
+        sports: "スポーツ"
+        travel_events: "旅行・イベント"
+        gaming: "ゲーム"
+        people_blogs: "人物・ブログ"
+        comedy: "コメディ"
+        entertainment: "エンターテイメント"
+        news_politics: "ニュース・政治"
+        howto_style: "ハウツー・スタイル"
+        education: "教育"
+        science_technology: "科学・テクノロジー"
+        nonprofits_activism: "非営利・社会活動"
+
   # PostsController関連のメッセージ
   posts:
     not_found: "投稿が見つかりません"
