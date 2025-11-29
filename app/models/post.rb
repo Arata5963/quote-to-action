@@ -5,29 +5,35 @@ class Post < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :likes, dependent: :destroy
 
-  mount_uploader :image, ImageUploader
   scope :recent, -> { order(created_at: :desc) }
 
   validates :trigger_content, presence: true, length: { minimum: 1, maximum: 100 }
   validates :action_plan, presence: true, length: { minimum: 1, maximum: 100 }
 
-  validates :related_url,
-  format: {
-    with: /\Ahttps?:\/\/.+\z/,
-    message: "正しいURL形式で入力してください（例: https://example.com）"
-  },
-  length: { maximum: 500 },
-  allow_blank: true
+  # YouTube URL検証（必須）
+  validates :youtube_url, presence: true
+  validates :youtube_url, format: {
+    with: %r{\A(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+},
+    message: "は有効なYouTube URLを入力してください"
+  }
 
-  # ===== カテゴリEnum定義（修正版） =====
+  # YouTube公式カテゴリEnum
   enum :category, {
-    text: 0,         # 📝 テキスト（本・記事・SNS・メモ）
-    video: 1,        # 🎥 映像（動画・映画・ドラマ）
-    audio: 2,        # 🎧 音声（ポッドキャスト・ラジオ）
-    conversation: 3, # 💬 対話（会話・セミナー・講演）
-    experience: 4,   # ✨ 体験（旅行・イベント・実践）
-    observation: 5,  # 👀 日常（日常の気づき・自然）
-    other: 6         # 📁 その他
+    film_animation: 1,
+    autos_vehicles: 2,
+    music: 10,
+    pets_animals: 15,
+    sports: 17,
+    travel_events: 19,
+    gaming: 20,
+    people_blogs: 22,
+    comedy: 23,
+    entertainment: 24,
+    news_politics: 25,
+    howto_style: 26,
+    education: 27,
+    science_technology: 28,
+    nonprofits_activism: 29
   }, prefix: true
 
   validates :category, presence: true
@@ -42,5 +48,37 @@ class Post < ApplicationRecord
 
   def liked_by?(user)
     likes.exists?(user_id: user.id)
+  end
+
+  # YouTube動画ID抽出
+  def youtube_video_id
+    return nil unless youtube_url.present?
+
+    if youtube_url.include?("youtube.com/watch")
+      URI.parse(youtube_url).query&.split("&")
+         &.find { |p| p.start_with?("v=") }
+         &.delete_prefix("v=")
+    elsif youtube_url.include?("youtu.be/")
+      youtube_url.split("youtu.be/").last&.split("?")&.first
+    end
+  rescue URI::InvalidURIError
+    nil
+  end
+
+  # YouTubeサムネイルURL取得
+  def youtube_thumbnail_url(size: :mqdefault)
+    return nil unless youtube_video_id
+
+    "https://img.youtube.com/vi/#{youtube_video_id}/#{size}.jpg"
+  end
+
+  # 達成済みかどうか
+  def achieved?
+    achieved_at.present?
+  end
+
+  # 達成する
+  def achieve!
+    update!(achieved_at: Time.current) unless achieved?
   end
 end

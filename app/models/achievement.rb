@@ -1,11 +1,14 @@
 class Achievement < ApplicationRecord
   belongs_to :user
   belongs_to :post
-  validates :awarded_at, presence: true
+
+  # タスク型：1投稿につき1ユーザー1回のみ達成可能
+  validates :achieved_at, presence: true
   validates :post_id, uniqueness: {
-    scope: [ :user_id, :awarded_at ],
-    message: "今日はすでに達成済みです"
+    scope: :user_id,
+    message: "既に達成済みです"
   }
 
-  scope :today, -> { where(awarded_at: Date.current) }
+  scope :today, -> { where(achieved_at: Date.current) }
+  scope :recent, -> { order(achieved_at: :desc) }
 end

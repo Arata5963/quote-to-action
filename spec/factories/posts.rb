@@ -1,19 +1,16 @@
 # spec/factories/posts.rb
 FactoryBot.define do
   factory :post do
-    # 必須項目のみ
+    # 必須項目
     association :user
     trigger_content { Faker::Lorem.sentence(word_count: 10) }
     action_plan { Faker::Lorem.sentence(word_count: 10) }
     category { Post.categories.keys.sample }
+    youtube_url { "https://www.youtube.com/watch?v=#{Faker::Alphanumeric.alphanumeric(number: 11)}" }
 
-    # 任意項目
-    trait :with_url do
-      related_url { Faker::Internet.url }
-    end
-
-    trait :with_image do
-      image { Rack::Test::UploadedFile.new(Rails.root.join("spec/fixtures/files/sample_post.jpg"), "image/jpeg") }
+    # 達成済み
+    trait :achieved do
+      achieved_at { Time.current }
     end
 
     # 関連データ付き

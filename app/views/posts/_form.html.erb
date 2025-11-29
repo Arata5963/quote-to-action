@@ -1,146 +1,107 @@
 <%# app/views/posts/_form.html.erb %>
-<div class="max-w-2xl mx-auto px-4 py-8 bg-white min-h-screen">
-  <div class="bg-white border-2 border-black p-6 lg:p-8">
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-2xl mx-auto px-4">
 
-    <%# フォームタイトル %>
-    <div class="text-center mb-8">
-      <div class="flex items-center justify-center gap-2 mb-4">
-        <svg class="w-6 h-6 text-black fill-current" viewBox="0 0 24 24">
-          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-        </svg>
-        <h1 class="text-2xl font-bold text-black">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 lg:p-8">
+
+      <%# フォームタイトル %>
+      <div class="text-center mb-8">
+        <div class="w-12 h-12 bg-accent-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6 text-accent-600" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">
           <%= post.persisted? ? "投稿を編集" : "新しい投稿を作成" %>
         </h1>
-      </div>
-    </div>
-
-    <%= form_with(model: post, local: true, html: { class: "space-y-8" }) do |form| %>
-      <%# エラーメッセージ表示 %>
-      <% if post.errors.any? %>
-        <div class="border-2 border-red-600 bg-red-50 p-4">
-          <h2 class="font-bold text-red-600 mb-2">
-            <%= pluralize(post.errors.count, "個") %>のエラーがあります
-          </h2>
-          <ul class="list-disc list-inside text-red-600">
-            <% post.errors.full_messages.each do |message| %>
-              <li><%= message %></li>
-            <% end %>
-          </ul>
-        </div>
-      <% end %>
-
-      <%# きっかけ入力 %>
-      <div class="p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-            <path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <%= form.label :trigger_content, "きっかけ", class: "text-sm font-bold text-black uppercase tracking-wide" %>
-        </div>
-        <%= form.text_area :trigger_content, rows: 4,
-              placeholder: "どんなきっかけがありましたか？（例：本で読んだ言葉、動画で見た内容、会話で気づいたことなど）",
-              class: "w-full px-3 py-2 border-2 border-black text-black placeholder-gray-500 focus:outline-none focus:border-gray-600 bg-white" %>
+        <p class="mt-2 text-gray-600">気づきをアクションに変えよう</p>
       </div>
 
-      <%# アクションプラン入力 %>
-      <div class="p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <%= form.label :action_plan, "アクションプラン", class: "text-sm font-bold text-black uppercase tracking-wide" %>
-        </div>
-        <%= form.text_area :action_plan, rows: 4,
-              placeholder: "どんなアクションを起こしますか？（例：毎朝5分読書する、週1回散歩する、感謝の気持ちを伝えるなど）",
-              class: "w-full px-3 py-2 border-2 border-black text-black placeholder-gray-500 focus:outline-none focus:border-gray-600 bg-white" %>
-      </div>
-
-      <%# ===== カテゴリ選択（最もシンプル版） ===== %>
-      <div class="p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-            <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/>
-          </svg>
-          <%= form.label :category, class: "text-sm font-bold text-black uppercase tracking-wide" do %>
-            カテゴリ <span class="text-red-600">*</span>
-          <% end %>
-        </div>
-        
-        <div class="space-y-2">
-          <% Post.categories.keys.each do |category_key| %>
-            <label class="flex items-center gap-3 p-3 border-2 border-black cursor-pointer hover:bg-gray-100">
-              <%= form.radio_button :category, category_key, class: "w-5 h-5" %>
-              <span class="text-2xl"><%= category_icon(category_key) %></span>
-              <span class="font-bold text-black"><%= category_name_without_icon(category_key) %></span>
-            </label>
-          <% end %>
-        </div>
-        
-        <p class="mt-2 text-sm text-gray-600">
-          きっかけをどのように得たかを選択してください
-        </p>
-      </div>
-      <%# ===== カテゴリ選択（ここまで） ===== %>
-
-      <%# 画像アップロード %>
-      <div class="p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-          </svg>
-          <%= form.label :image, "画像（任意）", class: "text-sm font-bold text-black uppercase tracking-wide" %>
-        </div>
-        <%= form.file_field :image,
-            accept: "image/*",
-            class: "w-full px-3 py-2 border-2 border-black text-black bg-white file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-black file:text-white file:font-bold file:cursor-pointer hover:file:bg-gray-800" %>
-        
-        <% if post.image.present? %>
-          <div class="mt-3 border-2 border-black inline-block">
-            <%= image_tag post.image.thumb.url, class: "h-20 w-20 object-cover" %>
+      <%= form_with(model: post, local: true, html: { class: "space-y-6" }) do |form| %>
+        <%# エラーメッセージ表示 %>
+        <% if post.errors.any? %>
+          <div class="bg-danger-50 border border-danger-200 rounded-xl p-4">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-danger-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              </svg>
+              <div>
+                <h3 class="font-medium text-danger-700">
+                  <%= pluralize(post.errors.count, "件") %>のエラーがあります
+                </h3>
+                <ul class="mt-2 text-sm text-danger-600 list-disc list-inside">
+                  <% post.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
           </div>
         <% end %>
-      </div>
 
-      <%# ===== ★ ここから追加：関連URL入力 ★ ===== %>
-      <div class="p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-            <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-          </svg>
-          <%= form.label :related_url, "関連URL（任意）", class: "text-sm font-bold text-black uppercase tracking-wide" %>
-        </div>
-        <%= form.text_field :related_url,
-            placeholder: "https://example.com/article",
-            class: "w-full px-3 py-2 border-2 border-black text-black placeholder-gray-500 focus:outline-none focus:border-gray-600 bg-white" %>
-        <p class="mt-2 text-sm text-gray-600">
-          記事・動画・ブログなどの参考URLを入力できます（http:// または https:// で始まるURL）
-        </p>
-      </div>
-      <%# ===== ★ ここまで追加 ★ ===== %>
-
-      <%# ボタンエリア - 左右配置 %>
-      <div class="pt-4 flex justify-between items-center">
-        <%# 左側：キャンセルボタン %>
+        <%# YouTube URL入力 %>
         <div>
+          <%= form.label :youtube_url, class: "block text-sm font-semibold text-gray-700 mb-2" do %>
+            YouTube URL <span class="text-danger-500">*</span>
+          <% end %>
+          <%= form.url_field :youtube_url,
+                placeholder: "https://www.youtube.com/watch?v=... または https://youtu.be/...",
+                required: true,
+                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+          <p class="mt-1 text-sm text-gray-500">学びを得たYouTube動画のURLを入力してください</p>
+        </div>
+
+        <%# 響いたポイント入力 %>
+        <div>
+          <%= form.label :trigger_content, class: "block text-sm font-semibold text-gray-700 mb-2" do %>
+            響いたポイント <span class="text-danger-500">*</span>
+          <% end %>
+          <%= form.text_area :trigger_content, rows: 4,
+                placeholder: "動画のどんな内容が響きましたか？（例：時間管理の重要性、習慣化のコツ、新しい視点など）",
+                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+        </div>
+
+        <%# アクションプラン入力 %>
+        <div>
+          <%= form.label :action_plan, class: "block text-sm font-semibold text-gray-700 mb-2" do %>
+            アクションプラン <span class="text-danger-500">*</span>
+          <% end %>
+          <%= form.text_area :action_plan, rows: 4,
+                placeholder: "どんなアクションを起こしますか？（例：毎朝5分読書する、週1回散歩する、感謝の気持ちを伝えるなど）",
+                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+        </div>
+
+        <%# カテゴリ選択 %>
+        <div>
+          <%= form.label :category, class: "block text-sm font-semibold text-gray-700 mb-2" do %>
+            カテゴリ <span class="text-danger-500">*</span>
+          <% end %>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <% Post.categories.keys.each do |category_key| %>
+              <label class="relative flex items-center gap-2 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-50">
+                <%= form.radio_button :category, category_key, class: "sr-only" %>
+                <span class="text-xl"><%= category_icon(category_key) %></span>
+                <span class="text-sm font-medium text-gray-700"><%= category_name_without_icon(category_key) %></span>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+
+        <%# ボタンエリア %>
+        <div class="pt-6 space-y-3">
+          <%= form.submit post.persisted? ? "更新する" : "投稿する",
+                class: "w-full inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-white text-lg font-bold hover:bg-primary-800 active:scale-95 transform transition-all shadow-lg cursor-pointer" %>
+
           <%= link_to(post.persisted? ? post_path(post) : posts_path,
-                class: "inline-flex items-center gap-2 text-black hover:bg-gray-100 px-4 py-2 font-bold transition-colors border border-black") do %>
-            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                class: "w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors") do %>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
             </svg>
             <span>キャンセル</span>
           <% end %>
         </div>
-
-        <%# 右側：投稿ボタン %>
-        <div class="relative">
-          <%= form.submit post.persisted? ? "更新する" : "投稿する",
-                class: "bg-black hover:bg-gray-800 text-white py-3 px-6 font-bold text-lg transition-colors border-2 border-black cursor-pointer pl-12" %>
-          <svg class="w-5 h-5 fill-current text-white absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24">
-            <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
-          </svg>
-        </div>
-      </div>
-
-    <% end %>
+      <% end %>
+    </div>
   </div>
 </div>

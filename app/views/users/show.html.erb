@@ -1,65 +1,104 @@
 <%# app/views/users/show.html.erb %>
-<%# マイページ - モノトーンカード形式のメニューレイアウト %>
 <% content_for :title, "マイページ" %>
 
-<div class="max-w-6xl mx-auto px-4 py-8 bg-white min-h-screen">
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4">
 
-  <%# ページタイトル %>
-  <div class="text-center mb-12">
-    <div class="flex items-center justify-center gap-3 mb-4">
-      <svg class="w-8 h-8 text-black fill-current" viewBox="0 0 24 24">
-        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-      </svg>
-      <h1 class="text-4xl font-bold text-black">マイページ</h1>
+    <%# ページヘッダー %>
+    <div class="text-center mb-10">
+      <div class="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-gray-900">マイページ</h1>
+      <p class="mt-2 text-gray-600">アカウント設定と実績を確認</p>
+    </div>
+
+    <%# メニューカードグリッド %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <%# マイバッジカード %>
+      <%= link_to user_badges_path, class: "group" do %>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-card hover:shadow-card-hover transition-shadow p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-accent-100 rounded-xl flex items-center justify-center group-hover:bg-accent-200 transition-colors">
+              <svg class="w-7 h-7 text-accent-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">マイバッジ</h3>
+              <p class="text-sm text-gray-500">獲得したバッジを確認</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl font-bold text-accent-600"><%= current_user.user_badges.count %></span>
+              <span class="text-sm text-gray-500">個</span>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%# プロフィール編集カード %>
+      <%= link_to edit_profile_path, class: "group" do %>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-card hover:shadow-card-hover transition-shadow p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+              <svg class="w-7 h-7 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">プロフィール編集</h3>
+              <p class="text-sm text-gray-500">アバターなどを変更</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+            </svg>
+          </div>
+        </div>
+      <% end %>
+
+      <%# アカウント設定カード %>
+      <%= link_to edit_user_registration_path, class: "group" do %>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-card hover:shadow-card-hover transition-shadow p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+              <svg class="w-7 h-7 text-gray-600" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">アカウント設定</h3>
+              <p class="text-sm text-gray-500">メール・パスワードを変更</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+            </svg>
+          </div>
+        </div>
+      <% end %>
+
+      <%# 自分の投稿カード %>
+      <%= link_to posts_path(tab: 'mine'), class: "group" do %>
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-card hover:shadow-card-hover transition-shadow p-6">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-primary-50 rounded-xl flex items-center justify-center group-hover:bg-primary-100 transition-colors">
+              <svg class="w-7 h-7 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">自分の投稿</h3>
+              <p class="text-sm text-gray-500">投稿した内容を確認</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+            </svg>
+          </div>
+        </div>
+      <% end %>
+
     </div>
   </div>
-
-  <%# メインカードエリア %>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-    <%# カード2: マイバッジ %>
-    <%= link_to user_badges_path, class: "group" do %>
-      <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
-        <div class="p-8 text-center">
-          <%# アイコン %>
-          <div class="w-20 h-20 mx-auto mb-4 bg-black flex items-center justify-center">
-            <svg class="w-10 h-10 text-white fill-current" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-          </div>
-          <%# テキスト %>
-          <h3 class="text-xl font-bold text-black mb-2">マイバッジ</h3>
-          <div class="flex items-center justify-center gap-1">
-            <svg class="w-4 h-4 text-black fill-current" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
-            <span class="text-black text-sm font-bold"><%= current_user.user_badges.count %> 個</span>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
-    <%# カード4: 設定 %>
-    <%= link_to edit_profile_path, class: "group" do %>
-      <div class="bg-white border-2 border-black hover:bg-gray-50 transition-all duration-200">
-        <div class="p-8 text-center">
-          <%# アイコン %>
-          <div class="w-20 h-20 mx-auto mb-4 bg-black flex items-center justify-center">
-            <svg class="w-10 h-10 text-white fill-current" viewBox="0 0 24 24">
-              <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
-            </svg>
-          </div>
-          <%# テキスト %>
-          <h3 class="text-xl font-bold text-black mb-2">個人情報変更</h3>
-          <div class="flex items-center justify-center gap-1">
-            <svg class="w-4 h-4 text-black fill-current" viewBox="0 0 24 24">
-              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-            </svg>
-            <span class="text-black text-sm font-bold">プロフィール編集</span>
-          </div>
-        </div>
-      </div>
-    <% end %>
-
-  </div>
-
 </div>

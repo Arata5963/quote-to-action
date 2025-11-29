@@ -1,179 +1,142 @@
 <%# app/views/posts/show.html.erb %>
 <% content_for :title, @post.trigger_content.truncate(30) %>
 
-<div class="max-w-2xl mx-auto px-4 py-8 bg-white min-h-screen">
-  <div class="bg-white border-2 border-black p-6 lg:p-8">
-    <%# ページタイトル %>
-    <div class="text-center mb-8 relative">
-      <div class="flex items-center justify-center gap-2 mb-4">
-        <svg class="w-6 h-6 text-black fill-current" viewBox="0 0 24 24">
-          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-2xl mx-auto px-4">
+
+    <%# 戻るリンク %>
+    <div class="mb-6">
+      <%= link_to posts_path, class: "inline-flex items-center gap-2 text-gray-600 hover:text-primary transition-colors" do %>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
         </svg>
-        <h1 class="text-2xl font-bold text-black">投稿詳細</h1>
-      </div>
-      <div class="w-16 h-1 bg-black mx-auto"></div>
-
-      <%# 編集/削除アイコン（タイトル右上に配置） %>
-      <% if user_signed_in? && @post.user == current_user %>
-        <div class="absolute right-0 top-0 flex items-center gap-1">
-          <%# 編集アイコン %>
-          <%= link_to edit_post_path(@post),
-                class: "inline-flex p-2 text-black hover:bg-gray-100 focus:outline-none",
-                aria: { label: "編集" }, title: "編集" do %>
-            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-            </svg>
-          <% end %>
-
-          <%# 削除アイコン %>
-          <%= link_to post_path(@post),
-                data: { turbo_method: :delete, turbo_confirm: "本当に削除しますか？" },
-                class: "inline-flex p-2 text-black hover:bg-gray-100 focus:outline-none",
-                aria: { label: "削除" }, title: "削除" do %>
-            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-              <path d="M3 6v18h18v-2H5V6h14V4H3v2zm16-2v2H9V4h10z"/>
-            </svg>
-          <% end %>
-        </div>
+        <span>投稿一覧に戻る</span>
       <% end %>
     </div>
 
-    <%# ===== カテゴリ表示（追加部分） ===== %>
-    <div class="mb-6 flex justify-center">
-      <div class="inline-flex items-center gap-2 px-4 py-2 border-2 border-black bg-gray-50">
-        <span class="text-2xl"><%= category_icon(@post.category) %></span>
-        <span class="font-bold text-black"><%= category_name_without_icon(@post.category) %></span>
-      </div>
-    </div>
-    <%# ===== カテゴリ表示（ここまで） ===== %>
+    <%# メインカード %>
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-card overflow-hidden">
 
-    <%# きっかけ表示 %>
-    <div class="p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-          <path d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <h2 class="text-sm font-bold text-black uppercase tracking-wide">きっかけ</h2>
-      </div>
-      <div class="w-full px-3 py-2 border-2 border-black text-black bg-gray-50 min-h-[100px] whitespace-pre-line">
-        <%= @post.trigger_content %>
-      </div>
-    </div>
-
-    <%# アクションプラン表示 %>
-    <div class="p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <h2 class="text-sm font-bold text-black uppercase tracking-wide">アクションプラン</h2>
-      </div>
-      <div class="w-full px-3 py-2 border-2 border-black text-black bg-gray-50 min-h-[100px] whitespace-pre-line">
-        <%= @post.action_plan %>
-      </div>
-    </div>
-
-    <%# ===== ★ ここから追加：画像表示 ★ ===== %>
-    <% if @post.image.present? %>
-      <div class="p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-            <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
-          </svg>
-          <h2 class="text-sm font-bold text-black uppercase tracking-wide">画像</h2>
+      <%# YouTubeサムネイル %>
+      <%= link_to @post.youtube_url, target: "_blank", rel: "noopener noreferrer", class: "block relative group" do %>
+        <%= image_tag @post.youtube_thumbnail_url(size: :maxresdefault),
+              class: "w-full h-64 object-cover",
+              alt: "YouTube動画サムネイル" %>
+        <%# 再生アイコンオーバーレイ %>
+        <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all">
+          <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform">
+            <svg class="w-8 h-8 text-white ml-1" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
         </div>
-        <div class="border-2 border-black">
-          <%= image_tag @post.image.url, class: "w-full object-cover" %>
-        </div>
-      </div>
-    <% end %>
-    <%# ===== ★ 画像表示（ここまで） ★ ===== %>
+      <% end %>
 
-    <%# ===== ★ 関連URL表示（修正版） ★ ===== %>
-    <% if @post.related_url.present? %>
-      <div class="p-4">
-        <div class="flex items-center gap-2 mb-3">
-          <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
-            <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
-          </svg>
-          <h2 class="text-sm font-bold text-black uppercase tracking-wide">関連URL</h2>
+      <div class="p-6 lg:p-8">
+
+        <%# ヘッダー：カテゴリ + アクション %>
+        <div class="flex items-center justify-between mb-6">
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-sm font-medium">
+            <span class="text-lg"><%= category_icon(@post.category) %></span>
+            <%= category_name_without_icon(@post.category) %>
+          </span>
+
+          <% if user_signed_in? && @post.user == current_user %>
+            <div class="flex items-center gap-1">
+              <%= link_to edit_post_path(@post),
+                    class: "p-2 text-gray-500 hover:text-primary hover:bg-gray-100 rounded-lg transition-colors",
+                    title: "編集" do %>
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                </svg>
+              <% end %>
+
+              <%= link_to post_path(@post),
+                    data: { turbo_method: :delete, turbo_confirm: "本当に削除しますか？" },
+                    class: "p-2 text-gray-500 hover:text-danger hover:bg-danger-50 rounded-lg transition-colors",
+                    title: "削除" do %>
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+              <% end %>
+            </div>
+          <% end %>
         </div>
-        <div class="w-full px-3 py-2 border-2 border-black bg-gray-50 break-all">
-          <%= link_to @post.related_url,
+
+        <%# 響いたポイント %>
+        <div class="mb-6">
+          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">響いたポイント</h2>
+          <p class="text-lg text-gray-900 whitespace-pre-line"><%= @post.trigger_content %></p>
+        </div>
+
+        <%# アクションプラン %>
+        <div class="mb-6 p-4 bg-accent-50 rounded-xl border border-accent-200">
+          <h2 class="text-sm font-semibold text-accent-700 uppercase tracking-wide mb-2">アクションプラン</h2>
+          <p class="text-gray-900 whitespace-pre-line"><%= @post.action_plan %></p>
+        </div>
+
+        <%# YouTube URL %>
+        <div class="mb-6">
+          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">YouTube動画</h2>
+          <%= link_to @post.youtube_url,
                 target: "_blank",
                 rel: "noopener noreferrer",
-                class: "text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1" do %>
-            <%= @post.related_url %>
-            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-              <path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7z"/>
+                class: "inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" do %>
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
             </svg>
+            <span class="font-medium">YouTubeで見る</span>
           <% end %>
         </div>
-        <p class="mt-2 text-sm text-gray-600 pl-3">
-          新しいタブで開きます
-        </p>
-      </div>
-    <% end %>
-    <%# ===== ★ 関連URL表示（ここまで） ★ ===== %>
 
-    <%# ボタンエリア - 左右配置 %>
-    <div class="pt-4 flex justify-between items-center">
-      <%# 左側：一覧に戻るボタン %>
-      <div>
-        <%= link_to posts_path, class: "inline-flex items-center gap-2 text-black hover:bg-gray-100 px-4 py-2 font-bold transition-colors border border-black" do %>
-          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
-          </svg>
-          <span>一覧に戻る</span>
-        <% end %>
-      </div>
+        <%# 達成セクション %>
+        <div class="pt-6 border-t border-gray-100">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-3xl"><%= post_badge_tag(@post) %></span>
+              <div>
+                <p class="text-2xl font-bold text-gray-900"><%= @post.achievements.count %></p>
+                <p class="text-sm text-gray-500">達成</p>
+              </div>
+            </div>
 
-      <%# 右側：達成ボタンエリア %>
-      <div>
-        <% if user_signed_in? && @post.user == current_user %>
-          <% done_today = @post.achievements.today.exists?(user_id: current_user.id) %>
-          <% unless done_today %>
-            <%# 未達成時：達成記録ボタン %>
-            <%= button_to post_achievements_path(@post), method: :post,
-                  class: "inline-flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-8 py-3 transition-colors font-bold text-lg border-2 border-black" do %>
-              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <span>達成</span>
+            <% if user_signed_in? && @post.user == current_user %>
+              <% if @post.achieved? %>
+                <div class="text-right">
+                  <div class="inline-flex items-center gap-2 bg-green-100 text-green-800 px-6 py-3 rounded-xl font-bold">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    <span>達成済み</span>
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500"><%= l(@post.achieved_at, format: :long) %></p>
+                </div>
+              <% else %>
+                <%= button_to post_achievements_path(@post), method: :post,
+                      class: "inline-flex items-center gap-2 bg-accent text-primary px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-accent-500 active:scale-95 transform transition-all" do %>
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  <span>達成！</span>
+                <% end %>
+              <% end %>
+            <% elsif user_signed_in? %>
+              <p class="text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-lg">
+                投稿者のみ達成記録できます
+              </p>
             <% end %>
-          <% else %>
-            <%# 達成済み時：取り消しボタン %>
-            <%= button_to post_achievement_path(@post, current_user.achievements.today.find_by(post: @post)),
-                  method: :delete,
-                  data: { turbo_confirm: "今日の達成記録を取り消しますか？" },
-                  class: "inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-800 text-white px-8 py-3 transition-colors font-bold text-lg border-2 border-gray-600" do %>
-              <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-              </svg>
-              <span>達成を取り消し</span>
-            <% end %>
-          <% end %>
-        <% elsif user_signed_in? %>
-          <%# 他人の投稿の場合 %>
-          <div class="text-black text-sm border-2 border-black p-4 bg-gray-50 text-center">
-            <svg class="w-4 h-4 inline-block mr-1 fill-current" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-            この投稿の所有者のみ達成記録できます
           </div>
-        <% end %>
+        </div>
       </div>
     </div>
 
-    <%# ========================================== %>
     <%# コメントセクション %>
-    <%# ========================================== %>
-    <div class="mt-8 pt-8 border-t-2 border-black">
+    <div class="mt-6 bg-white rounded-2xl border border-gray-200 shadow-card p-6">
       <div class="flex items-center gap-2 mb-6">
-        <svg class="w-5 h-5 text-black fill-current" viewBox="0 0 24 24">
+        <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
         </svg>
-        <h2 class="text-xl font-bold text-black">
+        <h2 class="text-lg font-bold text-gray-900">
           コメント (<%= @post.comments.count %>)
         </h2>
       </div>
@@ -183,20 +146,20 @@
         <% if @post.comments.any? %>
           <%= render @post.comments.recent %>
         <% else %>
-          <p class="text-center text-gray-500 py-8 border-2 border-dashed border-gray-300">
+          <p class="text-center text-gray-500 py-8 bg-gray-50 rounded-xl">
             まだコメントがありません
           </p>
         <% end %>
       </div>
 
-      <%# コメント投稿フォーム（ログインユーザーのみ表示） %>
+      <%# コメント投稿フォーム %>
       <% if user_signed_in? %>
         <%= render 'comments/form' %>
       <% else %>
-        <div class="text-center py-8 border-2 border-black bg-gray-50">
-          <p class="text-black mb-2">コメントするにはログインが必要です</p>
-          <%= link_to "ログイン", new_user_session_path, 
-                class: "inline-block px-6 py-2 bg-black text-white hover:bg-gray-800 transition-colors font-bold" %>
+        <div class="text-center py-6 bg-gray-50 rounded-xl">
+          <p class="text-gray-600 mb-3">コメントするにはログインが必要です</p>
+          <%= link_to "ログイン", new_user_session_path,
+                class: "inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-800 transition-colors" %>
         </div>
       <% end %>
     </div>

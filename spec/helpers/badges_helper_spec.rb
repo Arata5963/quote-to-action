@@ -4,16 +4,17 @@ require 'rails_helper'
 RSpec.describe BadgesHelper, type: :helper do
   let(:user) { create(:user) }
 
-  # 「1日1回」ユニーク制約: user_id + post_id + awarded_at
-  # → awarded_at を日ごとにずらして n 件作る
+  # タスク型：1投稿につき1回のみ達成可能
+  # → 別のユーザーによる達成を作成
   def post_with_achievements(n)
     post = create(:post, user: user)
     n.times do |i|
+      other_user = create(:user)
       create(
         :achievement,
-        user: user,
+        user: other_user,
         post: post,
-        awarded_at: Date.current - i.days
+        achieved_at: Date.current - i.days
       )
     end
     post.reload
