@@ -173,3 +173,27 @@ ja:
       already_liked: "既にいいね済みです"
     destroy:
       success: "いいねを取り消しました"
+
+  # Reminder関連のメッセージ
+  reminders:
+    set: "リマインダーを設定しました"
+    updated: "リマインダーを更新しました"
+    removed: "リマインダーを解除しました"
+    label: "リマインダー"
+    time_label: "通知時刻"
+    placeholder: "時刻を選択"
+    enabled: "リマインダー設定中"
+    disabled: "リマインダーなし"
+    help_text: "毎日この時刻にメールでお知らせします"
+
+  # ReminderMailer関連
+  reminder_mailer:
+    daily_reminder:
+      subject: "【ActionSpark】今日のアクションリマインダー"
+      header: "ActionSpark リマインダー"
+      greeting: "こんにちは！"
+      intro: "今日も一歩前進しましょう。あなたが設定したアクションプランを確認してください。"
+      your_action: "あなたのアクションプラン"
+      encouragement: "小さな一歩が大きな変化につながります。今日もがんばりましょう！"
+      view_post: "投稿を確認する"
+      footer: "このメールはActionSparkのリマインダー機能により送信されました。"
