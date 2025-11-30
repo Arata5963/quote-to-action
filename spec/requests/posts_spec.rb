@@ -478,4 +478,141 @@ RSpec.describe "Posts", type: :request do
       end
     end
   end
+
+  # ====================
+  # リマインダー関連
+  # ====================
+  describe "リマインダー機能" do
+    let(:user) { create(:user) }
+
+    before do
+      sign_in user
+    end
+
+    describe "POST /posts (リマインダー付き作成)" do
+      let(:valid_params_with_reminder) do
+        {
+          post: {
+            trigger_content: "リマインダーテスト",
+            action_plan: "毎日実行する",
+            category: "education",
+            youtube_url: "https://www.youtube.com/watch?v=test123",
+            reminder_attributes: {
+              remind_time: "08:00"
+            }
+          }
+        }
+      end
+
+      it "リマインダー付きで投稿を作成できる" do
+        expect {
+          post posts_path, params: valid_params_with_reminder
+        }.to change(Post, :count).by(1)
+                                 .and change(Reminder, :count).by(1)
+
+        created_post = Post.last
+        expect(created_post.reminder).to be_present
+        expect(created_post.reminder.remind_time.strftime("%H:%M")).to eq("08:00")
+        expect(created_post.reminder.user).to eq(user)
+      end
+
+      it "リマインダーなしでも投稿を作成できる" do
+        params_without_reminder = {
+          post: {
+            trigger_content: "リマインダーなし",
+            action_plan: "アクション",
+            category: "education",
+            youtube_url: "https://www.youtube.com/watch?v=test456"
+          }
+        }
+
+        expect {
+          post posts_path, params: params_without_reminder
+        }.to change(Post, :count).by(1)
+                                 .and change(Reminder, :count).by(0)
+      end
+    end
+
+    describe "PATCH /posts/:id (リマインダー更新)" do
+      let(:post_record) { create(:post, user: user) }
+
+      it "リマインダーを追加できる" do
+        update_params = {
+          post: {
+            reminder_attributes: {
+              remind_time: "09:00"
+            }
+          }
+        }
+
+        expect {
+          patch post_path(post_record), params: update_params
+        }.to change(Reminder, :count).by(1)
+
+        post_record.reload
+        expect(post_record.reminder.remind_time.strftime("%H:%M")).to eq("09:00")
+      end
+
+      context "既存リマインダーがある場合" do
+        let!(:existing_reminder) { create(:reminder, user: user, post: post_record, remind_time: "08:00") }
+
+        it "リマインダーを更新できる" do
+          update_params = {
+            post: {
+              reminder_attributes: {
+                id: existing_reminder.id,
+                remind_time: "21:00"
+              }
+            }
+          }
+
+          patch post_path(post_record), params: update_params
+
+          existing_reminder.reload
+          expect(existing_reminder.remind_time.strftime("%H:%M")).to eq("21:00")
+        end
+
+        it "リマインダーを削除できる" do
+          delete_params = {
+            post: {
+              reminder_attributes: {
+                id: existing_reminder.id,
+                _destroy: "1"
+              }
+            }
+          }
+
+          expect {
+            patch post_path(post_record), params: delete_params
+          }.to change(Reminder, :count).by(-1)
+
+          post_record.reload
+          expect(post_record.reminder).to be_nil
+        end
+      end
+    end
+
+    describe "GET /posts/:id (リマインダー表示)" do
+      let(:post_record) { create(:post, user: user) }
+
+      context "リマインダーが設定されている場合" do
+        let!(:reminder) { create(:reminder, user: user, post: post_record, remind_time: "07:30") }
+
+        it "リマインダー情報が表示される" do
+          get post_path(post_record)
+
+          expect(response.body).to include("07:30")
+          expect(response.body).to include("リマインダー")
+        end
+      end
+
+      context "リマインダーが設定されていない場合" do
+        it "リマインダーなしが表示される" do
+          get post_path(post_record)
+
+          expect(response.body).to include("リマインダーなし")
+        end
+      end
+    end
+  end
 end

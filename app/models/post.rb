@@ -1,9 +1,12 @@
 # app/models/post.rb
 class Post < ApplicationRecord
   belongs_to :user
+  has_one :reminder, dependent: :destroy
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :likes, dependent: :destroy
+
+  accepts_nested_attributes_for :reminder, allow_destroy: true, reject_if: :all_blank
 
   scope :recent, -> { order(created_at: :desc) }
 

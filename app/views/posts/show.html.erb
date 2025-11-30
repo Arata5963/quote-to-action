@@ -75,6 +75,32 @@
           <p class="text-gray-900 whitespace-pre-line"><%= @post.action_plan %></p>
         </div>
 
+        <%# リマインダー状態表示（自分の投稿のみ） %>
+        <% if user_signed_in? && @post.user == current_user %>
+          <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-accent-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+                </svg>
+                <div>
+                  <span class="text-sm font-semibold text-gray-700"><%= t('reminders.label') %></span>
+                  <% if @post.reminder.present? %>
+                    <p class="text-sm text-accent-600 font-medium">
+                      毎日 <%= @post.reminder.remind_time.strftime("%H:%M") %> に通知
+                    </p>
+                  <% else %>
+                    <p class="text-sm text-gray-500"><%= t('reminders.disabled') %></p>
+                  <% end %>
+                </div>
+              </div>
+              <%= link_to edit_post_path(@post), class: "text-sm text-primary hover:underline" do %>
+                設定変更
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
         <%# YouTube URL %>
         <div class="mb-6">
           <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">YouTube動画</h2>

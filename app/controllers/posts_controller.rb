@@ -26,6 +26,7 @@ class PostsController < ApplicationController
 
   def new
     @post = current_user.posts.build
+    @post.build_reminder
   end
 
   def create
@@ -39,6 +40,7 @@ class PostsController < ApplicationController
   end
 
   def edit
+    @post.build_reminder unless @post.reminder
   end
 
   def update
@@ -69,6 +71,9 @@ class PostsController < ApplicationController
   end
 
   def post_params
-    params.require(:post).permit(:trigger_content, :action_plan, :category, :youtube_url)
+    params.require(:post).permit(
+      :trigger_content, :action_plan, :category, :youtube_url,
+      reminder_attributes: [ :id, :remind_time, :_destroy ]
+    )
   end
 end

@@ -12,6 +12,12 @@ module Mvp
 
     # 日本語をデフォルトロケールに設定
     config.i18n.default_locale = :ja
+
+    # タイムゾーンを日本時間に設定
+    config.time_zone = "Tokyo"
+
+    # ActiveJobのアダプタをSidekiqに設定
+    config.active_job.queue_adapter = :sidekiq
     # Rails generatorの設定
     config.generators do |g|
       g.skip_routes true      # ルーティング自動生成を無効化

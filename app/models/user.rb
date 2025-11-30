@@ -4,6 +4,7 @@ class User < ApplicationRecord
          :omniauthable, omniauth_providers: [ :google_oauth2 ]
 
   has_many :posts, dependent: :destroy
+  has_many :reminders, dependent: :destroy
   has_many :achievements, dependent: :destroy
   has_many :user_badges, dependent: :destroy
   has_many :comments, dependent: :destroy

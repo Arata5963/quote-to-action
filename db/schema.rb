@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_27_091114) do
+ActiveRecord::Schema[7.2].define(version: 2025_11_30_122658) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -61,10 +61,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_27_091114) do
 
   create_table "reminders", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.boolean "enabled"
-    t.time "time"
+    t.time "remind_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "post_id", null: false
+    t.index ["post_id"], name: "index_reminders_on_post_id"
+    t.index ["user_id", "post_id"], name: "idx_unique_user_post_reminder", unique: true
     t.index ["user_id"], name: "index_reminders_on_user_id"
   end
 
@@ -100,6 +102,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_27_091114) do
   add_foreign_key "likes", "posts"
   add_foreign_key "likes", "users"
   add_foreign_key "posts", "users"
+  add_foreign_key "reminders", "posts"
   add_foreign_key "reminders", "users"
   add_foreign_key "user_badges", "users"
 end
