@@ -23,6 +23,8 @@
 | Hotwire実装 | `03_library_guides/02_hotwire.md` |
 | 検索機能 | `03_library_guides/03_ransack.md` |
 | 画像アップロード | `03_library_guides/04_carrierwave.md` |
+| Git操作・PR作成 | `01_technical_design/10_git_workflow.md` |
+| 設計決定の記録 | `04_adr/` |
 
 ## ドキュメント構成
 
@@ -39,17 +41,22 @@
 │   ├── 06_security.md                       # セキュリティ
 │   ├── 07_performance.md                    # パフォーマンス
 │   ├── 08_test_strategy.md                  # テスト戦略
-│   └── 09_ci_cd.md                          # CI/CD
+│   ├── 09_ci_cd.md                          # CI/CD
+│   └── 10_git_workflow.md                   # Gitワークフロー
 ├── 02_design_system/
 │   ├── 01_design_tokens.md                  # デザイントークン
 │   ├── 02_design_principles.md              # デザイン原則
 │   ├── 03_components.md                     # コンポーネント設計
 │   └── 04_layouts.md                        # レイアウトシステム
-└── 03_library_guides/
-    ├── 01_devise.md                         # Devise実装パターン
-    ├── 02_hotwire.md                        # Hotwire実装パターン
-    ├── 03_ransack.md                        # Ransack実装パターン
-    └── 04_carrierwave.md                    # CarrierWave実装パターン
+├── 03_library_guides/
+│   ├── 01_devise.md                         # Devise実装パターン
+│   ├── 02_hotwire.md                        # Hotwire実装パターン
+│   ├── 03_ransack.md                        # Ransack実装パターン
+│   └── 04_carrierwave.md                    # CarrierWave実装パターン
+├── 04_adr/                                   # ADR（設計決定記録）
+│   └── ADR-YYYYMMDD-xxx.md
+└── 05_learning/                              # 学習記録
+    └── YYYY-MM-DD-xxx.md
 ```
 
 ## 開発時の基本ルール
@@ -132,4 +139,4 @@ docker compose exec web rails c
 
 ---
 
-*最終更新: 2025-11-20*
+*最終更新: 2025-12-02*

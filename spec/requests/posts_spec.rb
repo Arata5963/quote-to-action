@@ -615,4 +615,27 @@ RSpec.describe "Posts", type: :request do
       end
     end
   end
+
+  # ====================
+  # GET /posts/autocomplete (オートコンプリート)
+  # ====================
+  describe "GET /posts/autocomplete" do
+    let!(:post1) { create(:post, trigger_content: "Ruby入門") }
+    let!(:post2) { create(:post, action_plan: "Rubyで自動化") }
+
+    it "検索候補を返す" do
+      get autocomplete_posts_path, params: { q: "Ruby" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Ruby入門")
+      expect(response.body).to include("Rubyで自動化")
+    end
+
+    it "2文字未満は空を返す" do
+      get autocomplete_posts_path, params: { q: "R" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include("Ruby")
+    end
+  end
 end
