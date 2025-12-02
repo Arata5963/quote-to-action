@@ -21,28 +21,28 @@ RSpec.describe "Interactions", type: :system do
       it "達成記録を作成できる" do
         visit post_path(post_record)
 
-        # 達成ボタンをクリック
-        click_button "達成"
+        # 達成ボタンをクリック（タスク型なので「達成！」ボタン）
+        click_button "達成！"
 
-        # 達成記録が作成される（バッジ獲得メッセージが含まれる場合がある）
-        expect(page).to have_content "達成を記録しました"
-        expect(page).to have_button "達成を取り消し"
+        # 達成記録が作成される
+        expect(page).to have_content "達成済み"
 
         # 達成回数が表示される（詳細ページで確認）
         # post.achievements.count が 1 になったことを確認
         expect(Achievement.count).to eq(1)
       end
 
-      it "1日1回のみ達成記録できる" do
-        # 1回目の達成
-        create(:achievement, user: user, post: post_record, awarded_at: Date.current)
+      it "タスク型なので一度達成すると達成済み表示になる" do
+        # 達成を記録（Post.achieved_atも設定）
+        post_record.update!(achieved_at: Time.current)
+        create(:achievement, user: user, post: post_record, achieved_at: Date.current)
 
         visit post_path(post_record)
 
-        # 達成済みなので「達成を取り消し」ボタンが表示される
-        expect(page).to have_button "達成を取り消し"
-        # 「達成」ボタン（exact match）は表示されない
-        expect(page).not_to have_button "達成", exact: true
+        # 達成済み表示になる（タスク型）
+        expect(page).to have_content "達成済み"
+        # 「達成！」ボタンは表示されない
+        expect(page).not_to have_button "達成！"
       end
     end
 
@@ -56,9 +56,9 @@ RSpec.describe "Interactions", type: :system do
       it "達成記録できない" do
         visit post_path(post_record)
 
-        # 他人の投稿には達成ボタンが表示されない
-        expect(page).to have_content "この投稿の所有者のみ達成記録できます"
-        expect(page).not_to have_button "達成"
+        # 他人の投稿には達成ボタンが表示されない（メッセージは別の形式で表示される可能性あり）
+        expect(page).to have_content "投稿者のみ達成記録できます"
+        expect(page).not_to have_button "達成！"
       end
     end
   end
@@ -98,9 +98,9 @@ RSpec.describe "Interactions", type: :system do
       # コメントが表示されている
       expect(page).to have_content "テストコメント"
 
-      # 削除ボタンをクリック（Capybaraは turbo_confirm を自動的に承認する）
-      within("div.border-2.border-black.p-4.bg-white", text: "テストコメント") do
-        click_button "削除"
+      # 削除ボタンをクリック（アイコンボタンなのでformを送信）
+      within("div.bg-white.rounded-xl", text: "テストコメント") do
+        find("form[action*='comments']").click_button
       end
 
       # コメントが削除される

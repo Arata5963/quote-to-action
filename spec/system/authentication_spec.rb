@@ -22,8 +22,8 @@ RSpec.describe "Authentication", type: :system do
       fill_in "user_password", with: "password123"
       fill_in "user_password_confirmation", with: "password123"
 
-      # 4. 登録ボタンをクリック（実際のボタンテキスト: "登録"）
-      click_button "登録"
+      # 4. 登録ボタンをクリック（実際のボタンテキスト: "登録する"）
+      click_button "登録する"
 
       # 5. トップページにリダイレクトされる
       expect(page).to have_current_path(root_path)
@@ -42,10 +42,10 @@ RSpec.describe "Authentication", type: :system do
       fill_in "user_password_confirmation", with: "short"
 
       # 3. 登録ボタンをクリック
-      click_button "登録"
+      click_button "登録する"
 
       # 4. エラーメッセージが表示される
-      expect(page).to have_content("個のエラーがあります")
+      expect(page).to have_content("件のエラーがあります")
     end
   end
 

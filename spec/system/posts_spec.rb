@@ -24,12 +24,13 @@ RSpec.describe "Posts", type: :system do
         visit new_post_path
 
         # 2. 新規投稿フォームが表示される
-        expect(page).to have_content("新規投稿")
+        expect(page).to have_content("新しい投稿を作成")
 
         # 3. フォームに入力
-        fill_in "きっかけ", with: "テストきっかけ"
-        fill_in "アクションプラン", with: "テストアクション"
-        choose "post_category_text"  # ラジオボタンで選択
+        fill_in "post_youtube_url", with: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        fill_in "post_trigger_content", with: "テストきっかけ"
+        fill_in "post_action_plan", with: "テストアクション"
+        choose "post_category_music"  # ラジオボタンで選択
 
         # 4. 投稿ボタンをクリック
         click_button "投稿する"
@@ -127,10 +128,10 @@ RSpec.describe "Posts", type: :system do
         click_link "編集"
 
         # 3. 編集フォームが表示される
-        expect(page).to have_content("編集")
+        expect(page).to have_content("投稿を編集")
 
         # 4. 内容を変更
-        fill_in "きっかけ", with: "編集後のきっかけ"
+        fill_in "post_trigger_content", with: "編集後のきっかけ"
 
         # 5. 更新ボタンをクリック
         click_button "更新する"

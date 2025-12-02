@@ -32,7 +32,7 @@ RSpec.describe "Factory の動作確認", type: :model do
       expect(achievement).to be_persisted
       expect(achievement.user).to be_present
       expect(achievement.post).to be_present
-      expect(achievement.awarded_at).to eq(Date.current)
+      expect(achievement.achieved_at).to eq(Date.current)
     end
   end
 

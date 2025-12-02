@@ -17,7 +17,7 @@ RSpec.describe ApplicationMailer, type: :mailer do
       end
 
       email = test_mailer.new.test_email
-      expect(email.to).to eq(['test@example.com'])
+      expect(email.to).to eq([ 'test@example.com' ])
       expect(email.subject).to eq('Test Email')
     end
   end

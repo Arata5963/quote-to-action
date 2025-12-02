@@ -16,7 +16,7 @@ RSpec.describe 'Users', type: :request do
         get mypage_path
         expect(response.body).to include('マイページ')
         expect(response.body).to include('マイバッジ')
-        expect(response.body).to include('個人情報変更')
+        expect(response.body).to include('アカウント設定')
       end
     end
 
@@ -58,7 +58,7 @@ RSpec.describe 'Users', type: :request do
 
       it 'プロフィールを更新できる' do
         patch update_profile_path, params: { user: { avatar: nil } }
-        
+
         expect(response).to redirect_to(mypage_path)
         follow_redirect!
         expect(response.body).to include('プロフィールを更新しました')

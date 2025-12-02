@@ -65,13 +65,13 @@ RSpec.describe "Posts", type: :request do
 
     context "カテゴリ絞り込み" do
       it "特定のカテゴリのみ表示される" do
-        text_post = create(:post, trigger_content: "テキスト投稿", category: "text")
-        video_post = create(:post, trigger_content: "動画投稿", category: "video")
+        music_post = create(:post, trigger_content: "音楽投稿", category: "music")
+        education_post = create(:post, trigger_content: "教育投稿", category: "education")
 
-        get posts_path, params: { category: "text" }
+        get posts_path, params: { category: "music" }
 
-        expect(response.body).to include("テキスト投稿")
-        expect(response.body).not_to include("動画投稿")
+        expect(response.body).to include("音楽投稿")
+        expect(response.body).not_to include("教育投稿")
       end
     end
 
@@ -119,15 +119,13 @@ RSpec.describe "Posts", type: :request do
       end
 
       it "達成回数が表示される" do
-        # 異なる日付で3回達成を記録
-        create(:achievement, post: post_record, user: user, awarded_at: 3.days.ago)
-        create(:achievement, post: post_record, user: user, awarded_at: 2.days.ago)
-        create(:achievement, post: post_record, user: user, awarded_at: 1.day.ago)
+        # タスク型: 1投稿1達成
+        create(:achievement, post: post_record, user: user, achieved_at: Date.current)
 
         get post_path(post_record)
 
-        # 達成回数の表示を確認（実際のビューに合わせて調整）
-        expect(response.body).to include("3")
+        # 達成回数の表示を確認（タスク型なので1回）
+        expect(response.body).to include("1")
       end
     end
 
@@ -186,9 +184,10 @@ RSpec.describe "Posts", type: :request do
         let(:valid_params) do
           {
             post: {
+              youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
               trigger_content: "新しいきっかけ",
               action_plan: "新しいアクションプラン",
-              category: "text"
+              category: "music"
             }
           }
         end
@@ -215,44 +214,14 @@ RSpec.describe "Posts", type: :request do
         end
       end
 
-      context "画像付きで作成する場合" do
-        let(:image_params) do
-          {
-            post: {
-              trigger_content: "画像付き投稿",
-              action_plan: "画像アクション",
-              category: "text",
-              image: fixture_file_upload('spec/fixtures/files/sample_avatar.jpg', 'image/jpeg')
-
-            }
-          }
-        end
-        # 画像ファイルがない場合はスキップ
-        it "画像付きで投稿を作成できる" do
-          expect {
-            post posts_path, params: image_params
-          }.to change(Post, :count).by(1)
-        
-          created_post = Post.last
-          expect(created_post.image).to be_present
-          expect(created_post.image.url).to be_present
-        end
-        it "画像がアップロードされてURLが生成される" do
-          post posts_path, params: image_params
-          
-          created_post = Post.last
-          # CarrierWaveのアップロード確認
-          expect(created_post.image_identifier).to be_present
-        end
-      end
-
       context "無効なパラメータの場合" do
         let(:invalid_params) do
           {
             post: {
+              youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
               trigger_content: "", # 必須項目が空
               action_plan: "アクションプラン",
-              category: "text"
+              category: "music"
             }
           }
         end
