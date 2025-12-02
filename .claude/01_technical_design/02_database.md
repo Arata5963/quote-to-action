@@ -12,30 +12,37 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 ├─────────────┤       ├─────────────┤
 │ id          │───┐   │ id          │
 │ email       │   │   │ user_id     │←─┐
-│ name        │   └──→│ trigger_... │  │
-│ avatar      │       │ action_plan │  │
-│ encrypted.. │   ┌──→│ category    │  │
-└─────────────┘   │   │ image       │  │
-      │           │   │ related_url │  │
-      │           │   │ achievement │  │
-      ▼           │   └─────────────┘  │
+│ name        │   └──→│ youtube_url │  │
+│ avatar      │       │ trigger_... │  │
+│ encrypted.. │   ┌──→│ action_plan │  │
+└─────────────┘   │   │ category    │  │
+      │           │   │ achieved_at │  │
+      │           │   └─────────────┘  │
+      ▼           │         │          │
 ┌─────────────┐   │         │          │
-│ Achievement │   │         │          │
-├─────────────┤   │         ▼          │
-│ id          │   │   ┌─────────────┐  │
-│ user_id     │───┘   │   Comment   │  │
-│ post_id     │───────├─────────────┤  │
-│ achieved_on │       │ id          │  │
-└─────────────┘       │ user_id     │──┘
-                      │ post_id     │───┐
-┌─────────────┐       │ content     │   │
-│    Like     │       └─────────────┘   │
-├─────────────┤              │          │
-│ id          │              ▼          │
-│ user_id     │───────────────────────┐ │
-│ post_id     │───────────────────────┼─┘
-└─────────────┘                       │
-                                      ▼
+│ Achievement │   │         ▼          │
+├─────────────┤   │   ┌─────────────┐  │
+│ id          │   │   │   Comment   │  │
+│ user_id     │───┘   ├─────────────┤  │
+│ post_id     │───────│ id          │  │
+│ achieved_at │       │ user_id     │──┘
+└─────────────┘       │ post_id     │───┐
+                      │ content     │   │
+┌─────────────┐       └─────────────┘   │
+│    Like     │              │          │
+├─────────────┤              ▼          │
+│ id          │       ┌─────────────┐   │
+│ user_id     │───────│  Reminder   │   │
+│ post_id     │───────├─────────────┤   │
+└─────────────┘       │ id          │   │
+                      │ user_id     │───┤
+┌─────────────┐       │ post_id     │───┘
+│  UserBadge  │       │ remind_time │
+├─────────────┤       └─────────────┘
+│ id          │
+│ user_id     │
+│ badge_type  │
+└─────────────┘
 ```
 
 ## テーブル定義
@@ -48,10 +55,12 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 | email | string | NOT NULL, UNIQUE | メールアドレス |
 | encrypted_password | string | NOT NULL | 暗号化パスワード |
 | name | string | | 表示名 |
-| avatar | string | | アバター画像パス |
+| avatar | string | | アバター画像パス（CarrierWave） |
 | reset_password_token | string | UNIQUE | パスワードリセット用 |
 | reset_password_sent_at | datetime | | リセットメール送信日時 |
 | remember_created_at | datetime | | Remember Me用 |
+| provider | string | | OAuthプロバイダ |
+| uid | string | | OAuthユーザーID |
 | created_at | datetime | NOT NULL | 作成日時 |
 | updated_at | datetime | NOT NULL | 更新日時 |
 
@@ -65,12 +74,11 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 |--------|-----|------|------|
 | id | bigint | PK | 主キー |
 | user_id | bigint | FK, NOT NULL | 投稿者 |
-| trigger_content | text | NOT NULL | きっかけ（1-100文字） |
+| youtube_url | string | NOT NULL | YouTube動画URL |
+| trigger_content | text | NOT NULL | 響いたポイント（1-100文字） |
 | action_plan | text | NOT NULL | アクションプラン（1-100文字） |
-| category | integer | NOT NULL, DEFAULT 0 | カテゴリ（enum） |
-| image | string | | 画像パス |
-| related_url | string | | 関連URL |
-| achievement_count | integer | DEFAULT 0 | 達成回数（counter_cache） |
+| category | integer | NOT NULL | カテゴリ（YouTube公式enum） |
+| achieved_at | datetime | | 達成日時（タスク型） |
 | created_at | datetime | NOT NULL | 作成日時 |
 | updated_at | datetime | NOT NULL | 更新日時 |
 
@@ -79,17 +87,55 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 - `index_posts_on_category`
 - `index_posts_on_created_at`
 
-**カテゴリEnum定義**:
+**カテゴリEnum定義（YouTube公式）**:
 ```ruby
-enum category: {
-  text: 0,        # テキスト
-  video: 1,       # 映像
-  audio: 2,       # 音声
-  conversation: 3, # 対話
-  experience: 4,   # 体験
-  observation: 5,  # 日常
-  other: 6        # その他
+enum :category, {
+  film_animation: 1,      # 映画・アニメ
+  autos_vehicles: 2,      # 車・乗り物
+  music: 10,              # 音楽
+  pets_animals: 15,       # ペット・動物
+  sports: 17,             # スポーツ
+  travel_events: 19,      # 旅行・イベント
+  gaming: 20,             # ゲーム
+  people_blogs: 22,       # 人物・ブログ
+  comedy: 23,             # コメディ
+  entertainment: 24,      # エンターテイメント
+  news_politics: 25,      # ニュース・政治
+  howto_style: 26,        # ハウツー・スタイル
+  education: 27,          # 教育
+  science_technology: 28, # 科学・テクノロジー
+  nonprofits_activism: 29 # 非営利・社会活動
 }
+```
+
+**YouTube関連メソッド**:
+```ruby
+class Post < ApplicationRecord
+  # YouTube動画ID抽出
+  def youtube_video_id
+    return nil unless youtube_url.present?
+
+    if youtube_url.include?("youtube.com/watch")
+      URI.parse(youtube_url).query&.split("&")
+         &.find { |p| p.start_with?("v=") }
+         &.delete_prefix("v=")
+    elsif youtube_url.include?("youtu.be/")
+      youtube_url.split("youtu.be/").last&.split("?")&.first
+    end
+  end
+
+  # サムネイルURL取得
+  def youtube_thumbnail_url(size: :mqdefault)
+    return nil unless youtube_video_id
+    "https://img.youtube.com/vi/#{youtube_video_id}/#{size}.jpg"
+  end
+
+  # 埋め込みURL取得
+  def youtube_embed_url
+    return nil unless youtube_video_id
+    "https://www.youtube.com/embed/#{youtube_video_id}"
+  end
+end
 ```
 
 ### achievements
@@ -99,14 +145,29 @@ enum category: {
 | id | bigint | PK | 主キー |
 | user_id | bigint | FK, NOT NULL | 達成ユーザー |
 | post_id | bigint | FK, NOT NULL | 対象投稿 |
-| achieved_on | date | NOT NULL | 達成日 |
+| achieved_at | datetime | NOT NULL | 達成日時 |
 | created_at | datetime | NOT NULL | 作成日時 |
 | updated_at | datetime | NOT NULL | 更新日時 |
 
 **インデックス**:
 - `index_achievements_on_user_id`
 - `index_achievements_on_post_id`
-- `index_achievements_on_user_id_and_post_id_and_achieved_on` (unique) - 1日1回制限
+- `index_achievements_on_user_id_and_post_id` (unique) - タスク型（1投稿1達成）
+
+### reminders
+
+| カラム | 型 | 制約 | 説明 |
+|--------|-----|------|------|
+| id | bigint | PK | 主キー |
+| user_id | bigint | FK, NOT NULL | リマインダー対象ユーザー |
+| post_id | bigint | FK, NOT NULL | 対象投稿 |
+| remind_time | time | NOT NULL | 通知時刻（HH:MM） |
+| created_at | datetime | NOT NULL | 作成日時 |
+| updated_at | datetime | NOT NULL | 更新日時 |
+
+**インデックス**:
+- `index_reminders_on_user_id`
+- `index_reminders_on_post_id`
 
 ### comments
 
@@ -137,14 +198,52 @@ enum category: {
 - `index_likes_on_user_id_and_post_id` (unique)
 - `index_likes_on_post_id`
 
+### user_badges
+
+| カラム | 型 | 制約 | 説明 |
+|--------|-----|------|------|
+| id | bigint | PK | 主キー |
+| user_id | bigint | FK, NOT NULL | バッジ所有ユーザー |
+| badge_type | integer | NOT NULL | バッジ種類（enum） |
+| created_at | datetime | NOT NULL | 作成日時 |
+| updated_at | datetime | NOT NULL | 更新日時 |
+
+## アソシエーション
+
+```ruby
+class User < ApplicationRecord
+  has_many :posts, dependent: :destroy
+  has_many :achievements, dependent: :destroy
+  has_many :comments, dependent: :destroy
+  has_many :likes, dependent: :destroy
+  has_many :reminders, dependent: :destroy
+  has_many :user_badges, dependent: :destroy
+end
+
+class Post < ApplicationRecord
+  belongs_to :user
+  has_many :achievements, dependent: :destroy
+  has_many :comments, dependent: :destroy
+  has_many :likes, dependent: :destroy
+  has_one :reminder, dependent: :destroy
+
+  accepts_nested_attributes_for :reminder, allow_destroy: true
+end
+
+class Reminder < ApplicationRecord
+  belongs_to :user
+  belongs_to :post
+end
+```
+
 ## マイグレーション規約
 
 ### 命名規則
 
 ```ruby
 # 良い例
-rails g migration AddCategoryToPosts category:integer
-rails g migration CreateAchievements user:references post:references achieved_on:date
+rails g migration AddYoutubeUrlToPosts youtube_url:string
+rails g migration CreateReminders user:references post:references remind_time:time
 
 # 悪い例
 rails g migration UpdatePosts  # 何を更新するか不明
@@ -153,10 +252,10 @@ rails g migration UpdatePosts  # 何を更新するか不明
 ### カラム追加時
 
 ```ruby
-class AddCategoryToPosts < ActiveRecord::Migration[7.2]
+class AddYoutubeUrlToPosts < ActiveRecord::Migration[7.2]
   def change
-    add_column :posts, :category, :integer, null: false, default: 0
-    add_index :posts, :category
+    add_column :posts, :youtube_url, :string, null: false
+    add_index :posts, :youtube_url
   end
 end
 ```
@@ -164,12 +263,12 @@ end
 ### 外部キー制約
 
 ```ruby
-class CreateComments < ActiveRecord::Migration[7.2]
+class CreateReminders < ActiveRecord::Migration[7.2]
   def change
-    create_table :comments do |t|
+    create_table :reminders do |t|
       t.references :user, null: false, foreign_key: true
       t.references :post, null: false, foreign_key: true
-      t.text :content, null: false
+      t.time :remind_time, null: false
 
       t.timestamps
     end
@@ -187,16 +286,7 @@ end
 # ビューで@posts.each { |p| p.user.name } するとN+1
 
 # 良い例
-@posts = Post.includes(:user, :comments, :likes).recent
-```
-
-### Counter Cache
-
-```ruby
-# Post モデルに achievement_count を持たせる
-class Achievement < ApplicationRecord
-  belongs_to :post, counter_cache: :achievement_count
-end
+@posts = Post.includes(:user, :comments, :likes, :achievements).recent
 ```
 
 ### スコープの活用
@@ -204,9 +294,10 @@ end
 ```ruby
 class Post < ApplicationRecord
   scope :recent, -> { order(created_at: :desc) }
-  scope :popular, -> { order(achievement_count: :desc) }
   scope :by_category, ->(cat) { where(category: cat) if cat.present? }
   scope :with_associations, -> { includes(:user, :achievements, :comments, :likes) }
+  scope :achieved, -> { where.not(achieved_at: nil) }
+  scope :not_achieved, -> { where(achieved_at: nil) }
 end
 ```
 
@@ -219,7 +310,7 @@ end
 pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
 
 # リストア
-psql $DATABASE_URL < backup_20251120.sql
+psql $DATABASE_URL < backup_20251202.sql
 ```
 
 ### 開発環境（Docker）
@@ -233,5 +324,7 @@ docker compose exec -T db psql -U postgres action_spark_development < backup.sql
 ```
 
 ---
+
+*最終更新: 2025-12-02*
 
 *関連ドキュメント*: `01_architecture.md`, `06_security.md`

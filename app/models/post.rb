@@ -75,6 +75,13 @@ class Post < ApplicationRecord
     "https://img.youtube.com/vi/#{youtube_video_id}/#{size}.jpg"
   end
 
+  # YouTube埋め込みURL取得
+  def youtube_embed_url
+    return nil unless youtube_video_id
+
+    "https://www.youtube.com/embed/#{youtube_video_id}"
+  end
+
   # 達成済みかどうか
   def achieved?
     achieved_at.present?

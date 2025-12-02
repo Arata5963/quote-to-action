@@ -87,6 +87,34 @@ RSpec.describe Post, type: :model do
     end
   end
 
+  describe "#youtube_embed_url" do
+    context "有効なYouTube URLの場合" do
+      let(:post) { build(:post, youtube_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ') }
+
+      it "埋め込みURLを返す" do
+        expect(post.youtube_embed_url).to eq('https://www.youtube.com/embed/dQw4w9WgXcQ')
+      end
+    end
+
+    context "youtu.be形式のURLの場合" do
+      let(:post) { build(:post, youtube_url: 'https://youtu.be/dQw4w9WgXcQ') }
+
+      it "埋め込みURLを返す" do
+        expect(post.youtube_embed_url).to eq('https://www.youtube.com/embed/dQw4w9WgXcQ')
+      end
+    end
+
+    context "YouTube URLが空の場合" do
+      let(:post) { build(:post) }
+
+      before { allow(post).to receive(:youtube_video_id).and_return(nil) }
+
+      it "nilを返す" do
+        expect(post.youtube_embed_url).to be_nil
+      end
+    end
+  end
+
   describe "#achieved?" do
     let(:post) { create(:post) }
 
