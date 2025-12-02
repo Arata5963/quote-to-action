@@ -58,7 +58,7 @@ RSpec.describe 'Users', type: :request do
 
       it 'プロフィールを更新できる' do
         patch update_profile_path, params: { user: { avatar: nil } }
-        
+
         expect(response).to redirect_to(mypage_path)
         follow_redirect!
         expect(response.body).to include('プロフィールを更新しました')

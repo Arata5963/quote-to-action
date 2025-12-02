@@ -40,13 +40,13 @@ RSpec.describe 'OmniauthCallbacks', type: :request do
 
         expect(response).to have_http_status(:found)
         expect(response).to redirect_to(root_path)
-        
+
         # 作成されたユーザーの確認
         user = User.last
         expect(user.email).to eq('newuser@example.com')
         expect(user.provider).to eq('google_oauth2')
         expect(user.uid).to eq('123456789')
-        
+
         # ログイン状態の確認
         follow_redirect!
         expect(response.body).to include('Google')
@@ -92,7 +92,7 @@ RSpec.describe 'OmniauthCallbacks', type: :request do
         # invalid_credentialsの場合、failureアクションを経由してroot_pathにリダイレクト
         expect(response).to have_http_status(:found)
         expect(response).to redirect_to(root_path)
-        
+
         # フラッシュメッセージの確認
         follow_redirect!
         expect(response.body).to include('Google認証に失敗しました')
@@ -118,7 +118,7 @@ RSpec.describe 'OmniauthCallbacks', type: :request do
 
         expect(response).to have_http_status(:found)
         expect(response).to redirect_to(new_user_session_path)
-        
+
         follow_redirect!
         expect(response.body).to include('ユーザー作成に失敗')
       end
@@ -133,7 +133,7 @@ RSpec.describe 'OmniauthCallbacks', type: :request do
           uid: 'test_uid'
         )
         unsaved_user.errors.add(:base, 'テスト用エラー')
-        
+
         allow(User).to receive(:from_omniauth).and_return(unsaved_user)
         allow(unsaved_user).to receive(:persisted?).and_return(false)
 
@@ -147,7 +147,7 @@ RSpec.describe 'OmniauthCallbacks', type: :request do
 
         expect(response).to have_http_status(:found)
         expect(response).to redirect_to(new_user_session_path)
-        
+
         follow_redirect!
         expect(response.body).to include('Google認証に失敗しました')
       end

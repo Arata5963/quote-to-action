@@ -150,7 +150,7 @@ RSpec.describe Post, type: :model do
 
     it '投稿を削除すると達成記録も削除される' do
       create(:achievement, user: user, post: post, awarded_at: Date.current)
-      
+
       expect {
         post.destroy
       }.to change(Achievement, :count).by(-1)
@@ -158,7 +158,7 @@ RSpec.describe Post, type: :model do
 
     it '投稿を削除するとコメントも削除される' do
       create(:comment, user: user, post: post)
-      
+
       expect {
         post.destroy
       }.to change(Comment, :count).by(-1)
@@ -166,7 +166,7 @@ RSpec.describe Post, type: :model do
 
     it '投稿を削除するといいねも削除される' do
       create(:like, user: user, post: post)
-      
+
       expect {
         post.destroy
       }.to change(Like, :count).by(-1)
@@ -176,12 +176,12 @@ RSpec.describe Post, type: :model do
       create(:achievement, user: user, post: post, awarded_at: Date.current)
       create(:comment, user: user, post: post)
       create(:like, user: user, post: post)
-      
+
       expect {
         post.destroy
       }.to change {
-        [Achievement.count, Comment.count, Like.count]
-      }.from([1, 1, 1]).to([0, 0, 0])
+        [ Achievement.count, Comment.count, Like.count ]
+      }.from([ 1, 1, 1 ]).to([ 0, 0, 0 ])
     end
   end
 end

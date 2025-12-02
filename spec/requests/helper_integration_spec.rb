@@ -22,7 +22,7 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
       it "各カテゴリのアイコンが表示される（category_iconメソッドが実行される）" do
         get posts_path
         expect(response).to have_http_status(:success)
-        
+
         # 各カテゴリのアイコンが含まれている（Helperメソッドが実行された証拠）
         expect(response.body).to include('📝') # text
         expect(response.body).to include('🎥') # video
@@ -36,7 +36,7 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
       it "カテゴリ名（絵文字なし）が表示される（category_name_without_iconメソッドが実行される）" do
         get posts_path
         expect(response).to have_http_status(:success)
-        
+
         # カテゴリ名が表示される
         # 注: 絵文字除去後のテキストが実際に表示されているか確認
         expect(response.body).to match(/カテゴリ/)
@@ -57,7 +57,7 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
       it "トップページにOGPタグが含まれる" do
         get root_path
         expect(response).to have_http_status(:success)
-        
+
         # OGPメタタグの存在確認（default_meta_tagsが実行された証拠）
         expect(response.body).to include('og:title')
         expect(response.body).to include('og:description')
@@ -69,7 +69,7 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
         sign_in user
         get posts_path
         expect(response).to have_http_status(:success)
-        
+
         expect(response.body).to include('og:title')
         expect(response.body).to include('ActionSpark')
       end
@@ -119,10 +119,10 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
       it "各達成回数に応じたバッジSVGが表示される（post_badge_tagメソッドが実行される）" do
         get posts_path
         expect(response).to have_http_status(:success)
-        
+
         # SVGタグが含まれている（BadgesHelperのメソッドが実行された証拠）
         expect(response.body.scan(/<svg/).count).to be >= 5
-        
+
         # 各種バッジのSVG要素が含まれているか確認
         expect(response.body).to include('viewBox="0 0 24 24"')
         expect(response.body).to include('polygon') # 星のSVG

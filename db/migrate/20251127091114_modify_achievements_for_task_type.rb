@@ -8,7 +8,7 @@ class ModifyAchievementsForTaskType < ActiveRecord::Migration[7.2]
 
     # 新インデックス追加（user_id + post_id のみのユニーク制約）
     # 1つの投稿に対して1人のユーザーは1回のみ達成可能
-    add_index :achievements, [:user_id, :post_id], unique: true, name: "idx_unique_achievements"
+    add_index :achievements, [ :user_id, :post_id ], unique: true, name: "idx_unique_achievements"
 
     # awarded_at カラムを achieved_at にリネーム（意味的な明確化）
     rename_column :achievements, :awarded_at, :achieved_at

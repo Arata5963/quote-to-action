@@ -51,7 +51,7 @@ RSpec.describe User, type: :model do
           Comment.where(user_id: user.id).count,
           Like.where(user_id: user.id).count
         ]
-      }.from([1,1,1,1,1]).to([0,0,0,0,0])
+      }.from([ 1, 1, 1, 1, 1 ]).to([ 0, 0, 0, 0, 0 ])
     end
   end
   describe '.from_omniauth' do

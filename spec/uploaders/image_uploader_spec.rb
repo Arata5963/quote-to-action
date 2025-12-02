@@ -2,7 +2,7 @@
 require 'rails_helper'
 
 RSpec.describe ImageUploader do
-  let(:user){ create(:user) }
+  let(:user) { create(:user) }
 
   it 'store_dir が user/avatar/<id> を含む' do
     uploader = ImageUploader.new(user, :avatar)
@@ -54,5 +54,5 @@ RSpec.describe ImageUploader do
     it '画像処理機能が含まれている' do
       expect(ImageUploader.ancestors).to include(CarrierWave::MiniMagick)
     end
-  end 
+  end
 end

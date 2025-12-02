@@ -232,14 +232,14 @@ RSpec.describe "Posts", type: :request do
           expect {
             post posts_path, params: image_params
           }.to change(Post, :count).by(1)
-        
+
           created_post = Post.last
           expect(created_post.image).to be_present
           expect(created_post.image.url).to be_present
         end
         it "画像がアップロードされてURLが生成される" do
           post posts_path, params: image_params
-          
+
           created_post = Post.last
           # CarrierWaveのアップロード確認
           expect(created_post.image_identifier).to be_present

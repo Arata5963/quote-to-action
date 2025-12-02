@@ -48,10 +48,10 @@ RSpec.describe User, type: :model do
     it 'アバターを削除できる' do
       user.avatar = fixture_file_upload('spec/fixtures/files/sample_avatar.jpg', 'image/jpeg')
       user.save
-      
+
       user.remove_avatar!
       user.save
-      
+
       expect(user.avatar.present?).to be false
     end
   end
@@ -162,7 +162,7 @@ RSpec.describe User, type: :model do
         user.password = 'newpassword123'
         user.password_confirmation = 'newpassword123'
         expect(user.save).to be true
-        
+
         # 新しいパスワードで認証できる
         expect(user.valid_password?('newpassword123')).to be true
       end
@@ -184,7 +184,7 @@ RSpec.describe User, type: :model do
 
   describe 'associations cascade' do
     let(:user) { create(:user) }
-    
+
     before do
       post = create(:post, user: user)
       create(:achievement, user: user, post: post, awarded_at: Date.current)

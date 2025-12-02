@@ -3,13 +3,13 @@ require 'rails_helper'
 
 RSpec.describe UserBadge, type: :model do
   let(:user) { create(:user) }
-  
+
   describe '#badge_info' do
     context '有効なバッジキーの場合' do
       it 'BADGE_POOLからバッジ情報を取得できる' do
         badge_key = BADGE_POOL.first[:key]
         user_badge = user.user_badges.create!(badge_key: badge_key, awarded_at: Time.current)
-        
+
         expect(user_badge.badge_info).to be_a(Hash)
         expect(user_badge.badge_info[:key]).to eq(badge_key)
       end
@@ -17,7 +17,7 @@ RSpec.describe UserBadge, type: :model do
       it 'バッジ情報にname、description、svgが含まれる' do
         badge_key = BADGE_POOL.first[:key]
         user_badge = user.user_badges.create!(badge_key: badge_key, awarded_at: Time.current)
-        
+
         badge_info = user_badge.badge_info
         expect(badge_info).to have_key(:name)
         expect(badge_info).to have_key(:description)
@@ -29,7 +29,7 @@ RSpec.describe UserBadge, type: :model do
       it 'nilを返す' do
         user_badge = user.user_badges.new(badge_key: 'invalid_key', awarded_at: Time.current)
         user_badge.save(validate: false) # バリデーションをスキップして保存
-        
+
         expect(user_badge.badge_info).to be_nil
       end
     end
@@ -40,7 +40,7 @@ RSpec.describe UserBadge, type: :model do
       it 'バッジ名を返す' do
         badge_key = BADGE_POOL.first[:key]
         user_badge = user.user_badges.create!(badge_key: badge_key, awarded_at: Time.current)
-        
+
         expect(user_badge.badge_name).to eq(BADGE_POOL.first[:name])
         expect(user_badge.badge_name).to be_a(String)
         expect(user_badge.badge_name.length).to be > 0
@@ -59,7 +59,7 @@ RSpec.describe UserBadge, type: :model do
       it 'デフォルトメッセージを返す' do
         user_badge = user.user_badges.new(badge_key: 'invalid_key', awarded_at: Time.current)
         user_badge.save(validate: false)
-        
+
         expect(user_badge.badge_name).to eq("不明なバッジ")
       end
     end
@@ -70,7 +70,7 @@ RSpec.describe UserBadge, type: :model do
       it 'SVGコードを返す' do
         badge_key = BADGE_POOL.first[:key]
         user_badge = user.user_badges.create!(badge_key: badge_key, awarded_at: Time.current)
-        
+
         expect(user_badge.badge_svg).to be_a(String)
         expect(user_badge.badge_svg).to include('<svg')
       end
@@ -89,7 +89,7 @@ RSpec.describe UserBadge, type: :model do
       it '空文字列を返す' do
         user_badge = user.user_badges.new(badge_key: 'invalid_key', awarded_at: Time.current)
         user_badge.save(validate: false)
-        
+
         expect(user_badge.badge_svg).to eq("")
       end
     end
@@ -100,7 +100,7 @@ RSpec.describe UserBadge, type: :model do
       it 'バッジの説明を返す' do
         badge_key = BADGE_POOL.first[:key]
         user_badge = user.user_badges.create!(badge_key: badge_key, awarded_at: Time.current)
-        
+
         expect(user_badge.description).to eq(BADGE_POOL.first[:description])
         expect(user_badge.description).to be_a(String)
         expect(user_badge.description.length).to be > 0
@@ -119,7 +119,7 @@ RSpec.describe UserBadge, type: :model do
       it '空文字列を返す' do
         user_badge = user.user_badges.new(badge_key: 'invalid_key', awarded_at: Time.current)
         user_badge.save(validate: false)
-        
+
         expect(user_badge.description).to eq("")
       end
     end
@@ -133,7 +133,7 @@ RSpec.describe UserBadge, type: :model do
     subject { user.user_badges.create!(badge_key: BADGE_POOL.first[:key], awarded_at: Time.current) }
 
     it { should validate_presence_of(:badge_key) }
-    
+
     it 'ユーザーごとにバッジキーがユニークである' do
       should validate_uniqueness_of(:badge_key).scoped_to(:user_id)
     end
@@ -157,7 +157,7 @@ RSpec.describe UserBadge, type: :model do
     end
 
     it '新しい順に並ぶ' do
-      expect(user.user_badges.recent).to eq([@new_badge, @middle_badge, @old_badge])
+      expect(user.user_badges.recent).to eq([ @new_badge, @middle_badge, @old_badge ])
     end
   end
 end

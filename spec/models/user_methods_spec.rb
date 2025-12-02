@@ -32,7 +32,7 @@ RSpec.describe User, type: :model do
       before do
         # 対象ユーザーの達成記録
         create(:achievement, user: user, post: post1, awarded_at: Date.current)
-        
+
         # 他のユーザーの達成記録（カウントされない）
         create(:achievement, user: other_user, post: other_post, awarded_at: Date.current)
       end
