@@ -25,6 +25,7 @@ Rails.application.routes.draw do
   resources :user_badges, only: [ :index ], path: "badges"
 
   resources :posts do
+    get :autocomplete, on: :collection
     resources :achievements, only: [ :create, :destroy ]
     resources :comments, only: [ :create, :destroy ]
     resources :likes, only: [ :create, :destroy ]

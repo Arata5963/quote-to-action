@@ -1,6 +1,6 @@
 # app/controllers/posts_controller.rb
 class PostsController < ApplicationController
-  before_action :authenticate_user!, except: [ :index, :show ]
+  before_action :authenticate_user!, except: [ :index, :show, :autocomplete ]
   before_action :set_post, only: [ :show, :edit, :update, :destroy ]
   before_action :check_owner, only: [ :edit, :update, :destroy ]
 
@@ -54,6 +54,26 @@ class PostsController < ApplicationController
   def destroy
     @post.destroy
     redirect_to posts_path, notice: t("posts.destroy.success")
+  end
+
+  def autocomplete
+    query = params[:q].to_s.strip
+
+    if query.length >= 2
+      @suggestions = Post
+        .where("trigger_content ILIKE :q OR action_plan ILIKE :q", q: "%#{query}%")
+        .limit(10)
+        .pluck(:trigger_content, :action_plan)
+        .flatten
+        .compact
+        .uniq
+        .select { |s| s.downcase.include?(query.downcase) }
+        .first(10)
+    else
+      @suggestions = []
+    end
+
+    render layout: false
   end
 
   private
