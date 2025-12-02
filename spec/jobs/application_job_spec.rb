@@ -2,6 +2,10 @@
 require 'rails_helper'
 
 RSpec.describe ApplicationJob, type: :job do
+  before do
+    ActiveJob::Base.queue_adapter = :test
+  end
+
   describe '基本設定' do
     it 'ApplicationJobを継承したジョブが作成できる' do
       test_job = Class.new(ApplicationJob) do

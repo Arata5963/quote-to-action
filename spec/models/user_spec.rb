@@ -35,7 +35,7 @@ RSpec.describe User, type: :model do
     it "ユーザー削除で関連レコードも削除される" do
       user = create(:user)
       post = create(:post, user: user)
-      create(:achievement, user: user, post: post, awarded_at: Date.current)
+      create(:achievement, user: user, post: post, achieved_at: Date.current)
       # ▼ Factoryなしで関連経由で作成
       user.user_badges.create!(badge_key: BADGE_POOL.first[:key], awarded_at: Time.current)
       create(:comment, user: user, post: post)

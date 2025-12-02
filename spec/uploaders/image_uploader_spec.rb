@@ -13,7 +13,7 @@ RSpec.describe ImageUploader do
   it 'thumb バージョンが定義されている' do
     expect(ImageUploader.versions).to have_key(:thumb)
   end
-  describe '画像処理' do
+  describe '画像処理', skip: 'ImageMagickが必要なためCI環境ではスキップ' do
     let(:user) { create(:user) }
     let(:uploader) { ImageUploader.new(user, :avatar) }
     let(:sample_image) { File.open(Rails.root.join('spec/fixtures/files/sample_avatar.jpg')) }

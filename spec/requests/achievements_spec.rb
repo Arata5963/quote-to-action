@@ -34,12 +34,14 @@ RSpec.describe "Achievements", type: :request do
         post post_achievements_path(post_record)
 
         achievement = Achievement.last
-        expect(achievement.awarded_at).to eq(Date.current)
+        expect(achievement.achieved_at).to eq(Date.current)
       end
 
-      context "既に今日達成済みの場合" do
+      context "既に達成済みの場合" do
         before do
-          create(:achievement, user: user, post: post_record, awarded_at: Date.current)
+          # タスク型モデル：post.achieved_at を設定
+          post_record.update!(achieved_at: Time.current)
+          create(:achievement, user: user, post: post_record, achieved_at: Date.current)
         end
 
         it "達成記録を作成できない" do
@@ -53,7 +55,7 @@ RSpec.describe "Achievements", type: :request do
 
           expect(response).to redirect_to(post_path(post_record))
           follow_redirect!
-          expect(response.body).to include("すでに達成済み")
+          expect(response.body).to include("既に達成済みです")
         end
       end
     end
@@ -98,41 +100,26 @@ RSpec.describe "Achievements", type: :request do
     let(:user) { create(:user) }
     let!(:post_record) { create(:post, user: user) }
 
-    context "今日の達成記録がある場合" do
-      let!(:achievement) { create(:achievement, user: user, post: post_record, awarded_at: Date.current) }
+    context "達成記録がある場合" do
+      let!(:achievement) { create(:achievement, user: user, post: post_record, achieved_at: Date.current) }
 
       before do
         sign_in user
       end
 
-      it "達成記録を削除できる" do
+      # タスク型では達成の取り消しは不可
+      it "達成記録を削除できない（タスク型では取り消し不可）" do
         expect {
           delete post_achievement_path(post_record, achievement)
-        }.to change(Achievement, :count).by(-1)
+        }.not_to change(Achievement, :count)
       end
 
-      it "投稿詳細ページにリダイレクトされる" do
+      it "取り消し不可メッセージが表示される" do
         delete post_achievement_path(post_record, achievement)
 
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
-        expect(response.body).to include("達成")
-      end
-    end
-
-    context "今日の達成記録がない場合" do
-      let!(:achievement) { create(:achievement, user: user, post: post_record, awarded_at: 1.day.ago) }
-
-      before do
-        sign_in user
-      end
-
-      it "削除メッセージが表示される" do
-        delete post_achievement_path(post_record, achievement)
-
-        expect(response).to redirect_to(post_path(post_record))
-        follow_redirect!
-        expect(response.body).to include("取り消す達成記録が見つかりません")
+        expect(response.body).to include("達成記録は取り消せません")
       end
     end
 

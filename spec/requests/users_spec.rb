@@ -16,7 +16,7 @@ RSpec.describe 'Users', type: :request do
         get mypage_path
         expect(response.body).to include('マイページ')
         expect(response.body).to include('マイバッジ')
-        expect(response.body).to include('個人情報変更')
+        expect(response.body).to include('アカウント設定')
       end
     end
 
