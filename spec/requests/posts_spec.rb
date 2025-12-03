@@ -606,5 +606,28 @@ RSpec.describe "Posts", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).not_to include("Ruby")
     end
+
+    context "YouTube情報での検索" do
+      let!(:post_with_youtube) do
+        create(:post,
+               trigger_content: "学習",
+               youtube_title: "プログラミング入門講座",
+               youtube_channel_name: "Tech Channel")
+      end
+
+      it "YouTubeタイトルで検索できる" do
+        get autocomplete_posts_path, params: { q: "プログラミング" }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("プログラミング入門講座")
+      end
+
+      it "チャンネル名で検索できる" do
+        get autocomplete_posts_path, params: { q: "Tech" }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Tech Channel")
+      end
+    end
   end
 end

@@ -10,6 +10,9 @@ module Mvp
 
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # app/services をautoload対象に追加
+    config.autoload_paths << Rails.root.join("app/services")
+
     # 日本語をデフォルトロケールに設定
     config.i18n.default_locale = :ja
 
