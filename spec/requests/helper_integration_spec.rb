@@ -107,7 +107,7 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
         get post_path(post_with_1_achievement)
         expect(response).to have_http_status(:success)
         # 詳細ページの要素が表示される
-        expect(response.body).to include('響いたポイント')
+        expect(response.body).to include('アクションプラン')
       end
     end
   end

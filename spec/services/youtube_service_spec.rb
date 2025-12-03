@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe YoutubeService, type: :service do
+RSpec.describe YoutubeService, type: :service, youtube_api: true do
   describe '.fetch_video_info' do
     let(:video_id) { 'dQw4w9WgXcQ' }
     let(:youtube_url) { "https://www.youtube.com/watch?v=#{video_id}" }

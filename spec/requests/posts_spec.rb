@@ -59,7 +59,7 @@ RSpec.describe "Posts", type: :request do
 
         expect(response).to have_http_status(200)
         # 2ページ目には1件だけ表示される
-        expect(response.body.scan(/投稿\d+/).size).to eq(1)
+        expect(response.body.scan(/アクション\d+/).size).to eq(1)
       end
     end
 
