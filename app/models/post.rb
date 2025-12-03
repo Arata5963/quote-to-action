@@ -10,6 +10,8 @@ class Post < ApplicationRecord
 
   scope :recent, -> { order(created_at: :desc) }
 
+  before_save :fetch_youtube_info, if: :should_fetch_youtube_info?
+
   validates :trigger_content, presence: true, length: { minimum: 1, maximum: 100 }
   validates :action_plan, presence: true, length: { minimum: 1, maximum: 100 }
 
@@ -42,7 +44,7 @@ class Post < ApplicationRecord
   validates :category, presence: true
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[trigger_content action_plan created_at]
+    %w[trigger_content action_plan youtube_title youtube_channel_name created_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)
@@ -90,5 +92,23 @@ class Post < ApplicationRecord
   # 達成する
   def achieve!
     update!(achieved_at: Time.current) unless achieved?
+  end
+
+  private
+
+  # YouTube情報を取得すべきかどうか判定
+  def should_fetch_youtube_info?
+    return false if youtube_url.blank?
+
+    new_record? || youtube_url_changed?
+  end
+
+  # YouTube APIから動画情報を取得してセット
+  def fetch_youtube_info
+    info = YoutubeService.fetch_video_info(youtube_url)
+    return if info.nil?
+
+    self.youtube_title = info[:title]
+    self.youtube_channel_name = info[:channel_name]
   end
 end

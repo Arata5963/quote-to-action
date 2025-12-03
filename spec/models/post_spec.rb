@@ -155,4 +155,70 @@ RSpec.describe Post, type: :model do
       end
     end
   end
+
+  describe "YouTube情報自動取得" do
+    let(:user) { create(:user) }
+    let(:youtube_url) { 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+
+    before do
+      allow(YoutubeService).to receive(:fetch_video_info).and_return({
+        title: 'Test Video Title',
+        channel_name: 'Test Channel'
+      })
+    end
+
+    context "新規作成時" do
+      it "YouTube情報を自動取得する" do
+        post = create(:post, user: user, youtube_url: youtube_url)
+
+        expect(post.youtube_title).to eq('Test Video Title')
+        expect(post.youtube_channel_name).to eq('Test Channel')
+      end
+    end
+
+    context "更新時にyoutube_urlが変更された場合" do
+      let(:post) { create(:post, user: user, youtube_url: youtube_url) }
+
+      it "YouTube情報を再取得する" do
+        allow(YoutubeService).to receive(:fetch_video_info).and_return({
+          title: 'Updated Title',
+          channel_name: 'Updated Channel'
+        })
+
+        post.update(youtube_url: 'https://www.youtube.com/watch?v=abc123')
+
+        expect(post.youtube_title).to eq('Updated Title')
+        expect(post.youtube_channel_name).to eq('Updated Channel')
+      end
+    end
+
+    context "更新時にyoutube_urlが変更されない場合" do
+      it "YouTube情報を再取得しない" do
+        post = create(:post, user: user, youtube_url: youtube_url)
+        expect(post.youtube_title).to eq('Test Video Title')
+
+        # モックをクリアして、呼ばれないことを確認
+        expect(YoutubeService).not_to receive(:fetch_video_info)
+
+        post.update(trigger_content: '新しいきっかけ')
+
+        # 既存の値がそのまま保持される
+        expect(post.youtube_title).to eq('Test Video Title')
+      end
+    end
+
+    context "API取得に失敗した場合" do
+      before do
+        allow(YoutubeService).to receive(:fetch_video_info).and_return(nil)
+      end
+
+      it "投稿は保存される（YouTube情報はnil）" do
+        post = create(:post, user: user, youtube_url: youtube_url)
+
+        expect(post).to be_persisted
+        expect(post.youtube_title).to be_nil
+        expect(post.youtube_channel_name).to be_nil
+      end
+    end
+  end
 end

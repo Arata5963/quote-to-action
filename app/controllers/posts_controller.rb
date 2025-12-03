@@ -61,9 +61,12 @@ class PostsController < ApplicationController
 
     if query.length >= 2
       @suggestions = Post
-        .where("trigger_content ILIKE :q OR action_plan ILIKE :q", q: "%#{query}%")
+        .where(
+          "trigger_content ILIKE :q OR action_plan ILIKE :q OR youtube_title ILIKE :q OR youtube_channel_name ILIKE :q",
+          q: "%#{query}%"
+        )
         .limit(10)
-        .pluck(:trigger_content, :action_plan)
+        .pluck(:trigger_content, :action_plan, :youtube_title, :youtube_channel_name)
         .flatten
         .compact
         .uniq

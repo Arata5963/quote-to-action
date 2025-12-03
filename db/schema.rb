@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_11_30_122658) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_03_002944) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -55,6 +55,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_11_30_122658) do
     t.integer "category", default: 6, null: false
     t.string "youtube_url", null: false
     t.datetime "achieved_at"
+    t.string "youtube_title"
+    t.string "youtube_channel_name"
     t.index ["category"], name: "index_posts_on_category"
     t.index ["user_id"], name: "index_posts_on_user_id"
   end

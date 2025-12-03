@@ -75,6 +75,8 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 | id | bigint | PK | 主キー |
 | user_id | bigint | FK, NOT NULL | 投稿者 |
 | youtube_url | string | NOT NULL | YouTube動画URL |
+| youtube_title | string | | YouTube動画タイトル（API自動取得） |
+| youtube_channel_name | string | | YouTubeチャンネル名（API自動取得） |
 | trigger_content | text | NOT NULL | 響いたポイント（1-100文字） |
 | action_plan | text | NOT NULL | アクションプラン（1-100文字） |
 | category | integer | NOT NULL | カテゴリ（YouTube公式enum） |
@@ -325,6 +327,6 @@ docker compose exec -T db psql -U postgres action_spark_development < backup.sql
 
 ---
 
-*最終更新: 2025-12-02*
+*最終更新: 2025-12-03*
 
 *関連ドキュメント*: `01_architecture.md`, `06_security.md`
