@@ -42,7 +42,6 @@ ja:
         password_confirmation: "パスワード（確認用）"
         avatar: "プロフィール画像"
       post:
-        trigger_content: "響いたポイント"
         action_plan: "アクションプラン"
         user: "投稿者"
         category: "カテゴリ"
@@ -75,10 +74,6 @@ ja:
               confirmation: "が一致しません"
         post:
           attributes:
-            trigger_content:
-              blank: "きっかけの内容を入力してください"
-              too_short: "きっかけは%{count}文字以上で入力してください"
-              too_long: "きっかけは%{count}文字以内で入力してください"
             action_plan:
               blank: "アクションプランを入力してください"
               too_short: "アクションプランは%{count}文字以上で入力してください"

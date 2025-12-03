@@ -62,11 +62,11 @@ class PostsController < ApplicationController
     if query.length >= 2
       @suggestions = Post
         .where(
-          "trigger_content ILIKE :q OR action_plan ILIKE :q OR youtube_title ILIKE :q OR youtube_channel_name ILIKE :q",
+          "action_plan ILIKE :q OR youtube_title ILIKE :q OR youtube_channel_name ILIKE :q",
           q: "%#{query}%"
         )
         .limit(10)
-        .pluck(:trigger_content, :action_plan, :youtube_title, :youtube_channel_name)
+        .pluck(:action_plan, :youtube_title, :youtube_channel_name)
         .flatten
         .compact
         .uniq
@@ -95,7 +95,7 @@ class PostsController < ApplicationController
 
   def post_params
     params.require(:post).permit(
-      :trigger_content, :action_plan, :category, :youtube_url,
+      :action_plan, :category, :youtube_url,
       reminder_attributes: [ :id, :remind_time, :_destroy ]
     )
   end

@@ -2,11 +2,9 @@ require 'rails_helper'
 
 RSpec.describe Post, type: :model do
   describe "validations" do
-    it { should validate_presence_of(:trigger_content) }
     it { should validate_presence_of(:action_plan) }
     it { should validate_presence_of(:category) }
     it { should validate_presence_of(:youtube_url) }
-    it { should validate_length_of(:trigger_content).is_at_most(100) }
     it { should validate_length_of(:action_plan).is_at_most(100) }
 
     # YouTube URL検証
@@ -200,7 +198,7 @@ RSpec.describe Post, type: :model do
         # モックをクリアして、呼ばれないことを確認
         expect(YoutubeService).not_to receive(:fetch_video_info)
 
-        post.update(trigger_content: '新しいきっかけ')
+        post.update(action_plan: '新しいアクション')
 
         # 既存の値がそのまま保持される
         expect(post.youtube_title).to eq('Test Video Title')

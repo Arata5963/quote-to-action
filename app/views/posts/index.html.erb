@@ -70,9 +70,9 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                   </svg>
                 </div>
-                <%= f.search_field :trigger_content_or_action_plan_or_youtube_title_or_youtube_channel_name_cont,
+                <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
                       data: { autocomplete_target: "input" },
-                      placeholder: "例: Ruby, 勉強会, HikakinTV",
+                      placeholder: "例: 毎朝読書, HikakinTV",
                       class: "w-full rounded-xl border-gray-300 bg-white pl-10 pr-3 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:ring-primary" %>
                 <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
                     data-autocomplete-target="results"
@@ -160,9 +160,8 @@
                 </span>
               </div>
 
-              <%# タイトル & 要約 %>
-              <h3 class="mt-1 text-lg font-bold text-gray-900 line-clamp-2"><%= truncate(post.trigger_content, length: 56) %></h3>
-              <p class="mt-1 text-sm text-gray-600 line-clamp-3"><%= truncate(post.action_plan, length: 90) %></p>
+              <%# アクションプラン %>
+              <p class="mt-1 text-base font-medium text-gray-900 line-clamp-3"><%= truncate(post.action_plan, length: 90) %></p>
 
               <%# 指標 %>
               <div class="mt-4 flex items-center gap-4 text-sm text-gray-500">

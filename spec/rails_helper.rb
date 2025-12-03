@@ -54,6 +54,13 @@ RSpec.configure do |config|
       example.run
     end
   end
+
+  # YouTubeServiceをモック（YouTube情報取得テスト以外）
+  config.before(:each) do |example|
+    unless example.metadata[:youtube_api]
+      allow(YoutubeService).to receive(:fetch_video_info).and_return(nil)
+    end
+  end
 end
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are

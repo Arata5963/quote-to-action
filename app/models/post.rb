@@ -12,7 +12,6 @@ class Post < ApplicationRecord
 
   before_save :fetch_youtube_info, if: :should_fetch_youtube_info?
 
-  validates :trigger_content, presence: true, length: { minimum: 1, maximum: 100 }
   validates :action_plan, presence: true, length: { minimum: 1, maximum: 100 }
 
   # YouTube URL検証（必須）
@@ -44,7 +43,7 @@ class Post < ApplicationRecord
   validates :category, presence: true
 
   def self.ransackable_attributes(_auth_object = nil)
-    %w[trigger_content action_plan youtube_title youtube_channel_name created_at]
+    %w[action_plan youtube_title youtube_channel_name created_at]
   end
 
   def self.ransackable_associations(_auth_object = nil)

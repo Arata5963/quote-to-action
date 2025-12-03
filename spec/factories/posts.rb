@@ -3,7 +3,6 @@ FactoryBot.define do
   factory :post do
     # 必須項目
     association :user
-    trigger_content { Faker::Lorem.sentence(word_count: 10) }
     action_plan { Faker::Lorem.sentence(word_count: 10) }
     category { Post.categories.keys.sample }
     youtube_url { "https://www.youtube.com/watch?v=#{Faker::Alphanumeric.alphanumeric(number: 11)}" }
