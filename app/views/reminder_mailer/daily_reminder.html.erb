@@ -85,9 +85,7 @@
 
       <div class="post-card">
         <h2><%= t('reminder_mailer.daily_reminder.your_action') %></h2>
-        <p class="trigger-content"><%= @post.trigger_content %></p>
         <div class="action-plan">
-          <strong><%= t('activerecord.attributes.post.action_plan') %>:</strong><br>
           <%= @post.action_plan %>
         </div>
       </div>

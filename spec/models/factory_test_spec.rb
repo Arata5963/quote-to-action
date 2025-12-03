@@ -21,7 +21,6 @@ RSpec.describe "Factory の動作確認", type: :model do
       post = create(:post)
       expect(post).to be_persisted
       expect(post.user).to be_present
-      expect(post.trigger_content).to be_present
       expect(post.action_plan).to be_present
     end
   end

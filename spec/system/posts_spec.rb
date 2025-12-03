@@ -28,7 +28,6 @@ RSpec.describe "Posts", type: :system do
 
         # 3. フォームに入力
         fill_in "post_youtube_url", with: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        fill_in "post_trigger_content", with: "テストきっかけ"
         fill_in "post_action_plan", with: "テストアクション"
         choose "post_category_music"  # ラジオボタンで選択
 
@@ -39,7 +38,6 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_current_path(/\/posts\/\d+/)
 
         # 6. 投稿内容が表示される
-        expect(page).to have_content("テストきっかけ")
         expect(page).to have_content("テストアクション")
 
         # 7. 成功メッセージが表示される
@@ -73,20 +71,20 @@ RSpec.describe "Posts", type: :system do
   # 投稿一覧表示
   # ====================
   describe "投稿一覧" do
-    let!(:post1) { create(:post, trigger_content: "投稿1のきっかけ", created_at: 2.days.ago) }
-    let!(:post2) { create(:post, trigger_content: "投稿2のきっかけ", created_at: 1.day.ago) }
+    let!(:post1) { create(:post, action_plan: "投稿1のアクション", created_at: 2.days.ago) }
+    let!(:post2) { create(:post, action_plan: "投稿2のアクション", created_at: 1.day.ago) }
 
     it "投稿が新しい順に表示される" do
       # 1. トップページにアクセス
       visit root_path
 
       # 2. 両方の投稿が表示される
-      expect(page).to have_content("投稿1のきっかけ")
-      expect(page).to have_content("投稿2のきっかけ")
+      expect(page).to have_content("投稿1のアクション")
+      expect(page).to have_content("投稿2のアクション")
 
       # 3. 新しい順に並んでいる（投稿2が先）
-      post2_position = page.body.index("投稿2のきっかけ")
-      post1_position = page.body.index("投稿1のきっかけ")
+      post2_position = page.body.index("投稿2のアクション")
+      post1_position = page.body.index("投稿1のアクション")
       expect(post2_position).to be < post1_position
     end
   end
@@ -96,15 +94,14 @@ RSpec.describe "Posts", type: :system do
   # ====================
   describe "投稿詳細" do
     let(:user) { create(:user) }
-    let!(:post_record) { create(:post, user: user, trigger_content: "詳細テストきっかけ") }
+    let!(:post_record) { create(:post, user: user, action_plan: "詳細テストアクション") }
 
     it "投稿の詳細が表示される" do
       # 1. 投稿詳細ページにアクセス
       visit post_path(post_record)
 
       # 2. 投稿内容が表示される
-      expect(page).to have_content("詳細テストきっかけ")
-      expect(page).to have_content(post_record.action_plan)
+      expect(page).to have_content("詳細テストアクション")
     end
   end
 
@@ -113,7 +110,7 @@ RSpec.describe "Posts", type: :system do
   # ====================
   describe "投稿編集" do
     let(:user) { create(:user) }
-    let!(:post_record) { create(:post, user: user, trigger_content: "編集前のきっかけ") }
+    let!(:post_record) { create(:post, user: user, action_plan: "編集前のアクション") }
 
     context "投稿者本人の場合" do
       before do
@@ -131,7 +128,7 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content("投稿を編集")
 
         # 4. 内容を変更
-        fill_in "post_trigger_content", with: "編集後のきっかけ"
+        fill_in "post_action_plan", with: "編集後のアクション"
 
         # 5. 更新ボタンをクリック
         click_button "更新する"
@@ -140,7 +137,7 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_current_path(post_path(post_record))
 
         # 7. 更新された内容が表示される
-        expect(page).to have_content("編集後のきっかけ")
+        expect(page).to have_content("編集後のアクション")
 
         # 8. 成功メッセージが表示される
         expect(page).to have_content("きっかけが更新されました")
@@ -153,7 +150,7 @@ RSpec.describe "Posts", type: :system do
   # ====================
   describe "投稿削除" do
     let(:user) { create(:user) }
-    let!(:post_record) { create(:post, user: user, trigger_content: "削除するきっかけ") }
+    let!(:post_record) { create(:post, user: user, action_plan: "削除するアクション") }
 
     context "投稿者本人の場合" do
       before do
@@ -174,7 +171,7 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content("きっかけが削除されました")
 
         # 5. 投稿が表示されない
-        expect(page).not_to have_content("削除するきっかけ")
+        expect(page).not_to have_content("削除するアクション")
       end
     end
   end

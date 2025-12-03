@@ -5,8 +5,9 @@ RSpec.describe Post, type: :model do
   describe '.ransackable_attributes' do
     it '検索可能な属性のリストを返す' do
       attributes = Post.ransackable_attributes
-      expect(attributes).to include('trigger_content')
       expect(attributes).to include('action_plan')
+      expect(attributes).to include('youtube_title')
+      expect(attributes).to include('youtube_channel_name')
       expect(attributes).to include('created_at')
     end
 

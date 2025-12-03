@@ -1,5 +1,5 @@
 <%# app/views/posts/show.html.erb %>
-<% content_for :title, @post.trigger_content.truncate(30) %>
+<% content_for :title, @post.action_plan.truncate(30) %>
 
 <div class="min-h-screen bg-gray-50 py-8">
   <div class="max-w-2xl mx-auto px-4">
@@ -56,12 +56,6 @@
               <% end %>
             </div>
           <% end %>
-        </div>
-
-        <%# 響いたポイント %>
-        <div class="mb-6">
-          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">響いたポイント</h2>
-          <p class="text-lg text-gray-900 whitespace-pre-line"><%= @post.trigger_content %></p>
         </div>
 
         <%# アクションプラン %>

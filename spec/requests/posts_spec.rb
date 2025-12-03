@@ -15,26 +15,26 @@ RSpec.describe "Posts", type: :request do
 
     context "投稿の表示" do
       it "投稿が表示される" do
-        post1 = create(:post, trigger_content: "投稿1")
-        post2 = create(:post, trigger_content: "投稿2")
-        post3 = create(:post, trigger_content: "投稿3")
+        post1 = create(:post, action_plan: "アクション1")
+        post2 = create(:post, action_plan: "アクション2")
+        post3 = create(:post, action_plan: "アクション3")
 
         get posts_path
 
-        expect(response.body).to include("投稿1")
-        expect(response.body).to include("投稿2")
-        expect(response.body).to include("投稿3")
+        expect(response.body).to include("アクション1")
+        expect(response.body).to include("アクション2")
+        expect(response.body).to include("アクション3")
       end
 
       it "新しい順に表示される" do
-        old_post = create(:post, trigger_content: "古い投稿", created_at: 2.days.ago)
-        new_post = create(:post, trigger_content: "新しい投稿", created_at: 1.day.ago)
+        old_post = create(:post, action_plan: "古いアクション", created_at: 2.days.ago)
+        new_post = create(:post, action_plan: "新しいアクション", created_at: 1.day.ago)
 
         get posts_path
 
         # 新しい投稿が先に表示される（HTML内の出現順）
-        old_pos = response.body.index("古い投稿")
-        new_pos = response.body.index("新しい投稿")
+        old_pos = response.body.index("古いアクション")
+        new_pos = response.body.index("新しいアクション")
 
         expect(new_pos).to be < old_pos
       end
@@ -43,17 +43,17 @@ RSpec.describe "Posts", type: :request do
     context "ページネーション" do
       it "1ページ目に20件まで表示される" do
         # 21件の投稿を作成
-        21.times { |i| create(:post, trigger_content: "投稿#{i}") }
+        21.times { |i| create(:post, action_plan: "アクション#{i}") }
 
         get posts_path
 
         # 20件分表示される
-        expect(response.body.scan(/投稿\d+/).size).to eq(20)
+        expect(response.body.scan(/アクション\d+/).size).to eq(20)
       end
 
       it "2ページ目が存在する" do
         # 21件の投稿を作成
-        21.times { |i| create(:post, trigger_content: "投稿#{i}") }
+        21.times { |i| create(:post, action_plan: "アクション#{i}") }
 
         get posts_path, params: { page: 2 }
 
@@ -65,13 +65,13 @@ RSpec.describe "Posts", type: :request do
 
     context "カテゴリ絞り込み" do
       it "特定のカテゴリのみ表示される" do
-        music_post = create(:post, trigger_content: "音楽投稿", category: "music")
-        education_post = create(:post, trigger_content: "教育投稿", category: "education")
+        music_post = create(:post, action_plan: "音楽アクション", category: "music")
+        education_post = create(:post, action_plan: "教育アクション", category: "education")
 
         get posts_path, params: { category: "music" }
 
-        expect(response.body).to include("音楽投稿")
-        expect(response.body).not_to include("教育投稿")
+        expect(response.body).to include("音楽アクション")
+        expect(response.body).not_to include("教育アクション")
       end
     end
 
@@ -84,13 +84,13 @@ RSpec.describe "Posts", type: :request do
       end
 
       it "「自分」タブで自分の投稿のみ表示される" do
-        my_post = create(:post, user: user, trigger_content: "自分の投稿")
-        others_post = create(:post, user: other_user, trigger_content: "他人の投稿")
+        my_post = create(:post, user: user, action_plan: "自分のアクション")
+        others_post = create(:post, user: other_user, action_plan: "他人のアクション")
 
         get posts_path, params: { tab: "mine" }
 
-        expect(response.body).to include("自分の投稿")
-        expect(response.body).not_to include("他人の投稿")
+        expect(response.body).to include("自分のアクション")
+        expect(response.body).not_to include("他人のアクション")
       end
     end
   end
@@ -100,14 +100,14 @@ RSpec.describe "Posts", type: :request do
   # ====================
   describe "GET /posts/:id" do
     let(:user) { create(:user) }
-    let(:post_record) { create(:post, user: user, trigger_content: "テスト投稿") }
+    let(:post_record) { create(:post, user: user, action_plan: "テストアクション") }
 
     context "投稿が存在する場合" do
       it "投稿の詳細が表示される" do
         get post_path(post_record)
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("テスト投稿")
+        expect(response.body).to include("テストアクション")
       end
 
       it "コメントが表示される" do
@@ -185,7 +185,6 @@ RSpec.describe "Posts", type: :request do
           {
             post: {
               youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-              trigger_content: "新しいきっかけ",
               action_plan: "新しいアクションプラン",
               category: "music"
             }
@@ -203,8 +202,7 @@ RSpec.describe "Posts", type: :request do
 
           expect(response).to redirect_to(post_path(Post.last))
           follow_redirect!
-          # 実際のアプリのフラッシュメッセージに合わせる
-          expect(response.body).to include("きっかけ")
+          expect(response.body).to include("アクションプラン")
         end
 
         it "current_userの投稿として作成される" do
@@ -219,8 +217,7 @@ RSpec.describe "Posts", type: :request do
           {
             post: {
               youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-              trigger_content: "", # 必須項目が空
-              action_plan: "アクションプラン",
+              action_plan: "", # 必須項目が空
               category: "music"
             }
           }
@@ -236,14 +233,14 @@ RSpec.describe "Posts", type: :request do
           post posts_path, params: invalid_params
 
           expect(response).to have_http_status(:unprocessable_entity)
-          expect(response.body).to include("きっかけ")
+          expect(response.body).to include("アクションプラン")
         end
       end
     end
 
     context "ログインしていない場合" do
       it "ログインページにリダイレクトされる" do
-        post posts_path, params: { post: { trigger_content: "test", action_plan: "test" } }
+        post posts_path, params: { post: { action_plan: "test" } }
 
         expect(response).to redirect_to(new_user_session_path)
       end
@@ -300,7 +297,7 @@ RSpec.describe "Posts", type: :request do
   describe "PATCH /posts/:id" do
     let(:user) { create(:user) }
     let(:other_user) { create(:user) }
-    let(:post_record) { create(:post, user: user, trigger_content: "元のきっかけ") }
+    let(:post_record) { create(:post, user: user, action_plan: "元のアクション") }
 
     context "投稿者本人の場合" do
       before do
@@ -311,7 +308,6 @@ RSpec.describe "Posts", type: :request do
         let(:valid_params) do
           {
             post: {
-              trigger_content: "更新されたきっかけ",
               action_plan: "更新されたアクションプラン"
             }
           }
@@ -321,7 +317,7 @@ RSpec.describe "Posts", type: :request do
           patch post_path(post_record), params: valid_params
 
           post_record.reload
-          expect(post_record.trigger_content).to eq("更新されたきっかけ")
+          expect(post_record.action_plan).to eq("更新されたアクションプラン")
         end
 
         it "詳細ページにリダイレクトされる" do
@@ -329,8 +325,7 @@ RSpec.describe "Posts", type: :request do
 
           expect(response).to redirect_to(post_path(post_record))
           follow_redirect!
-          # 実際のアプリのフラッシュメッセージに合わせる
-          expect(response.body).to include("きっかけ")
+          expect(response.body).to include("アクションプラン")
         end
       end
 
@@ -338,8 +333,7 @@ RSpec.describe "Posts", type: :request do
         let(:invalid_params) do
           {
             post: {
-              trigger_content: "", # 必須項目を空に
-              action_plan: "アクションプラン"
+              action_plan: "" # 必須項目を空に
             }
           }
         end
@@ -348,7 +342,7 @@ RSpec.describe "Posts", type: :request do
           patch post_path(post_record), params: invalid_params
 
           post_record.reload
-          expect(post_record.trigger_content).to eq("元のきっかけ")
+          expect(post_record.action_plan).to eq("元のアクション")
         end
 
         it "編集フォームが再表示される" do
@@ -366,14 +360,14 @@ RSpec.describe "Posts", type: :request do
       end
 
       it "投稿を更新できない" do
-        patch post_path(post_record), params: { post: { trigger_content: "他人による更新" } }
+        patch post_path(post_record), params: { post: { action_plan: "他人による更新" } }
 
         post_record.reload
-        expect(post_record.trigger_content).to eq("元のきっかけ")
+        expect(post_record.action_plan).to eq("元のアクション")
       end
 
       it "詳細ページにリダイレクトされる" do
-        patch post_path(post_record), params: { post: { trigger_content: "他人による更新" } }
+        patch post_path(post_record), params: { post: { action_plan: "他人による更新" } }
 
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
@@ -383,7 +377,7 @@ RSpec.describe "Posts", type: :request do
 
     context "ログインしていない場合" do
       it "ログインページにリダイレクトされる" do
-        patch post_path(post_record), params: { post: { trigger_content: "更新" } }
+        patch post_path(post_record), params: { post: { action_plan: "更新" } }
 
         expect(response).to redirect_to(new_user_session_path)
       end
@@ -462,7 +456,6 @@ RSpec.describe "Posts", type: :request do
       let(:valid_params_with_reminder) do
         {
           post: {
-            trigger_content: "リマインダーテスト",
             action_plan: "毎日実行する",
             category: "education",
             youtube_url: "https://www.youtube.com/watch?v=test123",
@@ -488,7 +481,6 @@ RSpec.describe "Posts", type: :request do
       it "リマインダーなしでも投稿を作成できる" do
         params_without_reminder = {
           post: {
-            trigger_content: "リマインダーなし",
             action_plan: "アクション",
             category: "education",
             youtube_url: "https://www.youtube.com/watch?v=test456"
@@ -589,7 +581,7 @@ RSpec.describe "Posts", type: :request do
   # GET /posts/autocomplete (オートコンプリート)
   # ====================
   describe "GET /posts/autocomplete" do
-    let!(:post1) { create(:post, trigger_content: "Ruby入門") }
+    let!(:post1) { create(:post, action_plan: "Ruby入門") }
     let!(:post2) { create(:post, action_plan: "Rubyで自動化") }
 
     it "検索候補を返す" do
@@ -610,7 +602,7 @@ RSpec.describe "Posts", type: :request do
     context "YouTube情報での検索" do
       let!(:post_with_youtube) do
         create(:post,
-               trigger_content: "学習",
+               action_plan: "学習を続ける",
                youtube_title: "プログラミング入門講座",
                youtube_channel_name: "Tech Channel")
       end
