@@ -16,8 +16,9 @@
 |--------|------------------|
 | 新機能の実装 | `01_technical_design/01_architecture.md`, `01_technical_design/02_database.md` |
 | API実装 | `01_technical_design/03_api_design.md` |
-| 画面実装 | `01_technical_design/04_screen_flow.md` |
+| 画面実装 | `01_technical_design/04_screen_flow.md`, `02_design_system/` |
 | テスト作成 | `01_technical_design/08_test_strategy.md` |
+| スタイリング | `02_design_system/01_design_tokens.md`, `02_design_system/03_components.md` |
 | Devise関連 | `03_library_guides/01_devise.md` |
 | Hotwire実装 | `03_library_guides/02_hotwire.md` |
 | 検索機能 | `03_library_guides/03_ransack.md` |
@@ -43,6 +44,11 @@
 │   ├── 08_test_strategy.md                  # テスト戦略
 │   ├── 09_ci_cd.md                          # CI/CD
 │   └── 10_git_workflow.md                   # Gitワークフロー
+├── 02_design_system/
+│   ├── 01_design_tokens.md                  # カラー、余白、角丸、影
+│   ├── 02_design_principles.md              # デザイン原則、方針
+│   ├── 03_components.md                     # UIコンポーネント設計
+│   └── 04_layouts.md                        # レイアウトシステム
 ├── 03_library_guides/
 │   ├── 01_devise.md                         # Devise実装パターン
 │   ├── 02_hotwire.md                        # Hotwire実装パターン
@@ -129,6 +135,7 @@ docker compose exec web rails c
 ## 注意事項
 
 - 実装前に必ず関連ドキュメントを参照すること
+- スタイリングは`02_design_system/`のデザイントークン・コンポーネントに従うこと
 - Tailwind CSSのユーティリティクラスを使用すること
 - 新規機能は必ずテストを作成すること
 - セキュリティ関連の実装は`01_technical_design/06_security.md`を必ず参照
