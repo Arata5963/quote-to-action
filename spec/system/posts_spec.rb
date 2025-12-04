@@ -29,7 +29,7 @@ RSpec.describe "Posts", type: :system do
         # 3. フォームに入力
         fill_in "post_youtube_url", with: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         fill_in "post_action_plan", with: "テストアクション"
-        choose "post_category_music"  # ラジオボタンで選択
+        select "音楽", from: "post_category"  # プルダウンで選択
 
         # 4. 投稿ボタンをクリック
         click_button "投稿する"
