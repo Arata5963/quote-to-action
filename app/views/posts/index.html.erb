@@ -6,10 +6,7 @@
     <%# ===== Page Header ===== %>
     <header class="mb-8">
       <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">みんなの投稿</h1>
-          <p class="mt-2 text-gray-600">気づきから行動へ。今日も一歩、前へ。</p>
-        </div>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">みんなの投稿</h1>
         <% if user_signed_in? %>
           <%= link_to new_post_path,
               class: "hidden sm:inline-flex items-center gap-2 rounded-xl bg-primary text-white px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-primary-800 transition-colors" do %>
@@ -22,73 +19,82 @@
 
     <%# ===== Search / Filters Bar ===== %>
     <section class="mb-8">
-      <div class="rounded-2xl bg-white border border-gray-200 shadow-card">
-        <div class="px-5 py-4 border-b border-gray-100">
-          <p class="text-sm font-semibold text-gray-900">検索・フィルター</p>
-        </div>
-        <div class="p-5">
-          <%= search_form_for @q, url: posts_path, method: :get,
-                html: { id: 'search_form', class: "grid grid-cols-1 lg:grid-cols-12 gap-4 items-end" } do |f| %>
+      <div class="rounded-2xl bg-white border border-gray-200 shadow-card p-5">
+        <%= search_form_for @q, url: posts_path, method: :get,
+              html: { id: 'search_form', class: "grid grid-cols-1 lg:grid-cols-12 gap-4 items-end" } do |f| %>
 
-            <%# 表示タブ %>
-            <div class="lg:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">表示</label>
-              <%= select_tag :tab,
-                    options_for_select(
-                      [
-                        ['全体', ''],
-                        user_signed_in? ? ['自分の投稿', 'mine'] : nil
-                      ].compact,
-                      params[:tab]
-                    ),
-                    class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
-                    onchange: "document.getElementById('search_form').submit()" %>
-            </div>
+          <%# 表示タブ %>
+          <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">表示</label>
+            <%= select_tag :tab,
+                  options_for_select(
+                    [
+                      ['全体', ''],
+                      user_signed_in? ? ['自分の投稿', 'mine'] : nil
+                    ].compact,
+                    params[:tab]
+                  ),
+                  class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
+                  onchange: "document.getElementById('search_form').submit()" %>
+          </div>
 
-            <%# カテゴリ %>
-            <div class="lg:col-span-3">
-              <label class="block text-sm font-medium text-gray-700 mb-1">カテゴリ</label>
-              <%= select_tag :category,
-                    options_for_select(
-                      [['すべて', '']] + Post.categories.keys.map { |k| ["#{category_icon(k)} #{category_name_without_icon(k)}", k] },
-                      params[:category]
-                    ),
-                    class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
-                    onchange: "document.getElementById('search_form').submit()" %>
-            </div>
+          <%# カテゴリ %>
+          <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">カテゴリ</label>
+            <%= select_tag :category,
+                  options_for_select(
+                    [['すべて', '']] + Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
+                    params[:category]
+                  ),
+                  class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
+                  onchange: "document.getElementById('search_form').submit()" %>
+          </div>
 
-            <%# キーワード %>
-            <div class="lg:col-span-5">
-              <label class="block text-sm font-medium text-gray-700 mb-1">キーワード</label>
-              <div class="relative"
-                   data-controller="autocomplete"
-                   data-autocomplete-url-value="<%= autocomplete_posts_path %>"
-                   data-autocomplete-min-length-value="2"
-                   role="combobox">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
-                  <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                  </svg>
-                </div>
-                <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
-                      data: { autocomplete_target: "input" },
-                      placeholder: "例: 毎朝読書, HikakinTV",
-                      class: "w-full rounded-xl border-gray-300 bg-white pl-10 pr-3 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:ring-primary" %>
-                <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
-                    data-autocomplete-target="results"
-                    hidden></ul>
+          <%# 達成状況 %>
+          <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">達成状況</label>
+            <%= select_tag :achievement,
+                  options_for_select(
+                    [
+                      ['すべて', ''],
+                      ['達成済み', 'achieved'],
+                      ['未達成', 'not_achieved']
+                    ],
+                    params[:achievement]
+                  ),
+                  class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
+                  onchange: "document.getElementById('search_form').submit()" %>
+          </div>
+
+          <%# キーワード %>
+          <div class="lg:col-span-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">キーワード</label>
+            <div class="relative"
+                 data-controller="autocomplete"
+                 data-autocomplete-url-value="<%= autocomplete_posts_path %>"
+                 data-autocomplete-min-length-value="2"
+                 role="combobox">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
+                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
               </div>
+              <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
+                    data: { autocomplete_target: "input" },
+                    placeholder: "例: 毎朝読書, HikakinTV",
+                    class: "w-full rounded-xl border-gray-300 bg-white pl-10 pr-3 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:ring-primary" %>
+              <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
+                  data-autocomplete-target="results"
+                  hidden></ul>
             </div>
+          </div>
 
-            <%# ボタン %>
-            <div class="lg:col-span-2 flex gap-2">
-              <%= f.submit "検索",
-                    class: "inline-flex flex-1 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-800 transition-colors" %>
-              <%= link_to "クリア", posts_path,
-                    class: "inline-flex flex-1 items-center justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors" %>
-            </div>
-          <% end %>
-        </div>
+          <%# ボタン %>
+          <div class="lg:col-span-2">
+            <%= f.submit "検索",
+                  class: "w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-800 transition-colors" %>
+          </div>
+        <% end %>
       </div>
     </section>
 
@@ -104,7 +110,7 @@
           <% if params[:q].present? %>
             検索条件に一致する投稿が見つかりませんでした
           <% elsif params[:category].present? %>
-            <%= category_icon(params[:category]) %><%= category_name_without_icon(params[:category]) %> の投稿がまだありません
+            <%= category_name_without_icon(params[:category]) %> の投稿がまだありません
           <% elsif params[:tab] == 'mine' %>
             あなたの投稿がまだありません
           <% else %>
@@ -137,25 +143,9 @@
 
             <%# 本文 %>
             <div class="p-5 flex-1 flex flex-col">
-              <%# ユーザー / 作成日 %>
-              <div class="mb-3 flex items-center gap-3">
-                <% if post.user&.avatar&.present? %>
-                  <%= image_tag post.user.avatar.thumb.url, class: "h-8 w-8 rounded-full object-cover", alt: "プロフィール画像" %>
-                <% else %>
-                  <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                    <svg class="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                  </div>
-                <% end %>
-                <div>
-                  <p class="text-sm font-semibold text-gray-900"><%= post.user.email.split('@').first %></p>
-                  <p class="text-xs text-gray-500"><%= l(post.created_at, format: :short) %></p>
-                </div>
-              </div>
-
               <%# カテゴリバッジ %>
               <div class="mb-2">
-                <span class="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-                  <%= category_icon(post.category) %>
+                <span class="inline-flex items-center rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
                   <%= category_name_without_icon(post.category) %>
                 </span>
               </div>
