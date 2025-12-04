@@ -165,10 +165,6 @@
 
               <%# 指標 %>
               <div class="mt-4 flex items-center gap-4 text-sm text-gray-500">
-                <div class="flex items-center gap-1.5">
-                  <%= post_badge_tag(post, class: "h-5 w-5") %>
-                  <span class="font-medium"><%= post.achievements.count %></span>
-                </div>
                 <div id="like_button_<%= post.id %>">
                   <%= render 'likes/like_button', post: post %>
                 </div>
