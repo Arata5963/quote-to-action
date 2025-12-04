@@ -15,7 +15,7 @@ RSpec.describe 'Users', type: :request do
       it 'マイページの主要要素が表示される' do
         get mypage_path
         expect(response.body).to include('マイページ')
-        expect(response.body).to include('マイバッジ')
+        expect(response.body).to include('プロフィール編集')
         expect(response.body).to include('アカウント設定')
       end
     end

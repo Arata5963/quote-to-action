@@ -156,89 +156,40 @@ set_meta_tags(
       </h2>
       <div class="prose max-w-none">
         <p class="text-gray-700 leading-relaxed mb-6">
-          設定したアクションプランを実行したら、「達成する」ボタンを押して記録しましょう。
+          設定したアクションプランを実行したら、「達成する」ボタンを押して記録しましょう。1つの投稿につき1回達成を記録できます。
         </p>
 
         <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">達成記録の方法</h3>
         <ol class="list-decimal list-inside space-y-3 text-gray-700">
-          <li>投稿詳細ページまたは投稿一覧で「達成する」ボタンをクリック</li>
-          <li>1日1回まで達成記録が可能です（翌日になるとリセット）</li>
-          <li>達成回数に応じてアイコンが変化します</li>
-          <li>ランダムでバッジを獲得できます</li>
+          <li>投稿詳細ページで「達成する」ボタンをクリック</li>
+          <li>達成すると星アイコンが塗りつぶしに変化します</li>
+          <li>達成した投稿は「達成済み」として記録されます</li>
         </ol>
 
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">達成回数による変化</h3>
+        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">達成状態の表示</h3>
         <div class="space-y-4">
           <div class="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
             <span class="text-4xl">☆</span>
             <div>
-              <h4 class="font-bold text-gray-900 mb-1">0回：空の星</h4>
+              <h4 class="font-bold text-gray-900 mb-1">未達成：空の星</h4>
               <p class="text-gray-700 text-sm">まだ達成していない状態</p>
             </div>
           </div>
           <div class="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-            <span class="text-4xl">⭐</span>
+            <span class="text-4xl text-yellow-500">⭐</span>
             <div>
-              <h4 class="font-bold text-gray-900 mb-1">1回：塗りつぶし星</h4>
-              <p class="text-gray-700 text-sm">初めての達成！</p>
+              <h4 class="font-bold text-gray-900 mb-1">達成済み：塗りつぶし星</h4>
+              <p class="text-gray-700 text-sm">アクションプランを達成した状態</p>
             </div>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-            <span class="text-4xl">🔥</span>
-            <div>
-              <h4 class="font-bold text-gray-900 mb-1">2回：炎</h4>
-              <p class="text-gray-700 text-sm">継続の兆し</p>
-            </div>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-            <span class="text-4xl">🏆</span>
-            <div>
-              <h4 class="font-bold text-gray-900 mb-1">3回：トロフィー</h4>
-              <p class="text-gray-700 text-sm">習慣化の第一歩</p>
-            </div>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-            <span class="text-4xl">👑</span>
-            <div>
-              <h4 class="font-bold text-gray-900 mb-1">4回以上：王冠</h4>
-              <p class="text-gray-700 text-sm">継続達成者</p>
-            </div>
-          </div>
-        </div>
-
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">バッジ獲得</h3>
-        <p class="text-gray-700 leading-relaxed mb-4">
-          達成記録をすると、ランダムでバッジを獲得できます（1日1個まで）。獲得したバッジはマイページで確認できます。
-        </p>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div class="bg-gray-50 rounded-xl p-3 text-center">
-            <div class="text-3xl mb-2">📚</div>
-            <p class="text-sm font-bold text-gray-900">読書家</p>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3 text-center">
-            <div class="text-3xl mb-2">⭐</div>
-            <p class="text-sm font-bold text-gray-900">スター</p>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3 text-center">
-            <div class="text-3xl mb-2">🔥</div>
-            <p class="text-sm font-bold text-gray-900">情熱</p>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3 text-center">
-            <div class="text-3xl mb-2">💎</div>
-            <p class="text-sm font-bold text-gray-900">ダイヤモンド</p>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3 text-center">
-            <div class="text-3xl mb-2">🏆</div>
-            <p class="text-sm font-bold text-gray-900">達成者</p>
           </div>
         </div>
 
         <div class="bg-accent-50 border-l-4 border-accent p-4 my-6 rounded-r-xl">
           <h3 class="font-bold text-gray-900 mb-2">達成のポイント</h3>
           <ul class="list-disc list-inside text-gray-700 space-y-1">
-            <li>毎日の達成を習慣にしましょう</li>
-            <li>達成回数が増えるとモチベーションアップにつながります</li>
-            <li>1日1回制限なので、確実に実行できた日に記録しましょう</li>
+            <li>アクションプランを実行したら、忘れずに達成記録しましょう</li>
+            <li>達成した投稿が増えると、成長を実感できます</li>
+            <li>マイページで累計達成数を確認できます</li>
           </ul>
         </div>
       </div>
@@ -258,24 +209,16 @@ set_meta_tags(
         <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">確認できる情報</h3>
         <div class="space-y-4">
           <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">統計情報</h4>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 ml-4">
-              <li>総投稿数：これまでに投稿した「きっかけ」の数</li>
-              <li>総達成回数：累計の達成記録数</li>
-              <li>今日の達成回数：本日の達成記録数</li>
-            </ul>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">投稿一覧</h4>
+            <h4 class="font-bold text-gray-900 mb-2">自分の投稿</h4>
             <p class="text-gray-700">自分が投稿したきっかけとアクションプランを一覧で確認できます</p>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">獲得バッジ</h4>
-            <p class="text-gray-700">達成記録で獲得したバッジを確認できます（ハンバーガーメニュー内の「バッジ」からも確認可能）</p>
           </div>
           <div class="bg-gray-50 rounded-xl p-4">
             <h4 class="font-bold text-gray-900 mb-2">プロフィール編集</h4>
             <p class="text-gray-700">プロフィール画像を設定・変更できます</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4">
+            <h4 class="font-bold text-gray-900 mb-2">アカウント設定</h4>
+            <p class="text-gray-700">メールアドレスやパスワードを変更できます</p>
           </div>
         </div>
       </div>
