@@ -10,25 +10,8 @@ RSpec.describe User, type: :model do
   describe "associations" do
     it { should have_many(:posts).dependent(:destroy) }
     it { should have_many(:achievements).dependent(:destroy) }
-    it { should have_many(:user_badges).dependent(:destroy) }
     it { should have_many(:comments).dependent(:destroy) }
     it { should have_many(:likes).dependent(:destroy) }
-  end
-
-  describe "#available_badges_count" do
-    let(:user) { create(:user) }
-
-    it "初期値は BADGE_POOL.size と等しい" do
-      expect(user.available_badges_count).to eq(BADGE_POOL.size)
-    end
-
-    it "獲得が増えると残数が減る" do
-      user.user_badges.create!(
-        badge_key: BADGE_POOL.first[:key],
-        awarded_at: Time.current
-      )
-      expect(user.available_badges_count).to eq(BADGE_POOL.size - 1)
-    end
   end
 
   describe "dependent destroy (実データ確認)" do
@@ -36,8 +19,6 @@ RSpec.describe User, type: :model do
       user = create(:user)
       post = create(:post, user: user)
       create(:achievement, user: user, post: post, achieved_at: Date.current)
-      # ▼ Factoryなしで関連経由で作成
-      user.user_badges.create!(badge_key: BADGE_POOL.first[:key], awarded_at: Time.current)
       create(:comment, user: user, post: post)
       create(:like, user: user, post: post)
 
@@ -47,11 +28,10 @@ RSpec.describe User, type: :model do
         [
           Post.where(user_id: user.id).count,
           Achievement.where(user_id: user.id).count,
-          UserBadge.where(user_id: user.id).count,
           Comment.where(user_id: user.id).count,
           Like.where(user_id: user.id).count
         ]
-      }.from([ 1, 1, 1, 1, 1 ]).to([ 0, 0, 0, 0, 0 ])
+      }.from([ 1, 1, 1, 1 ]).to([ 0, 0, 0, 0 ])
     end
   end
   describe '.from_omniauth' do

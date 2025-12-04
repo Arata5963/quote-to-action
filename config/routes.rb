@@ -22,8 +22,6 @@ Rails.application.routes.draw do
   get :edit_profile, to: "users#edit"
   patch :update_profile, to: "users#update"
 
-  resources :user_badges, only: [ :index ], path: "badges"
-
   resources :posts do
     get :autocomplete, on: :collection
     resources :achievements, only: [ :create, :destroy ]

@@ -6,7 +6,6 @@ class User < ApplicationRecord
   has_many :posts, dependent: :destroy
   has_many :reminders, dependent: :destroy
   has_many :achievements, dependent: :destroy
-  has_many :user_badges, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :likes, dependent: :destroy
 
@@ -36,9 +35,5 @@ class User < ApplicationRecord
 
   def total_achievements_count
     achievements.count
-  end
-
-  def available_badges_count
-    BADGE_POOL.size - user_badges.count
   end
 end

@@ -188,7 +188,6 @@ RSpec.describe User, type: :model do
     before do
       post = create(:post, user: user)
       create(:achievement, user: user, post: post, achieved_at: Date.current)
-      user.user_badges.create!(badge_key: BADGE_POOL.first[:key], awarded_at: Time.current)
       create(:comment, user: user, post: post)
       create(:like, user: user, post: post)
     end
@@ -199,7 +198,6 @@ RSpec.describe User, type: :model do
       }.to change { User.count }.by(-1)
         .and change { Post.count }.by(-1)
         .and change { Achievement.count }.by(-1)
-        .and change { UserBadge.count }.by(-1)
         .and change { Comment.count }.by(-1)
         .and change { Like.count }.by(-1)
     end

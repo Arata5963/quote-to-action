@@ -9,32 +9,17 @@ class AchievementsController < ApplicationController
       return
     end
 
-    awarded_badge = nil
-
     ActiveRecord::Base.transaction do
       @post.achieve!
 
       # Achievement記録も残す（統計用）
-      @achievement = current_user.achievements.create!(
+      current_user.achievements.create!(
         post: @post,
         achieved_at: Date.current
       )
-
-      # バッジ獲得処理
-      badge_data = random_available_badge(current_user)
-      if badge_data
-        awarded_badge = current_user.user_badges.create!(
-          badge_key: badge_data[:key],
-          awarded_at: Time.current
-        )
-      end
     end
 
-    if awarded_badge
-      redirect_to @post, notice: "達成を記録しました！新しいバッジ「#{awarded_badge.badge_name}」を獲得しました！"
-    else
-      redirect_to @post, notice: t("achievements.create.success")
-    end
+    redirect_to @post, notice: t("achievements.create.success")
   rescue ActiveRecord::RecordInvalid => e
     redirect_to @post, alert: e.message
   end
