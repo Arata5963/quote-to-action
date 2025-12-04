@@ -58,26 +58,6 @@
         </div>
       <% end %>
 
-      <%# 自分の投稿カード %>
-      <%= link_to posts_path(tab: 'mine'), class: "group" do %>
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-card hover:shadow-card-hover transition-shadow p-6">
-          <div class="flex items-center gap-4">
-            <div class="w-14 h-14 bg-primary-50 rounded-xl flex items-center justify-center group-hover:bg-primary-100 transition-colors">
-              <svg class="w-7 h-7 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">自分の投稿</h3>
-              <p class="text-sm text-gray-500">投稿した内容を確認</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-            </svg>
-          </div>
-        </div>
-      <% end %>
-
     </div>
   </div>
 </div>

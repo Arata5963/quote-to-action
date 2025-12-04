@@ -31,8 +31,7 @@
 
         <%# ヘッダー：カテゴリ + アクション %>
         <div class="flex items-center justify-between mb-6">
-          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-sm font-medium">
-            <span class="text-lg"><%= category_icon(@post.category) %></span>
+          <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-gray-100 text-sm font-medium">
             <%= category_name_without_icon(@post.category) %>
           </span>
 
@@ -89,20 +88,6 @@
             </div>
           </div>
         <% end %>
-
-        <%# YouTube URL %>
-        <div class="mb-6">
-          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">YouTube動画</h2>
-          <%= link_to @post.youtube_url,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                class: "inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" do %>
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <span class="font-medium">YouTubeで見る</span>
-          <% end %>
-        </div>
 
         <%# 達成セクション %>
         <div class="pt-6 border-t border-gray-100">

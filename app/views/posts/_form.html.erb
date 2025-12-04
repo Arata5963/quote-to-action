@@ -68,9 +68,8 @@
           <% end %>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <% Post.categories.keys.each do |category_key| %>
-              <label class="relative flex items-center gap-2 p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-50">
+              <label class="relative flex items-center justify-center p-3 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary-50">
                 <%= form.radio_button :category, category_key, class: "sr-only" %>
-                <span class="text-xl"><%= category_icon(category_key) %></span>
                 <span class="text-sm font-medium text-gray-700"><%= category_name_without_icon(category_key) %></span>
               </label>
             <% end %>

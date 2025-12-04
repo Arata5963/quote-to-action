@@ -18,6 +18,14 @@ class PostsController < ApplicationController
       @posts = @posts.where(category: params[:category])
     end
 
+    # ===== 達成状況絞り込み =====
+    case params[:achievement]
+    when "achieved"
+      @posts = @posts.where.not(achieved_at: nil)
+    when "not_achieved"
+      @posts = @posts.where(achieved_at: nil)
+    end
+
     @posts = @posts.recent.page(params[:page]).per(20)
   end
 

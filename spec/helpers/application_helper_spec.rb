@@ -2,36 +2,6 @@
 require 'rails_helper'
 
 RSpec.describe ApplicationHelper, type: :helper do
-  describe '#category_icon' do
-    it 'music カテゴリのアイコンを返す' do
-      expect(helper.category_icon('music')).to eq('🎵')
-    end
-
-    it 'education カテゴリのアイコンを返す' do
-      expect(helper.category_icon('education')).to eq('📚')
-    end
-
-    it 'gaming カテゴリのアイコンを返す' do
-      expect(helper.category_icon('gaming')).to eq('🎮')
-    end
-
-    it 'sports カテゴリのアイコンを返す' do
-      expect(helper.category_icon('sports')).to eq('⚽')
-    end
-
-    it '存在しないカテゴリはデフォルトアイコンを返す' do
-      expect(helper.category_icon('invalid')).to eq('📁')
-    end
-
-    it 'nil入力でもデフォルトアイコンを返す（to_s安全）' do
-      expect(helper.category_icon(nil)).to eq('📁')
-    end
-
-    it 'シンボルでも正しく動作する' do
-      expect(helper.category_icon(:music)).to eq('🎵')
-    end
-  end
-
   describe '#category_name_without_icon' do
     it 'カテゴリ名を返す' do
       result = helper.category_name_without_icon('music')
