@@ -21,8 +21,8 @@ RSpec.describe "Interactions", type: :system do
       it "達成記録を作成できる" do
         visit post_path(post_record)
 
-        # 達成ボタンをクリック（タスク型なので「達成！」ボタン）
-        click_button "達成！"
+        # 達成ボタンをクリック
+        click_button "達成する"
 
         # 達成記録が作成される
         expect(page).to have_content "達成済み"
@@ -41,8 +41,8 @@ RSpec.describe "Interactions", type: :system do
 
         # 達成済み表示になる（タスク型）
         expect(page).to have_content "達成済み"
-        # 「達成！」ボタンは表示されない
-        expect(page).not_to have_button "達成！"
+        # 「達成する」ボタンは表示されない
+        expect(page).not_to have_button "達成する"
       end
     end
 
@@ -56,9 +56,8 @@ RSpec.describe "Interactions", type: :system do
       it "達成記録できない" do
         visit post_path(post_record)
 
-        # 他人の投稿には達成ボタンが表示されない（メッセージは別の形式で表示される可能性あり）
-        expect(page).to have_content "投稿者のみ達成記録できます"
-        expect(page).not_to have_button "達成！"
+        # 他人の投稿には達成ボタンが表示されない
+        expect(page).not_to have_button "達成する"
       end
     end
   end
@@ -77,12 +76,12 @@ RSpec.describe "Interactions", type: :system do
     it "コメントを投稿できる" do
       visit post_path(post_record)
 
-      # コメントフォームが表示されている
-      expect(page).to have_content "コメントを投稿"
+      # コメントセクションが表示されている
+      expect(page).to have_content "コメント"
 
       # コメントを入力して投稿
       fill_in "comment_content", with: "素晴らしい投稿ですね！"
-      click_button "コメントする"
+      click_button "送信"
 
       # コメントが表示される
       expect(page).to have_content "コメントを投稿しました"

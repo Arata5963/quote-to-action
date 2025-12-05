@@ -104,7 +104,7 @@ class PostsController < ApplicationController
   def post_params
     params.require(:post).permit(
       :action_plan, :category, :youtube_url,
-      reminder_attributes: [ :id, :remind_time, :_destroy ]
+      reminder_attributes: [ :id, :remind_at, :_destroy ]
     )
   end
 end

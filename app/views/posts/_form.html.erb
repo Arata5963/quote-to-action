@@ -83,8 +83,9 @@
           <%= form.fields_for :reminder, post.reminder || post.build_reminder do |reminder_form| %>
             <div class="flex items-center gap-4">
               <div class="flex-1">
-                <%= reminder_form.label :remind_time, t('reminders.time_label'), class: "sr-only" %>
-                <%= reminder_form.time_field :remind_time,
+                <%= reminder_form.label :remind_at, t('reminders.datetime_label'), class: "sr-only" %>
+                <%= reminder_form.datetime_local_field :remind_at,
+                      min: Time.current.strftime("%Y-%m-%dT%H:%M"),
                       class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary transition-colors",
                       placeholder: t('reminders.placeholder') %>
               </div>
