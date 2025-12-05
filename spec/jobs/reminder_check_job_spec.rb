@@ -16,42 +16,61 @@ RSpec.describe ReminderCheckJob, type: :job do
   describe "#perform" do
     context "when there are sendable reminders" do
       it "sends emails for matching reminders" do
-        # 現在時刻を固定してテスト
-        travel_to Time.zone.parse("08:00:30") do
-          post1 = create(:post, user: user, achieved_at: nil)
-          post2 = create(:post, user: user, achieved_at: nil)
-          create(:reminder, user: user, post: post1, remind_time: "08:00", create_post: false)
-          create(:reminder, user: user, post: post2, remind_time: "08:00", create_post: false)
+        # 未来の日時を基準にテスト
+        base_time = 1.day.from_now.change(hour: 8, min: 0, sec: 0)
+        post1 = create(:post, user: user, achieved_at: nil)
+        post2 = create(:post, user: user, achieved_at: nil)
+        create(:reminder, user: user, post: post1, remind_at: base_time, create_post: false)
+        create(:reminder, user: user, post: post2, remind_at: base_time, create_post: false)
 
+        travel_to base_time + 30.seconds do
           expect {
             described_class.perform_now
-          }.to have_enqueued_mail(ReminderMailer, :daily_reminder).twice
+          }.to change { ActionMailer::Base.deliveries.size }.by(0)
+            .and change { enqueued_jobs.count { |j| j[:job] == ActionMailer::MailDeliveryJob } }.by(2)
+        end
+      end
+
+      it "deletes reminders after sending" do
+        # 未来の日時を基準にテスト
+        base_time = 1.day.from_now.change(hour: 8, min: 0, sec: 0)
+        post1 = create(:post, user: user, achieved_at: nil)
+        create(:reminder, user: user, post: post1, remind_at: base_time, create_post: false)
+
+        travel_to base_time + 30.seconds do
+          expect {
+            described_class.perform_now
+          }.to change(Reminder, :count).by(-1)
         end
       end
     end
 
     context "when there are no sendable reminders" do
       it "does not send any emails" do
-        travel_to Time.zone.parse("08:00:30") do
-          post = create(:post, user: user, achieved_at: nil)
-          create(:reminder, user: user, post: post, remind_time: "23:59", create_post: false)
+        # 未来の日時を基準にテスト
+        base_time = 1.day.from_now.change(hour: 8, min: 0, sec: 0)
+        post = create(:post, user: user, achieved_at: nil)
+        create(:reminder, user: user, post: post, remind_at: base_time + 16.hours, create_post: false)
 
+        travel_to base_time + 30.seconds do
           expect {
             described_class.perform_now
-          }.not_to have_enqueued_mail(ReminderMailer, :daily_reminder)
+          }.not_to have_enqueued_mail(ReminderMailer, :reminder_notification)
         end
       end
     end
 
     context "when post is achieved" do
       it "does not send email for achieved posts" do
-        travel_to Time.zone.parse("08:00:30") do
-          achieved_post = create(:post, :achieved, user: user)
-          create(:reminder, user: user, post: achieved_post, remind_time: "08:00", create_post: false)
+        # 未来の日時を基準にテスト
+        base_time = 1.day.from_now.change(hour: 8, min: 0, sec: 0)
+        achieved_post = create(:post, :achieved, user: user)
+        create(:reminder, user: user, post: achieved_post, remind_at: base_time, create_post: false)
 
+        travel_to base_time + 30.seconds do
           expect {
             described_class.perform_now
-          }.not_to have_enqueued_mail(ReminderMailer, :daily_reminder)
+          }.not_to have_enqueued_mail(ReminderMailer, :reminder_notification)
         end
       end
     end

@@ -102,7 +102,7 @@
                 <span class="text-sm font-medium text-gray-700"><%= t('reminders.label') %></span>
                 <% if @post.reminder.present? %>
                   <p class="text-sm text-gray-600">
-                    毎日 <%= @post.reminder.remind_time.strftime("%H:%M") %> に通知
+                    <%= l(@post.reminder.remind_at, format: :default) %> に通知
                   </p>
                 <% else %>
                   <p class="text-sm text-gray-500"><%= t('reminders.disabled') %></p>

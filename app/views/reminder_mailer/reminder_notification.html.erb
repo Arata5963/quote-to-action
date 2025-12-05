@@ -73,34 +73,34 @@
   </head>
   <body>
     <div class="header">
-      <h1><%= t('reminder_mailer.daily_reminder.header') %></h1>
+      <h1><%= t('reminder_mailer.reminder_notification.header') %></h1>
     </div>
 
     <div class="content">
       <p class="greeting">
-        <%= t('reminder_mailer.daily_reminder.greeting') %>
+        <%= t('reminder_mailer.reminder_notification.greeting') %>
       </p>
 
-      <p><%= t('reminder_mailer.daily_reminder.intro') %></p>
+      <p><%= t('reminder_mailer.reminder_notification.intro') %></p>
 
       <div class="post-card">
-        <h2><%= t('reminder_mailer.daily_reminder.your_action') %></h2>
+        <h2><%= t('reminder_mailer.reminder_notification.your_action') %></h2>
         <div class="action-plan">
           <%= @post.action_plan %>
         </div>
       </div>
 
-      <p><%= t('reminder_mailer.daily_reminder.encouragement') %></p>
+      <p><%= t('reminder_mailer.reminder_notification.encouragement') %></p>
 
       <p style="text-align: center;">
         <a href="<%= post_url(@post) %>" class="cta-button">
-          <%= t('reminder_mailer.daily_reminder.view_post') %>
+          <%= t('reminder_mailer.reminder_notification.view_post') %>
         </a>
       </p>
     </div>
 
     <div class="footer">
-      <p><%= t('reminder_mailer.daily_reminder.footer') %></p>
+      <p><%= t('reminder_mailer.reminder_notification.footer') %></p>
       <p>&copy; ActionSpark</p>
     </div>
   </body>

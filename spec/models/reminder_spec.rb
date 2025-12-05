@@ -3,13 +3,15 @@
 require "rails_helper"
 
 RSpec.describe Reminder, type: :model do
+  include ActiveSupport::Testing::TimeHelpers
+
   describe "associations" do
     it { is_expected.to belong_to(:user) }
     it { is_expected.to belong_to(:post) }
   end
 
   describe "validations" do
-    it { is_expected.to validate_presence_of(:remind_time) }
+    it { is_expected.to validate_presence_of(:remind_at) }
 
     describe "post_id uniqueness" do
       let(:user) { create(:user) }
@@ -39,21 +41,49 @@ RSpec.describe Reminder, type: :model do
         expect(reminder.errors[:post]).to include("は自分の投稿のみ設定できます")
       end
     end
+
+    describe "remind_at_must_be_future validation" do
+      let(:user) { create(:user) }
+      let(:post) { create(:post, user: user) }
+
+      it "is valid when remind_at is in the future" do
+        reminder = build(:reminder, user: user, post: post, remind_at: 1.hour.from_now, create_post: false)
+        expect(reminder).to be_valid
+      end
+
+      it "is invalid when remind_at is in the past on create" do
+        reminder = build(:reminder, user: user, post: post, remind_at: 1.hour.ago, create_post: false)
+        expect(reminder).not_to be_valid
+        expect(reminder.errors[:remind_at]).to include("は現在より未来の日時を指定してください")
+      end
+
+      it "allows past remind_at on update" do
+        reminder = create(:reminder, user: user, post: post, remind_at: 1.hour.from_now, create_post: false)
+        travel_to 2.hours.from_now do
+          reminder.remind_at = 1.hour.ago
+          expect(reminder).to be_valid
+        end
+      end
+    end
   end
 
   describe "scopes" do
     let(:user) { create(:user) }
 
-    describe ".at_time" do
+    describe ".due_now" do
       let(:post1) { create(:post, user: user) }
       let(:post2) { create(:post, user: user) }
-      let!(:reminder_at_8) { create(:reminder, user: user, post: post1, remind_time: "08:00", create_post: false) }
-      let!(:reminder_at_9) { create(:reminder, user: user, post: post2, remind_time: "09:00", create_post: false) }
 
-      it "returns reminders at specified time" do
-        time = Time.zone.parse("08:00:30")
-        expect(Reminder.at_time(time)).to include(reminder_at_8)
-        expect(Reminder.at_time(time)).not_to include(reminder_at_9)
+      it "returns reminders due at the current minute" do
+        # 未来の日時を基準にテスト
+        base_time = 1.day.from_now.change(hour: 8, min: 0, sec: 0)
+        due_reminder = create(:reminder, user: user, post: post1, remind_at: base_time, create_post: false)
+        future_reminder = create(:reminder, user: user, post: post2, remind_at: base_time + 1.hour, create_post: false)
+
+        travel_to base_time + 30.seconds do
+          expect(Reminder.due_now).to include(due_reminder)
+          expect(Reminder.due_now).not_to include(future_reminder)
+        end
       end
     end
 
@@ -69,20 +99,24 @@ RSpec.describe Reminder, type: :model do
       end
     end
 
-    describe ".sendable_at" do
+    describe ".sendable" do
       let(:post1) { create(:post, user: user, achieved_at: nil) }
       let(:post2) { create(:post, :achieved, user: user) }
       let(:post3) { create(:post, user: user, achieved_at: nil) }
-      let!(:sendable) { create(:reminder, user: user, post: post1, remind_time: "08:00", create_post: false) }
-      let!(:achieved) { create(:reminder, user: user, post: post2, remind_time: "08:00", create_post: false) }
-      let!(:different_time) { create(:reminder, user: user, post: post3, remind_time: "09:00", create_post: false) }
 
-      it "returns sendable reminders at specified time" do
-        time = Time.zone.parse("08:00:30")
-        result = Reminder.sendable_at(time)
-        expect(result).to include(sendable)
-        expect(result).not_to include(achieved)
-        expect(result).not_to include(different_time)
+      it "returns sendable reminders due now" do
+        # 未来の日時を基準にテスト
+        base_time = 1.day.from_now.change(hour: 8, min: 0, sec: 0)
+        sendable = create(:reminder, user: user, post: post1, remind_at: base_time, create_post: false)
+        achieved = create(:reminder, user: user, post: post2, remind_at: base_time, create_post: false)
+        different_time = create(:reminder, user: user, post: post3, remind_at: base_time + 1.hour, create_post: false)
+
+        travel_to base_time + 30.seconds do
+          result = Reminder.sendable
+          expect(result).to include(sendable)
+          expect(result).not_to include(achieved)
+          expect(result).not_to include(different_time)
+        end
       end
     end
   end
