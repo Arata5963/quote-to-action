@@ -211,7 +211,7 @@ RSpec.describe Post, type: :model do
       end
 
       it "投稿は保存される（YouTube情報はnil）" do
-        post = create(:post, user: user, youtube_url: youtube_url)
+        post = create(:post, user: user, youtube_url: youtube_url, youtube_title: nil, youtube_channel_name: nil)
 
         expect(post).to be_persisted
         expect(post.youtube_title).to be_nil
