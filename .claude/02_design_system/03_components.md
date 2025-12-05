@@ -507,4 +507,68 @@ YouTube動画のサムネイルを大きく表示。
 
 ---
 
-*最終更新: 2025-12-04*
+## 実装時の注意事項
+
+### Railsフォームヘルパーとボタンスタイル
+
+**問題**: Railsの`f.submit`や`button_to`ヘルパーでTailwindクラスを指定しても、スタイルが正しく適用されないことがある。
+
+**原因**:
+- `f.submit`は`<input type="submit">`を生成し、一部のTailwindクラスが効かない
+- `button_to`はフォームを生成し、クラスの適用が期待通りにならないケースがある
+- ブラウザのデフォルトスタイルやCSSリセットが影響する場合がある
+
+**解決策**: 明示的な`<button>`タグを使用し、必要に応じてインラインスタイルを併用する。
+
+```erb
+<%# NG: f.submit を使用 %>
+<%= f.submit "送信", class: "bg-pink-400 text-white px-5 py-2.5 rounded-full" %>
+
+<%# OK: 明示的な <button> タグを使用 %>
+<button type="submit" class="bg-pink-400 text-white px-5 py-2.5 rounded-full">
+  送信
+</button>
+
+<%# 確実: インラインスタイルを併用 %>
+<button type="submit"
+        class="rounded-full text-sm font-medium"
+        style="background-color: #f472b6; color: white; padding: 10px 20px;">
+  送信
+</button>
+```
+
+### button_to の代替
+
+```erb
+<%# NG: button_to with block %>
+<%= button_to some_path, method: :post, class: "bg-gray-900 text-white" do %>
+  実行
+<% end %>
+
+<%# OK: form_with + button %>
+<%= form_with url: some_path, method: :post, local: true, class: "inline" do %>
+  <button type="submit"
+          class="inline-flex items-center gap-2 rounded-xl"
+          style="background-color: #111827; color: white; padding: 10px 24px;">
+    実行
+  </button>
+<% end %>
+```
+
+### 推奨カラーコード
+
+インラインスタイルで使用する場合の対応表:
+
+| Tailwindクラス | カラーコード |
+|---------------|-------------|
+| `bg-gray-900` | `#111827` |
+| `bg-gray-800` | `#1f2937` |
+| `bg-pink-400` | `#f472b6` |
+| `bg-pink-500` | `#ec4899` |
+| `bg-red-500` | `#ef4444` |
+| `bg-red-600` | `#dc2626` |
+| `text-white` | `#ffffff` |
+
+---
+
+*最終更新: 2025-12-05*

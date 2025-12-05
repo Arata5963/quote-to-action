@@ -1,7 +1,7 @@
 <%# app/views/posts/index.html.erb %>
 
 <div class="min-h-screen bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10">
 
     <%# ===== Page Header ===== %>
     <header class="mb-8">
@@ -9,7 +9,7 @@
         <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">みんなの投稿</h1>
         <% if user_signed_in? %>
           <%= link_to new_post_path,
-              class: "hidden sm:inline-flex items-center gap-2 rounded-xl bg-primary text-white px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-primary-800 transition-colors" do %>
+              class: "hidden sm:inline-flex items-center gap-2 rounded-xl bg-gray-900 text-white px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-gray-800 transition-colors" do %>
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             新規投稿
           <% end %>
@@ -19,13 +19,33 @@
 
     <%# ===== Search / Filters Bar ===== %>
     <section class="mb-8">
-      <div class="rounded-2xl bg-white border border-gray-200 shadow-card p-5">
+      <div class="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
         <%= search_form_for @q, url: posts_path, method: :get,
-              html: { id: 'search_form', class: "grid grid-cols-1 lg:grid-cols-12 gap-4 items-end" } do |f| %>
+              html: { id: 'search_form', class: "space-y-4" } do |f| %>
 
-          <%# 表示タブ %>
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">表示</label>
+          <%# キーワード検索（メイン） %>
+          <div class="relative"
+               data-controller="autocomplete"
+               data-autocomplete-url-value="<%= autocomplete_posts_path %>"
+               data-autocomplete-min-length-value="2"
+               role="combobox">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
+              <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+            <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
+                  data: { autocomplete_target: "input" },
+                  placeholder: "キーワードで検索...",
+                  class: "w-full rounded-xl border-gray-200 bg-gray-50 pl-12 pr-4 py-3 text-sm placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 focus:bg-white transition-all" %>
+            <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
+                data-autocomplete-target="results"
+                hidden></ul>
+          </div>
+
+          <%# フィルター（横並び） %>
+          <div class="flex flex-wrap gap-3">
+            <%# 表示タブ %>
             <%= select_tag :tab,
                   options_for_select(
                     [
@@ -34,65 +54,35 @@
                     ].compact,
                     params[:tab]
                   ),
-                  class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
+                  class: "rounded-lg border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 focus:border-gray-400 focus:ring-2 focus:ring-gray-200",
                   onchange: "document.getElementById('search_form').submit()" %>
-          </div>
 
-          <%# カテゴリ %>
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">カテゴリ</label>
+            <%# カテゴリ %>
             <%= select_tag :category,
                   options_for_select(
-                    [['すべて', '']] + Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
+                    [['カテゴリ', '']] + Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
                     params[:category]
                   ),
-                  class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
+                  class: "rounded-lg border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 focus:border-gray-400 focus:ring-2 focus:ring-gray-200",
                   onchange: "document.getElementById('search_form').submit()" %>
-          </div>
 
-          <%# 達成状況 %>
-          <div class="lg:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">達成状況</label>
+            <%# 達成状況 %>
             <%= select_tag :achievement,
                   options_for_select(
                     [
-                      ['すべて', ''],
+                      ['達成状況', ''],
                       ['達成済み', 'achieved'],
                       ['未達成', 'not_achieved']
                     ],
                     params[:achievement]
                   ),
-                  class: "w-full rounded-xl border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-primary focus:ring-primary",
+                  class: "rounded-lg border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 focus:border-gray-400 focus:ring-2 focus:ring-gray-200",
                   onchange: "document.getElementById('search_form').submit()" %>
-          </div>
 
-          <%# キーワード %>
-          <div class="lg:col-span-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">キーワード</label>
-            <div class="relative"
-                 data-controller="autocomplete"
-                 data-autocomplete-url-value="<%= autocomplete_posts_path %>"
-                 data-autocomplete-min-length-value="2"
-                 role="combobox">
-              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 z-10">
-                <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-              </div>
-              <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
-                    data: { autocomplete_target: "input" },
-                    placeholder: "例: 毎朝読書, HikakinTV",
-                    class: "w-full rounded-xl border-gray-300 bg-white pl-10 pr-3 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-primary focus:ring-primary" %>
-              <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
-                  data-autocomplete-target="results"
-                  hidden></ul>
-            </div>
-          </div>
-
-          <%# ボタン %>
-          <div class="lg:col-span-2">
-            <%= f.submit "検索",
-                  class: "w-full inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-800 transition-colors" %>
+            <%# 検索ボタン %>
+            <button type="submit" class="rounded-lg text-sm font-medium transition-colors" style="background-color: #111827; color: white; padding: 8px 16px;">
+              検索
+            </button>
           </div>
         <% end %>
       </div>
@@ -100,9 +90,9 @@
 
     <%# ===== Posts List ===== %>
     <% if @posts.empty? %>
-      <div class="rounded-2xl bg-white border border-gray-200 p-12 text-center shadow-card">
-        <div class="mx-auto h-14 w-14 rounded-full bg-accent-100 flex items-center justify-center">
-          <svg class="h-7 w-7 text-accent-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <div class="rounded-2xl bg-white border border-gray-100 p-12 text-center shadow-sm">
+        <div class="mx-auto h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
+          <svg class="h-7 w-7 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
@@ -120,57 +110,17 @@
         <% if user_signed_in? %>
           <p class="mt-1 text-sm text-gray-500">最初の一歩を記録しよう。</p>
           <%= link_to new_post_path,
-                class: "mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-800 transition-colors" do %>
+                class: "mt-6 inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors" do %>
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             投稿する
           <% end %>
         <% end %>
       </div>
     <% else %>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <%# 投稿リスト - シンプルな1カラム %>
+      <div class="space-y-4">
         <% @posts.each do |post| %>
-          <article class="flex flex-col rounded-2xl bg-white border border-gray-200 shadow-card hover:shadow-card-hover transition-shadow">
-            <%# YouTube埋め込み %>
-            <div class="aspect-video">
-              <iframe
-                src="<%= post.youtube_embed_url %>"
-                class="w-full h-full rounded-t-2xl"
-                loading="lazy"
-                allowfullscreen
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              ></iframe>
-            </div>
-
-            <%# 本文 %>
-            <div class="p-5 flex-1 flex flex-col">
-              <%# カテゴリバッジ %>
-              <div class="mb-2">
-                <span class="inline-flex items-center rounded-lg bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-                  <%= category_name_without_icon(post.category) %>
-                </span>
-              </div>
-
-              <%# アクションプラン %>
-              <p class="mt-1 text-base font-medium text-gray-900 line-clamp-3"><%= truncate(post.action_plan, length: 90) %></p>
-
-              <%# 指標 %>
-              <div class="mt-4 flex items-center gap-4 text-sm text-gray-500">
-                <div id="like_button_<%= post.id %>">
-                  <%= render 'likes/like_button', post: post %>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
-                  <span class="font-medium"><%= post.comments.count %></span>
-                </div>
-              </div>
-
-              <%# CTA %>
-              <div class="mt-5">
-                <%= link_to "詳細を見る", post_path(post),
-                      class: "inline-flex items-center justify-center w-full rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-800 transition-colors" %>
-              </div>
-            </div>
-          </article>
+          <%= render 'posts/post_card', post: post %>
         <% end %>
       </div>
 
@@ -186,7 +136,7 @@
 <% if user_signed_in? %>
   <div class="fixed bottom-6 right-6 z-50 sm:hidden">
     <%= link_to new_post_path,
-          class: "flex h-14 w-14 items-center justify-center rounded-full bg-accent text-primary shadow-lg hover:bg-accent-500 transition-colors" do %>
+          class: "flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg hover:bg-gray-800 transition-colors" do %>
       <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
     <% end %>
   </div>
