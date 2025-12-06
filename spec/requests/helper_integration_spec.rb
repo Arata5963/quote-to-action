@@ -43,7 +43,7 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
         expect(response.body).to include('og:title')
         expect(response.body).to include('og:description')
         expect(response.body).to include('og:image')
-        expect(response.body).to include('ActionSpark')
+        expect(response.body).to include('mitadake?')
       end
 
       it "投稿一覧ページにもOGPタグが含まれる" do
@@ -52,7 +52,7 @@ RSpec.describe "Helper Integration (カバレッジ向上)", type: :request do
         expect(response).to have_http_status(:success)
 
         expect(response.body).to include('og:title')
-        expect(response.body).to include('ActionSpark')
+        expect(response.body).to include('mitadake?')
       end
     end
   end

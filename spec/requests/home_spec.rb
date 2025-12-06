@@ -9,7 +9,7 @@ RSpec.describe 'Home', type: :request do
 
     it 'タイトルが含まれる' do
       get home_path
-      expect(response.body).to include('ActionSpark')
+      expect(response.body).to include('mitadake?')
     end
   end
 end
