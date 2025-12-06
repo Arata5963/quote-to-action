@@ -8,12 +8,12 @@ module ApplicationHelper
   # ★★★ OGP・メタタグのデフォルト設定（ここから追加） ★★★
   def default_meta_tags
     {
-      site: "ActionSpark",
-      title: "きっかけを行動に変える",
+      site: "mitadake?",
+      title: "見て終わり→やってみる",
       reverse: true,
       charset: "utf-8",
-      description: "日常で得た「きっかけ」を記録し、具体的な行動に変換。小さな一歩から始める成長アプリ。",
-      keywords: "きっかけ,行動,習慣,成長,目標達成,自己改善",
+      description: "YouTube動画から得た学びを具体的なアクションに変換。見て終わりを、やってみるに変える。",
+      keywords: "YouTube,学習,行動,習慣,目標達成,自己改善,アクションプラン",
       canonical: request.original_url,
       separator: "|",
       icon: [
@@ -23,7 +23,7 @@ module ApplicationHelper
         { href: "/favicon-16x16.png", rel: "icon", sizes: "16x16", type: "image/png" }
       ],
       og: {
-        site_name: "ActionSpark",
+        site_name: "mitadake?",
         title: :title,
         description: :description,
         type: "website",

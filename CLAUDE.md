@@ -1,10 +1,10 @@
-# ActionSpark - Claude Code 開発ガイド
+# mitadake? - Claude Code 開発ガイド
 
 このファイルはClaude Codeがプロジェクト全体を理解し、一貫性のある開発を行うための統括ドキュメントです。
 
 ## プロジェクト概要
 
-- **プロジェクト名**: ActionSpark（アクションスパーク）
+- **プロジェクト名**: mitadake?（みただけ？）
 - **概要**: YouTube動画から学びを行動に変えるプラットフォーム
 - **技術スタック**: Ruby on Rails 7.2.2 / PostgreSQL / Hotwire / Tailwind CSS
 

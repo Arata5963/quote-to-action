@@ -155,7 +155,7 @@ RSpec.describe "Posts", type: :request do
         get new_post_path
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("きっかけ")
+        expect(response.body).to include("YouTube")
         expect(response.body).to include("アクションプラン")
       end
     end

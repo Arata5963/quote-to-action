@@ -184,11 +184,11 @@ ja:
   # ReminderMailer関連
   reminder_mailer:
     reminder_notification:
-      subject: "【ActionSpark】アクションリマインダー"
-      header: "ActionSpark リマインダー"
+      subject: "【mitadake?】アクションリマインダー"
+      header: "mitadake? リマインダー"
       greeting: "こんにちは！"
       intro: "設定したリマインダーの時間になりました。あなたのアクションプランを確認してください。"
       your_action: "あなたのアクションプラン"
       encouragement: "小さな一歩が大きな変化につながります。今日もがんばりましょう！"
       view_post: "投稿を確認する"
-      footer: "このメールはActionSparkのリマインダー機能により送信されました。"
+      footer: "このメールはmitadake?のリマインダー機能により送信されました。"

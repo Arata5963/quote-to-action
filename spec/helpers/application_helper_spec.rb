@@ -28,20 +28,20 @@ RSpec.describe ApplicationHelper, type: :helper do
     let(:meta) { helper.default_meta_tags }
 
     it 'サイト名を返す' do
-      expect(meta[:site]).to eq('ActionSpark')
+      expect(meta[:site]).to eq('mitadake?')
     end
 
     it 'タイトルを返す' do
-      expect(meta[:title]).to eq('きっかけを行動に変える')
+      expect(meta[:title]).to eq('見て終わり→やってみる')
     end
 
     it 'ディスクリプションを返す' do
-      expect(meta[:description]).to include('きっかけ')
-      expect(meta[:description]).to include('行動')
+      expect(meta[:description]).to include('YouTube')
+      expect(meta[:description]).to include('アクション')
     end
 
     it 'キーワードを返す' do
-      expect(meta[:keywords]).to include('きっかけ')
+      expect(meta[:keywords]).to include('YouTube')
     end
 
     it 'canonical URL を返す' do
@@ -50,7 +50,7 @@ RSpec.describe ApplicationHelper, type: :helper do
 
     it 'OG タグを含む（URL/画像/型）' do
       expect(meta[:og]).to be_a(Hash)
-      expect(meta[:og][:site_name]).to eq('ActionSpark')
+      expect(meta[:og][:site_name]).to eq('mitadake?')
       expect(meta[:og][:type]).to eq('website')
       expect(meta[:og][:url]).to eq('http://example.com/test')
       expect(meta[:og][:image]).to eq('http://example.com/ogp-image.svg')
