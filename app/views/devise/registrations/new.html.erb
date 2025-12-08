@@ -1,30 +1,26 @@
 <%# app/views/devise/registrations/new.html.erb %>
 <% content_for :title, "新規登録" %>
 
-<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
+<div class="min-h-screen flex items-center justify-center py-12 px-4">
   <div class="max-w-md w-full">
 
     <%# ロゴ %>
     <div class="text-center mb-8">
       <%= link_to root_path, class: "inline-flex items-center gap-2" do %>
-        <div class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
-          <svg class="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
-          </svg>
-        </div>
-        <span class="text-2xl font-bold text-gray-900">mitadake?</span>
+        <%= image_tag "/favicon-32x32.png", alt: "mitadake?", class: "w-10 h-10 rounded-xl" %>
+        <span class="text-2xl font-bold text-primary">mitadake?</span>
       <% end %>
     </div>
 
     <%# カード %>
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-card p-8">
-      <h2 class="text-2xl font-bold text-gray-900 text-center mb-6">新規登録</h2>
+    <div class="bg-white rounded-2xl border border-accent/20 shadow-sm p-8">
+      <h2 class="text-2xl font-bold text-primary text-center mb-6">新規登録</h2>
 
       <%# Googleログイン %>
       <%= button_to user_google_oauth2_omniauth_authorize_path,
                     method: :post,
                     data: { turbo: false },
-                    class: "w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors mb-6" do %>
+                    class: "w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-accent/30 bg-white text-primary/80 font-medium hover:bg-accent/10 transition-colors mb-6" do %>
         <svg class="h-5 w-5" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -37,10 +33,10 @@
       <%# 区切り線 %>
       <div class="relative mb-6">
         <div class="absolute inset-0 flex items-center">
-          <div class="w-full border-t border-gray-200"></div>
+          <div class="w-full border-t border-accent/20"></div>
         </div>
         <div class="relative flex justify-center text-sm">
-          <span class="px-3 bg-white text-gray-500">または</span>
+          <span class="px-3 bg-white text-primary/60">または</span>
         </div>
       </div>
 
@@ -51,41 +47,48 @@
         <%= render "devise/shared/error_messages", resource: resource %>
 
         <div>
-          <%= f.label :email, "メールアドレス", class: "block text-sm font-medium text-gray-700 mb-1" %>
-          <%= f.email_field :email, autofocus: true, autocomplete: "email",
-                placeholder: "mail@example.com",
-                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+          <%= f.label :name, "ユーザー名", class: "block text-sm font-medium text-primary mb-1" %>
+          <%= f.text_field :name, autocomplete: "name",
+                placeholder: "ユーザー名を入力",
+                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
         <div>
-          <%= f.label :password, "パスワード", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.label :email, "メールアドレス", class: "block text-sm font-medium text-primary mb-1" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email",
+                placeholder: "mail@example.com",
+                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
+        </div>
+
+        <div>
+          <%= f.label :password, "パスワード", class: "block text-sm font-medium text-primary mb-1" %>
           <%= f.password_field :password, autocomplete: "new-password",
                 placeholder: "パスワードを入力",
-                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
           <% if @minimum_password_length %>
-            <p class="text-xs text-gray-500 mt-1"><%= @minimum_password_length %>文字以上で入力してください</p>
+            <p class="text-xs text-primary/60 mt-1"><%= @minimum_password_length %>文字以上で入力してください</p>
           <% end %>
         </div>
 
         <div>
-          <%= f.label :password_confirmation, "パスワード（確認用）", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.label :password_confirmation, "パスワード（確認用）", class: "block text-sm font-medium text-primary mb-1" %>
           <%= f.password_field :password_confirmation, autocomplete: "new-password",
                 placeholder: "パスワードを再入力",
-                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
         <div class="pt-2">
           <%= f.submit "登録する",
-                class: "w-full bg-primary text-white py-3 px-4 rounded-xl font-semibold hover:bg-primary-800 transition-colors cursor-pointer" %>
+                class: "w-full bg-accent text-white py-3 px-4 rounded-xl font-semibold hover:bg-accent/90 transition-colors cursor-pointer" %>
         </div>
       <% end %>
     </div>
 
     <%# ログインリンク %>
-    <p class="mt-6 text-center text-sm text-gray-600">
+    <p class="mt-6 text-center text-sm text-primary/80">
       アカウントをお持ちの方は
       <%= link_to "ログイン", new_session_path(resource_name),
-            class: "font-semibold text-primary hover:text-primary-700 transition-colors" %>
+            class: "font-semibold text-accent hover:text-accent/80 transition-colors" %>
     </p>
   </div>
 </div>

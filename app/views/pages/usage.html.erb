@@ -6,12 +6,12 @@ set_meta_tags(
 )
 %>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen">
   <%# ヘッダー %>
-  <div class="bg-primary text-white py-16">
+  <div class="bg-accent text-white py-16">
     <div class="max-w-4xl mx-auto px-4 text-center">
       <h1 class="text-4xl md:text-5xl font-bold mb-4">使い方ガイド</h1>
-      <p class="text-lg text-gray-300">
+      <p class="text-lg text-white/80">
         mitadake?の基本的な使い方をステップバイステップでご紹介します
       </p>
     </div>
@@ -21,50 +21,50 @@ set_meta_tags(
   <div class="max-w-4xl mx-auto px-4 py-12">
 
     <%# 目次 %>
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 mb-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">目次</h2>
+    <div class="bg-white rounded-2xl border border-accent/20 shadow-sm p-6 mb-8">
+      <h2 class="text-2xl font-bold text-primary mb-4">目次</h2>
       <nav class="space-y-2">
-        <a href="#login" class="block text-primary hover:text-primary-700 hover:underline transition">
+        <a href="#login" class="block text-accent hover:text-accent/80 hover:underline transition">
           1. ログイン
         </a>
-        <a href="#post-list" class="block text-primary hover:text-primary-700 hover:underline transition">
+        <a href="#post-list" class="block text-accent hover:text-accent/80 hover:underline transition">
           2. 投稿一覧
         </a>
-        <a href="#post" class="block text-primary hover:text-primary-700 hover:underline transition">
-          3. きっかけ投稿
+        <a href="#post" class="block text-accent hover:text-accent/80 hover:underline transition">
+          3. 新規投稿
         </a>
-        <a href="#achievement" class="block text-primary hover:text-primary-700 hover:underline transition">
+        <a href="#achievement" class="block text-accent hover:text-accent/80 hover:underline transition">
           4. 達成記録
         </a>
-        <a href="#mypage" class="block text-primary hover:text-primary-700 hover:underline transition">
+        <a href="#mypage" class="block text-accent hover:text-accent/80 hover:underline transition">
           5. マイページ
         </a>
-        <a href="#interaction" class="block text-primary hover:text-primary-700 hover:underline transition">
+        <a href="#interaction" class="block text-accent hover:text-accent/80 hover:underline transition">
           6. コメント・いいね
         </a>
       </nav>
     </div>
 
     <%# 1. ログイン %>
-    <section id="login" class="bg-white rounded-2xl border border-gray-200 shadow-card p-8 mb-8 scroll-mt-20">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
-        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold">1</span>
+    <section id="login" class="bg-white rounded-2xl border border-accent/20 shadow-sm p-8 mb-8 scroll-mt-20">
+      <h2 class="text-2xl font-bold text-primary mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
+        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white font-bold">1</span>
         ログイン
       </h2>
       <div class="prose max-w-none">
-        <p class="text-gray-700 leading-relaxed mb-6">
+        <p class="text-primary/80 leading-relaxed mb-6">
           ヘッダーのハンバーガーメニューから「ログイン」をクリックするとログイン画面に遷移します。新規登録していない場合は、「新規登録」から行ってください。また、Googleログインも利用可能です。パスワードを忘れた場合は、パスワードリセットができます。
         </p>
 
         <%# スクリーンショット %>
-        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+        <div class="bg-cream rounded-xl p-4 border border-accent/20">
           <%= image_tag "usage_login.png", alt: "ログイン画面", class: "w-full rounded-lg shadow-sm" %>
         </div>
 
         <%# ポイント %>
-        <div class="bg-accent-50 border-l-4 border-accent p-4 my-6 rounded-r-xl">
-          <h3 class="font-bold text-gray-900 mb-2">ポイント</h3>
-          <ul class="list-disc list-inside text-gray-700 space-y-1">
+        <div class="bg-accent/10 border-l-4 border-accent p-4 my-6 rounded-r-xl">
+          <h3 class="font-bold text-primary mb-2">ポイント</h3>
+          <ul class="list-disc list-inside text-primary/80 space-y-1">
             <li>Googleログインを使えば、パスワード管理が不要で簡単にログインできます</li>
             <li>「ログイン状態を保持する」にチェックを入れると、次回から自動ログイン可能です</li>
           </ul>
@@ -73,73 +73,69 @@ set_meta_tags(
     </section>
 
     <%# 2. 投稿一覧 %>
-    <section id="post-list" class="bg-white rounded-2xl border border-gray-200 shadow-card p-8 mb-8 scroll-mt-20">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
-        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold">2</span>
+    <section id="post-list" class="bg-white rounded-2xl border border-accent/20 shadow-sm p-8 mb-8 scroll-mt-20">
+      <h2 class="text-2xl font-bold text-primary mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
+        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white font-bold">2</span>
         投稿一覧
       </h2>
       <div class="prose max-w-none">
-        <p class="text-gray-700 leading-relaxed mb-6">
-          ログイン後、投稿一覧ページが表示されます。ここでは全ユーザーの「きっかけ」と「アクションプラン」を確認できます。
+        <p class="text-primary/80 leading-relaxed mb-6">
+          ログイン後、投稿一覧ページが表示されます。ここでは全ユーザーの投稿とアクションプランを確認できます。
         </p>
 
         <%# スクリーンショット %>
-        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-6">
+        <div class="bg-cream rounded-xl p-4 border border-accent/20 mb-6">
           <%= image_tag "usage_posts.png", alt: "投稿一覧画面", class: "w-full rounded-lg shadow-sm" %>
         </div>
 
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">主な機能</h3>
+        <h3 class="text-xl font-bold text-primary mb-4 mt-8">主な機能</h3>
         <div class="space-y-4">
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">タブ切り替え</h4>
-            <p class="text-gray-700">「全体」と「自分の投稿」を切り替えて表示できます</p>
+          <div class="bg-cream rounded-xl p-4">
+            <h4 class="font-bold text-primary mb-2">タブ切り替え</h4>
+            <p class="text-primary/80">「全体」と「自分の投稿」を切り替えて表示できます</p>
           </div>
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">検索機能</h4>
-            <p class="text-gray-700">きっかけやアクションプランの内容で検索できます</p>
+          <div class="bg-cream rounded-xl p-4">
+            <h4 class="font-bold text-primary mb-2">検索機能</h4>
+            <p class="text-primary/80">動画タイトルやアクションプランの内容で検索できます</p>
           </div>
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">カテゴリ絞り込み</h4>
-            <p class="text-gray-700">テキスト・映像・音声・対話・体験・日常・その他のカテゴリ別に絞り込めます</p>
+          <div class="bg-cream rounded-xl p-4">
+            <h4 class="font-bold text-primary mb-2">カテゴリ絞り込み</h4>
+            <p class="text-primary/80">テキスト・映像・音声・対話・体験・日常・その他のカテゴリ別に絞り込めます</p>
           </div>
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">コメント・いいね</h4>
-            <p class="text-gray-700">他のユーザーの投稿にコメントやいいねができます</p>
+          <div class="bg-cream rounded-xl p-4">
+            <h4 class="font-bold text-primary mb-2">コメント・いいね</h4>
+            <p class="text-primary/80">他のユーザーの投稿にコメントやいいねができます</p>
           </div>
         </div>
       </div>
     </section>
 
-    <%# 3. きっかけ投稿 %>
-    <section id="post" class="bg-white rounded-2xl border border-gray-200 shadow-card p-8 mb-8 scroll-mt-20">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
-        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold">3</span>
-        きっかけ投稿
+    <%# 3. 新規投稿 %>
+    <section id="post" class="bg-white rounded-2xl border border-accent/20 shadow-sm p-8 mb-8 scroll-mt-20">
+      <h2 class="text-2xl font-bold text-primary mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
+        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white font-bold">3</span>
+        新規投稿
       </h2>
       <div class="prose max-w-none">
-        <p class="text-gray-700 leading-relaxed mb-6">
-          日常で得た「きっかけ」と、それを実践する「アクションプラン」を投稿します。
+        <p class="text-primary/80 leading-relaxed mb-6">
+          YouTube動画から学んだことを「アクションプラン」として投稿します。
         </p>
 
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">投稿の手順</h3>
-        <ol class="list-decimal list-inside space-y-3 text-gray-700">
-          <li>ハンバーガーメニューから「新規投稿」をクリック</li>
-          <li>「きっかけ」の内容を入力（1〜100文字）<br>
-              <span class="text-sm text-gray-500">例：「本で読んだ『小さな一歩が大きな変化を生む』という言葉」</span>
-          </li>
+        <h3 class="text-xl font-bold text-primary mb-4 mt-8">投稿の手順</h3>
+        <ol class="list-decimal list-inside space-y-3 text-primary/80">
+          <li>ボトムナビの「投稿」をタップ</li>
+          <li>学びを得たYouTube動画のURLを入力</li>
           <li>「アクションプラン」を入力（1〜100文字）<br>
-              <span class="text-sm text-gray-500">例：「毎日階段を使う」</span>
+              <span class="text-sm text-primary/60">例：「毎日階段を使う」「週1回散歩する」</span>
           </li>
-          <li>カテゴリを選択<br>
-              <span class="text-sm text-gray-500">テキスト / 映像 / 音声 / 対話 / 体験 / 日常 / その他</span>
-          </li>
-          <li>必要に応じて画像を添付（オプション）</li>
-          <li>「投稿」ボタンをクリック</li>
+          <li>カテゴリを選択</li>
+          <li>必要に応じてリマインダーを設定</li>
+          <li>「投稿する」ボタンをクリック</li>
         </ol>
 
-        <div class="bg-primary-50 border-l-4 border-primary p-4 my-6 rounded-r-xl">
-          <h3 class="font-bold text-gray-900 mb-2">投稿のコツ</h3>
-          <ul class="list-disc list-inside text-gray-700 space-y-1">
+        <div class="bg-accent/10 border-l-4 border-accent p-4 my-6 rounded-r-xl">
+          <h3 class="font-bold text-primary mb-2">投稿のコツ</h3>
+          <ul class="list-disc list-inside text-primary/80 space-y-1">
             <li>アクションプランは具体的で実行可能なものにしましょう</li>
             <li>「階段を使う」「15分読書する」など小さな一歩から始められる内容がおすすめ</li>
             <li>無理なく継続できる内容を設定することが成功の鍵です</li>
@@ -149,25 +145,25 @@ set_meta_tags(
     </section>
 
     <%# 4. 達成記録 %>
-    <section id="achievement" class="bg-white rounded-2xl border border-gray-200 shadow-card p-8 mb-8 scroll-mt-20">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
-        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold">4</span>
+    <section id="achievement" class="bg-white rounded-2xl border border-accent/20 shadow-sm p-8 mb-8 scroll-mt-20">
+      <h2 class="text-2xl font-bold text-primary mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
+        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white font-bold">4</span>
         達成記録
       </h2>
       <div class="prose max-w-none">
-        <p class="text-gray-700 leading-relaxed mb-6">
+        <p class="text-primary/80 leading-relaxed mb-6">
           設定したアクションプランを実行したら、「達成する」ボタンを押して記録しましょう。1つの投稿につき1回達成を記録できます。
         </p>
 
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">達成記録の方法</h3>
-        <ol class="list-decimal list-inside space-y-3 text-gray-700">
+        <h3 class="text-xl font-bold text-primary mb-4 mt-8">達成記録の方法</h3>
+        <ol class="list-decimal list-inside space-y-3 text-primary/80">
           <li>投稿詳細ページで「達成する」ボタンをクリック</li>
-          <li>達成した投稿は「達成済み」として記録されます</li>
+          <li>達成した投稿は「やったけど？」として記録されます</li>
         </ol>
 
-        <div class="bg-accent-50 border-l-4 border-accent p-4 my-6 rounded-r-xl">
-          <h3 class="font-bold text-gray-900 mb-2">達成のポイント</h3>
-          <ul class="list-disc list-inside text-gray-700 space-y-1">
+        <div class="bg-accent/10 border-l-4 border-accent p-4 my-6 rounded-r-xl">
+          <h3 class="font-bold text-primary mb-2">達成のポイント</h3>
+          <ul class="list-disc list-inside text-primary/80 space-y-1">
             <li>アクションプランを実行したら、忘れずに達成記録しましょう</li>
             <li>達成した投稿が増えると、成長を実感できます</li>
           </ul>
@@ -176,62 +172,62 @@ set_meta_tags(
     </section>
 
     <%# 5. マイページ %>
-    <section id="mypage" class="bg-white rounded-2xl border border-gray-200 shadow-card p-8 mb-8 scroll-mt-20">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
-        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold">5</span>
+    <section id="mypage" class="bg-white rounded-2xl border border-accent/20 shadow-sm p-8 mb-8 scroll-mt-20">
+      <h2 class="text-2xl font-bold text-primary mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
+        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white font-bold">5</span>
         マイページ
       </h2>
       <div class="prose max-w-none">
-        <p class="text-gray-700 leading-relaxed mb-6">
+        <p class="text-primary/80 leading-relaxed mb-6">
           ハンバーガーメニューから「マイページ」をクリックすると、自分の投稿一覧や達成記録を確認できます。
         </p>
 
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">確認できる情報</h3>
+        <h3 class="text-xl font-bold text-primary mb-4 mt-8">確認できる情報</h3>
         <div class="space-y-4">
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">自分の投稿</h4>
-            <p class="text-gray-700">自分が投稿したきっかけとアクションプランを一覧で確認できます</p>
+          <div class="bg-cream rounded-xl p-4">
+            <h4 class="font-bold text-primary mb-2">自分の投稿</h4>
+            <p class="text-primary/80">自分が投稿したアクションプランを一覧で確認できます</p>
           </div>
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">プロフィール編集</h4>
-            <p class="text-gray-700">プロフィール画像を設定・変更できます</p>
+          <div class="bg-cream rounded-xl p-4">
+            <h4 class="font-bold text-primary mb-2">プロフィール編集</h4>
+            <p class="text-primary/80">プロフィール画像を設定・変更できます</p>
           </div>
-          <div class="bg-gray-50 rounded-xl p-4">
-            <h4 class="font-bold text-gray-900 mb-2">アカウント設定</h4>
-            <p class="text-gray-700">メールアドレスやパスワードを変更できます</p>
+          <div class="bg-cream rounded-xl p-4">
+            <h4 class="font-bold text-primary mb-2">アカウント設定</h4>
+            <p class="text-primary/80">メールアドレスやパスワードを変更できます</p>
           </div>
         </div>
       </div>
     </section>
 
     <%# 6. コメント・いいね %>
-    <section id="interaction" class="bg-white rounded-2xl border border-gray-200 shadow-card p-8 mb-8 scroll-mt-20">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
-        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-primary font-bold">6</span>
+    <section id="interaction" class="bg-white rounded-2xl border border-accent/20 shadow-sm p-8 mb-8 scroll-mt-20">
+      <h2 class="text-2xl font-bold text-primary mb-6 pb-3 border-b-2 border-accent flex items-center gap-3">
+        <span class="w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white font-bold">6</span>
         コメント・いいね
       </h2>
       <div class="prose max-w-none">
-        <p class="text-gray-700 leading-relaxed mb-6">
+        <p class="text-primary/80 leading-relaxed mb-6">
           他のユーザーの投稿にコメントやいいねをして、お互いに励まし合いましょう。
         </p>
 
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">コメント機能</h3>
-        <ol class="list-decimal list-inside space-y-3 text-gray-700">
+        <h3 class="text-xl font-bold text-primary mb-4 mt-8">コメント機能</h3>
+        <ol class="list-decimal list-inside space-y-3 text-primary/80">
           <li>投稿詳細ページ下部のコメント欄にコメントを入力</li>
           <li>「コメントする」ボタンをクリック</li>
           <li>自分のコメントは削除できます</li>
         </ol>
 
-        <h3 class="text-xl font-bold text-gray-900 mb-4 mt-8">いいね機能</h3>
-        <ol class="list-decimal list-inside space-y-3 text-gray-700">
+        <h3 class="text-xl font-bold text-primary mb-4 mt-8">いいね機能</h3>
+        <ol class="list-decimal list-inside space-y-3 text-primary/80">
           <li>投稿一覧または投稿詳細ページでハートアイコンをクリック</li>
           <li>もう一度クリックすると、いいねを取り消せます</li>
           <li>いいね数は投稿カードに表示されます</li>
         </ol>
 
-        <div class="bg-primary-50 border-l-4 border-primary p-4 my-6 rounded-r-xl">
-          <h3 class="font-bold text-gray-900 mb-2">コミュニティのマナー</h3>
-          <ul class="list-disc list-inside text-gray-700 space-y-1">
+        <div class="bg-accent/10 border-l-4 border-accent p-4 my-6 rounded-r-xl">
+          <h3 class="font-bold text-primary mb-2">コミュニティのマナー</h3>
+          <ul class="list-disc list-inside text-primary/80 space-y-1">
             <li>他のユーザーを応援する前向きなコメントを心がけましょう</li>
             <li>自分も頑張ろうと思える投稿にはいいねを押しましょう</li>
             <li>お互いの成長を支え合うコミュニティを作りましょう</li>
@@ -241,13 +237,13 @@ set_meta_tags(
     </section>
 
     <%# フッター CTA %>
-    <div class="bg-primary text-white rounded-2xl shadow-lg p-8 text-center">
+    <div class="bg-accent text-white rounded-2xl shadow-lg p-8 text-center">
       <h2 class="text-2xl font-bold mb-4">さあ、始めましょう！</h2>
-      <p class="mb-6 text-gray-300">
-        mitadake?できっかけを行動に変えて、成長を実感しましょう
+      <p class="mb-6 text-white/80">
+        mitadake?で学びを行動に変えて、成長を実感しましょう
       </p>
       <%= link_to posts_path,
-            class: "inline-flex items-center gap-2 bg-accent text-primary font-bold py-3 px-8 rounded-xl hover:bg-accent-500 transition shadow-md" do %>
+            class: "inline-flex items-center gap-2 bg-white text-accent font-bold py-3 px-8 rounded-xl hover:bg-cream transition shadow-md" do %>
         <span>投稿一覧に戻る</span>
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>

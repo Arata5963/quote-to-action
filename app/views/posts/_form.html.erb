@@ -1,35 +1,37 @@
 <%# app/views/posts/_form.html.erb %>
-<div class="min-h-screen bg-gray-50 py-8">
+<div class="min-h-screen py-8">
   <div class="max-w-2xl mx-auto px-4">
 
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-card p-6 lg:p-8">
+    <%# 戻るリンク %>
+    <div class="mb-6">
+      <%= link_to posts_path, class: "inline-flex items-center gap-2 text-primary/60 hover:text-accent transition-colors" do %>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
+        </svg>
+        <span>投稿一覧に戻る</span>
+      <% end %>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-accent/20 shadow-sm p-6 lg:p-8">
 
       <%# フォームタイトル %>
-      <div class="text-center mb-8">
-        <div class="w-12 h-12 bg-accent-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-          <svg class="w-6 h-6 text-accent-600" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-          </svg>
-        </div>
-        <h1 class="text-2xl font-bold text-gray-900">
-          <%= post.persisted? ? "投稿を編集" : "新しい投稿を作成" %>
-        </h1>
-        <p class="mt-2 text-gray-600">気づきをアクションに変えよう</p>
-      </div>
+      <h1 class="text-2xl font-bold text-primary mb-8">
+        <%= post.persisted? ? "投稿を編集" : "新規投稿" %>
+      </h1>
 
       <%= form_with(model: post, local: true, html: { class: "space-y-6" }) do |form| %>
         <%# エラーメッセージ表示 %>
         <% if post.errors.any? %>
-          <div class="bg-danger-50 border border-danger-200 rounded-xl p-4">
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4">
             <div class="flex items-start gap-3">
-              <svg class="w-5 h-5 text-danger-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+              <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
               </svg>
               <div>
-                <h3 class="font-medium text-danger-700">
+                <h3 class="font-medium text-red-700">
                   <%= pluralize(post.errors.count, "件") %>のエラーがあります
                 </h3>
-                <ul class="mt-2 text-sm text-danger-600 list-disc list-inside">
+                <ul class="mt-2 text-sm text-red-600 list-disc list-inside">
                   <% post.errors.full_messages.each do |message| %>
                     <li><%= message %></li>
                   <% end %>
@@ -41,44 +43,43 @@
 
         <%# YouTube URL入力 %>
         <div>
-          <%= form.label :youtube_url, class: "block text-sm font-semibold text-gray-700 mb-2" do %>
-            YouTube URL <span class="text-danger-500">*</span>
+          <%= form.label :youtube_url, class: "block text-sm font-semibold text-primary mb-2" do %>
+            YouTube URL <span class="text-red-500">*</span>
           <% end %>
           <%= form.url_field :youtube_url,
-                placeholder: "https://www.youtube.com/watch?v=... または https://youtu.be/...",
+                placeholder: "YouTube動画のURLを入力してください",
                 required: true,
-                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
-          <p class="mt-1 text-sm text-gray-500">学びを得たYouTube動画のURLを入力してください</p>
+                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
         <%# アクションプラン入力 %>
         <div>
-          <%= form.label :action_plan, class: "block text-sm font-semibold text-gray-700 mb-2" do %>
-            アクションプラン <span class="text-danger-500">*</span>
+          <%= form.label :action_plan, class: "block text-sm font-semibold text-primary mb-2" do %>
+            アクションプラン <span class="text-red-500">*</span>
           <% end %>
           <%= form.text_area :action_plan, rows: 4,
                 placeholder: "どんなアクションを起こしますか？（例：毎朝5分読書する、週1回散歩する、感謝の気持ちを伝えるなど）",
-                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
         <%# カテゴリ選択 %>
         <div>
-          <%= form.label :category, class: "block text-sm font-semibold text-gray-700 mb-2" do %>
-            カテゴリ <span class="text-danger-500">*</span>
+          <%= form.label :category, class: "block text-sm font-semibold text-primary mb-2" do %>
+            カテゴリ <span class="text-red-500">*</span>
           <% end %>
           <%= form.select :category,
                 Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
                 { prompt: "カテゴリを選択してください" },
-                class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary transition-colors" %>
+                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
         <%# リマインダー設定 %>
-        <div class="p-4 bg-gray-50 rounded-xl border border-gray-200">
+        <div class="p-4 rounded-xl border border-accent/20">
           <div class="flex items-center gap-3 mb-3">
-            <svg class="w-5 h-5 text-accent-600" viewBox="0 0 24 24" fill="currentColor">
+            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
             </svg>
-            <span class="text-sm font-semibold text-gray-700"><%= t('reminders.label') %></span>
+            <span class="text-sm font-semibold text-primary"><%= t('reminders.label') %></span>
           </div>
           <%= form.fields_for :reminder, post.reminder || post.build_reminder do |reminder_form| %>
             <div class="flex items-center gap-4">
@@ -86,32 +87,24 @@
                 <%= reminder_form.label :remind_at, t('reminders.datetime_label'), class: "sr-only" %>
                 <%= reminder_form.datetime_local_field :remind_at,
                       min: Time.current.strftime("%Y-%m-%dT%H:%M"),
-                      class: "w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:border-primary focus:ring-1 focus:ring-primary transition-colors",
+                      class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary focus:border-accent focus:ring-1 focus:ring-accent transition-colors",
                       placeholder: t('reminders.placeholder') %>
               </div>
               <% if post.reminder&.persisted? %>
-                <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                  <%= reminder_form.check_box :_destroy, class: "rounded border-gray-300 text-primary focus:ring-primary" %>
+                <label class="flex items-center gap-2 text-sm text-primary/80 cursor-pointer">
+                  <%= reminder_form.check_box :_destroy, class: "rounded border-accent/30 text-accent focus:ring-accent" %>
                   <span>解除</span>
                 </label>
               <% end %>
             </div>
           <% end %>
-          <p class="mt-2 text-xs text-gray-500"><%= t('reminders.help_text') %></p>
+          <p class="mt-2 text-xs text-primary/60"><%= t('reminders.help_text') %></p>
         </div>
 
         <%# ボタンエリア %>
-        <div class="pt-6 space-y-3">
+        <div class="pt-6">
           <%= form.submit post.persisted? ? "更新する" : "投稿する",
-                class: "w-full inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-white text-lg font-bold hover:bg-primary-800 active:scale-95 transform transition-all shadow-lg cursor-pointer" %>
-
-          <%= link_to(post.persisted? ? post_path(post) : posts_path,
-                class: "w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors") do %>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
-            </svg>
-            <span>キャンセル</span>
-          <% end %>
+                class: "w-full inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-accent text-white font-bold hover:bg-accent/90 active:scale-95 transform transition-all shadow-md cursor-pointer" %>
         </div>
       <% end %>
     </div>

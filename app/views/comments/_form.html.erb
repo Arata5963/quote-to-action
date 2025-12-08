@@ -5,8 +5,8 @@
   <div class="flex items-center gap-2">
     <%= f.text_field :content,
                     placeholder: "コメントを書く...",
-                    class: "flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 focus:outline-none transition-colors" %>
+                    class: "flex-1 border border-accent/20 rounded-full px-4 py-2.5 text-sm text-primary placeholder-primary/40 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-colors" %>
     <%= f.submit "送信",
-          class: "bg-pink-400 hover:bg-pink-500 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors cursor-pointer" %>
+          class: "bg-accent hover:bg-accent/90 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors cursor-pointer" %>
   </div>
 <% end %>

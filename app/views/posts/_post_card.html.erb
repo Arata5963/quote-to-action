@@ -1,79 +1,68 @@
 <%# app/views/posts/_post_card.html.erb %>
-<%# 投稿カード（リスト型・横並び・あまピタ風） %>
+<%# 投稿カード（横型・2列グリッド対応・高さ統一） %>
 
-<article class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
-  <div class="flex gap-4">
+<article class="bg-white rounded-2xl shadow-sm border border-accent/20 p-5 hover:shadow-md transition-shadow group h-full">
+  <div class="flex items-center gap-4 h-full">
 
     <%# 左側: サムネイル %>
     <%= link_to post_path(post), class: "flex-shrink-0" do %>
-      <div class="w-32 md:w-40 aspect-video rounded-xl overflow-hidden bg-gray-100">
+      <div class="w-40 aspect-video rounded-lg overflow-hidden bg-accent/10">
         <%= image_tag post.youtube_thumbnail_url(size: :mqdefault),
               alt: post.youtube_title || post.action_plan,
-              class: "w-full h-full object-cover",
+              class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
               loading: "lazy" %>
       </div>
     <% end %>
 
-    <%# 右側: コンテンツ %>
-    <div class="flex-1 min-w-0 flex flex-col justify-between">
+    <%# 右側: コンテンツ（flex-colで縦配置） %>
+    <div class="flex-1 min-w-0 flex flex-col">
 
-      <%# 上部: ユーザー情報（大きめ） %>
-      <div class="flex items-center gap-2">
-        <% if post.user.avatar.present? %>
-          <%= image_tag post.user.avatar.url,
-                alt: post.user.email.split('@').first,
-                class: "w-8 h-8 rounded-full object-cover" %>
-        <% else %>
-          <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-            <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-          </div>
-        <% end %>
-        <span class="text-sm font-semibold text-gray-800"><%= post.user.email.split('@').first %></span>
+      <%# 上部: ユーザー情報 + いいね（固定位置） %>
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <% if post.user.avatar.present? %>
+            <%= image_tag post.user.avatar.url,
+                  alt: display_name(post.user),
+                  class: "w-6 h-6 rounded-full object-cover flex-shrink-0" %>
+          <% else %>
+            <div class="w-6 h-6 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-3.5 h-3.5 text-primary/40" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+          <% end %>
+          <span class="text-sm font-medium text-primary truncate"><%= display_name(post.user) %></span>
+        </div>
+
+        <%# いいねボタン %>
+        <div id="like_button_<%= post.id %>" class="flex-shrink-0">
+          <%= render 'likes/like_button_minimal', post: post %>
+        </div>
       </div>
 
-      <%# 中部: アクションプラン（タイトル） %>
-      <%= link_to post_path(post), class: "block group" do %>
-        <h3 class="text-base font-medium text-gray-900 line-clamp-2 group-hover:text-gray-600 transition-colors mt-2">
+      <%# 中央: アクションプラン（2行分の高さを固定確保） %>
+      <%= link_to post_path(post), class: "block mt-2" do %>
+        <h3 class="text-base font-medium text-primary line-clamp-2 h-12 group-hover:text-accent transition-colors leading-normal">
           <%= post.action_plan %>
         </h3>
       <% end %>
 
-      <%# 下部: カテゴリ + 達成状況（横並び） %>
-      <div class="flex items-center gap-2 mt-3">
-        <%# カテゴリタグ（ボタン風・グレー背景） %>
-        <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+      <%# 下部: カテゴリ + 達成状況（mt-autoで下部固定） %>
+      <div class="flex items-center gap-2 mt-auto pt-2">
+        <span class="text-xs bg-accent/10 text-primary/70 px-2.5 py-1 rounded-full">
           <%= category_name_without_icon(post.category) %>
         </span>
-
-        <%# 達成状況（ボタン風・グレー背景） %>
         <% if post.achieved? %>
-          <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-            達成済み
+          <span class="text-xs bg-accent text-white px-2.5 py-1 rounded-full">
+            やったけど？
           </span>
         <% else %>
-          <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-            未達成
+          <span class="text-xs border border-accent/30 text-primary/50 px-2.5 py-1 rounded-full">
+            みただけ？
           </span>
         <% end %>
       </div>
+
     </div>
-
-    <%# 右端: いいね・矢印 %>
-    <div class="flex-shrink-0 flex flex-col items-end justify-between">
-      <%# いいね（右上） %>
-      <div id="like_button_<%= post.id %>">
-        <%= render 'likes/like_button_minimal', post: post %>
-      </div>
-
-      <%# 矢印（右下・詳細へ） %>
-      <%= link_to post_path(post), class: "text-gray-300 hover:text-gray-500 transition-colors" do %>
-        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
-        </svg>
-      <% end %>
-    </div>
-
   </div>
 </article>

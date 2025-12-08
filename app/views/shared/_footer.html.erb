@@ -1,15 +1,15 @@
 <%# app/views/shared/_footer.html.erb %>
-<footer class="bg-white border-t border-gray-200 mt-auto">
+<footer class="bg-white border-t border-accent/20 mt-auto">
   <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
       <%# ロゴ %>
       <div class="flex items-center gap-2">
         <div class="w-6 h-6 bg-accent rounded-md flex items-center justify-center">
-          <svg class="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="currentColor">
+          <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
             <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
           </svg>
         </div>
-        <span class="font-semibold text-gray-900">mitadake?</span>
+        <span class="font-semibold text-primary">mitadake?</span>
       </div>
 
       <%# リンク %>
@@ -17,16 +17,16 @@
         <%= link_to "お問合せ", "https://forms.gle/k8SEXwr3B32EvhPY8",
             target: "_blank",
             rel: "noopener noreferrer",
-            class: "text-gray-500 hover:text-gray-900 transition-colors" %>
+            class: "text-primary/60 hover:text-primary transition-colors" %>
         <%= link_to "利用規約", terms_path,
-            class: "text-gray-500 hover:text-gray-900 transition-colors" %>
+            class: "text-primary/60 hover:text-primary transition-colors" %>
         <%= link_to "プライバシー", privacy_path,
-            class: "text-gray-500 hover:text-gray-900 transition-colors" %>
+            class: "text-primary/60 hover:text-primary transition-colors" %>
       </nav>
     </div>
 
-    <div class="mt-6 pt-6 border-t border-gray-100 text-center">
-      <p class="text-sm text-gray-400">&copy; <%= Time.current.year %> mitadake?</p>
+    <div class="mt-6 pt-6 border-t border-accent/10 text-center">
+      <p class="text-sm text-primary/40">&copy; <%= Time.current.year %> mitadake?</p>
     </div>
   </div>
 </footer>

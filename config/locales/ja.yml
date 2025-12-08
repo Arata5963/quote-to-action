@@ -37,6 +37,7 @@ ja:
     # 属性名の日本語表示設定
     attributes:
       user:
+        name: "ユーザー名"
         email: "メールアドレス"
         password: "パスワード"
         password_confirmation: "パスワード（確認用）"
@@ -125,21 +126,21 @@ ja:
     not_found: "投稿が見つかりません"
     unauthorized: "他のユーザーの投稿は編集・削除できません"
     create:
-      success: "きっかけが投稿されました"
+      success: "投稿しました！"
     update:
-      success: "きっかけが更新されました"
+      success: "投稿を更新しました"
     destroy:
-      success: "きっかけが削除されました"
+      success: "投稿を削除しました"
       
-  # AchievementsController関連のメッセージ  
+  # AchievementsController関連のメッセージ
   achievements:
     unauthorized: "他のユーザーの投稿には達成記録できません"
     create:
-      success: "今日の達成を記録しました"
-      failed: "達成記録に失敗しました"
+      success: "やったけど？に変更しました！"
+      failed: "変更に失敗しました"
     destroy:
-      success: "今日の達成記録を取り消しました"
-      not_found: "取り消す達成記録が見つかりません"
+      success: "みただけ？に戻しました"
+      not_found: "対象の記録が見つかりません"
 
   # UsersController関連のメッセージ
   users:

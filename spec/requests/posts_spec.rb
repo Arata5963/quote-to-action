@@ -409,7 +409,7 @@ RSpec.describe "Posts", type: :request do
         expect(response).to redirect_to(posts_path)
         follow_redirect!
         # 実際のアプリのフラッシュメッセージに合わせる
-        expect(response.body).to include("きっかけが削除されました")
+        expect(response.body).to include("投稿を削除しました")
       end
     end
 

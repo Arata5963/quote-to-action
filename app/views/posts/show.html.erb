@@ -1,23 +1,23 @@
 <%# app/views/posts/show.html.erb %>
 <% content_for :title, @post.action_plan.truncate(30) %>
 
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen">
   <div class="max-w-2xl mx-auto px-4 py-8">
 
     <%# 戻るリンク %>
     <div class="mb-6">
-      <%= link_to posts_path, class: "inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors" do %>
+      <%= link_to posts_path, class: "inline-flex items-center gap-1 text-sm text-primary/60 hover:text-primary transition-colors" do %>
         <span>←</span>
         <span>投稿一覧に戻る</span>
       <% end %>
     </div>
 
     <%# メインカード（コメント含む） %>
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-accent/20 p-6">
 
       <%# YouTube表示（サムネイル + 再生ボタン） %>
       <%= link_to @post.youtube_url, target: "_blank", rel: "noopener noreferrer", class: "block relative group mb-4" do %>
-        <div class="aspect-video w-full rounded-xl overflow-hidden bg-gray-100">
+        <div class="aspect-video w-full rounded-xl overflow-hidden bg-accent/10">
           <%= image_tag @post.youtube_thumbnail_url(size: :mqdefault),
                 alt: @post.youtube_title || @post.action_plan,
                 class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
@@ -40,24 +40,24 @@
           <div class="flex items-center gap-2">
             <% if @post.user.avatar.present? %>
               <%= image_tag @post.user.avatar.url,
-                    alt: @post.user.email.split('@').first,
+                    alt: display_name(@post.user),
                     class: "w-8 h-8 rounded-full object-cover" %>
             <% else %>
-              <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+              <div class="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-primary/40" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                 </svg>
               </div>
             <% end %>
-            <span class="text-sm font-medium text-gray-700"><%= @post.user.email.split('@').first %></span>
+            <span class="text-sm font-medium text-primary/80"><%= display_name(@post.user) %></span>
           </div>
           <%# カテゴリタグ %>
-          <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
+          <span class="text-xs bg-accent/10 text-primary/80 px-3 py-1 rounded-full">
             <%= category_name_without_icon(@post.category) %>
           </span>
         </div>
 
-        <%# アクションアイコン（いいね・編集・削除） %>
+        <%# アクションアイコン（いいね・編集・削除・達成） %>
         <div class="flex items-center gap-3">
           <div id="like_button_<%= @post.id %>">
             <%= render 'likes/like_button', post: @post %>
@@ -65,7 +65,7 @@
 
           <% if user_signed_in? && @post.user == current_user %>
             <%= link_to edit_post_path(@post),
-                  class: "text-gray-400 hover:text-gray-600 transition-colors",
+                  class: "text-primary/40 hover:text-accent transition-colors",
                   title: "編集" do %>
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
@@ -74,76 +74,76 @@
 
             <%= link_to post_path(@post),
                   data: { turbo_method: :delete, turbo_confirm: "本当に削除しますか？" },
-                  class: "text-gray-400 hover:text-red-500 transition-colors",
+                  class: "text-primary/40 hover:text-red-500 transition-colors",
                   title: "削除" do %>
               <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
               </svg>
+            <% end %>
+
+            <%# 達成ボタン %>
+            <% if @post.achieved? %>
+              <span class="inline-flex items-center gap-1 text-xs bg-accent text-white px-3 py-1.5 rounded-full" title="達成済み">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                やったけど？
+              </span>
+            <% else %>
+              <%= form_with url: post_achievements_path(@post), method: :post, local: true, class: "inline" do %>
+                <button type="submit"
+                        class="inline-flex items-center gap-1 text-xs border border-accent/30 text-primary/60 px-3 py-1.5 rounded-full hover:bg-accent hover:text-white hover:border-accent transition-colors"
+                        title="達成を記録">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  みただけ？
+                </button>
+              <% end %>
             <% end %>
           <% end %>
         </div>
       </div>
 
       <%# アクションプランセクション %>
-      <div class="bg-gray-50 rounded-xl p-4 mb-4">
-        <p class="text-xs text-gray-500 mb-1">アクションプラン</p>
-        <p class="text-base text-gray-900 whitespace-pre-line"><%= @post.action_plan %></p>
+      <div class="bg-cream rounded-xl p-4 mb-4">
+        <p class="text-xs text-primary/60 mb-1">アクションプラン</p>
+        <p class="text-base text-primary whitespace-pre-line"><%= @post.action_plan %></p>
       </div>
 
       <%# リマインダーセクション（自分の投稿のみ） %>
       <% if user_signed_in? && @post.user == current_user %>
-        <div class="border border-gray-200 rounded-xl p-4 mb-4">
+        <div class="border border-accent/20 rounded-xl p-4 mb-4">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 text-gray-500" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="w-5 h-5 text-primary/60" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
               </svg>
               <div>
-                <span class="text-sm font-medium text-gray-700"><%= t('reminders.label') %></span>
+                <span class="text-sm font-medium text-primary/80"><%= t('reminders.label') %></span>
                 <% if @post.reminder.present? %>
-                  <p class="text-sm text-gray-600">
+                  <p class="text-sm text-primary/80">
                     <%= l(@post.reminder.remind_at, format: :default) %> に通知
                   </p>
                 <% else %>
-                  <p class="text-sm text-gray-500"><%= t('reminders.disabled') %></p>
+                  <p class="text-sm text-primary/60"><%= t('reminders.disabled') %></p>
                 <% end %>
               </div>
             </div>
-            <%= link_to edit_post_path(@post), class: "text-sm text-gray-500 hover:text-gray-700 transition-colors" do %>
+            <%= link_to edit_post_path(@post), class: "text-sm text-primary/60 hover:text-primary transition-colors" do %>
               設定変更
             <% end %>
           </div>
         </div>
       <% end %>
 
-      <%# 達成セクション（常時表示） %>
-      <div class="flex items-center justify-between">
-        <% if @post.achieved? %>
-          <span class="inline-flex items-center text-sm bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full">
-            達成済み
-          </span>
-          <span class="text-sm text-gray-500"><%= l(@post.achieved_at, format: :long) %></span>
-        <% else %>
-          <% if user_signed_in? && @post.user == current_user %>
-            <%= form_with url: post_achievements_path(@post), method: :post, local: true, class: "inline" do %>
-              <button type="submit" class="inline-flex items-center gap-2 rounded-xl text-sm font-medium transition-colors" style="background-color: #111827; color: white; padding: 10px 24px;">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                達成する
-              </button>
-            <% end %>
-          <% end %>
-        <% end %>
-      </div>
-
       <%# 区切り線 %>
-      <hr class="my-6 border-gray-200">
+      <hr class="my-6 border-accent/20">
 
       <%# コメントセクション（同じカード内） %>
       <div>
-        <h3 class="flex items-center gap-2 text-base font-semibold text-gray-900 mb-4">
-          <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+        <h3 class="flex items-center gap-2 text-base font-semibold text-primary mb-4">
+          <svg class="w-5 h-5 text-primary/40" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
           </svg>
           コメント (<%= @post.comments.count %>)
@@ -154,7 +154,7 @@
           <% if @post.comments.any? %>
             <%= render @post.comments.recent %>
           <% else %>
-            <p class="text-sm text-gray-400 text-center py-6">
+            <p class="text-sm text-primary/40 text-center py-6">
               まだコメントがありません
             </p>
           <% end %>
@@ -165,16 +165,16 @@
           <%= form_with model: [@post, Comment.new], class: "flex items-center gap-2" do |f| %>
             <%= f.text_field :content,
                   placeholder: "コメントを書く...",
-                  class: "flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 focus:outline-none transition-colors" %>
-            <button type="submit" class="rounded-full text-sm font-medium transition-colors flex-shrink-0" style="background-color: #111827; color: white; padding: 10px 20px;">
+                  class: "flex-1 border border-accent/20 rounded-full px-4 py-2.5 text-sm text-primary placeholder-primary/40 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-colors" %>
+            <button type="submit" class="rounded-full bg-accent text-white px-5 py-2.5 text-sm font-medium hover:bg-accent/90 transition-colors flex-shrink-0">
               送信
             </button>
           <% end %>
         <% else %>
-          <div class="text-center py-4 bg-gray-50 rounded-xl">
-            <p class="text-gray-600 mb-3">コメントするにはログインが必要です</p>
+          <div class="text-center py-4 bg-cream rounded-xl">
+            <p class="text-primary/80 mb-3">コメントするにはログインが必要です</p>
             <%= link_to "ログイン", new_user_session_path,
-                  class: "inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors" %>
+                  class: "inline-flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors" %>
           </div>
         <% end %>
       </div>
