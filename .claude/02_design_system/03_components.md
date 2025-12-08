@@ -1,6 +1,6 @@
-# ActionSpark UIコンポーネント設計
+# mitadake? UIコンポーネント設計
 
-本ドキュメントでは、ActionSparkで使用するUIコンポーネントのデザインパターンを定義します。
+本ドキュメントでは、mitadake?で使用するUIコンポーネントのデザインパターンを定義します。
 
 ---
 
@@ -8,10 +8,10 @@
 
 ### プライマリボタン
 
-メインアクション用。黒背景に白文字。
+メインアクション用。ウォームブラウン背景に白文字。
 
 ```html
-<button class="bg-gray-900 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-800 hover:shadow-md active:bg-gray-700 transition-all">
+<button class="bg-accent text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-accent/90 hover:shadow-md active:bg-accent/80 transition-all">
   投稿する
 </button>
 ```
@@ -20,27 +20,27 @@
 
 ```html
 <!-- 大サイズ -->
-<button class="bg-gray-900 text-white font-bold px-8 py-4 rounded-xl text-lg shadow-sm hover:bg-gray-800 hover:shadow-md transition-all">
+<button class="bg-accent text-white font-bold px-8 py-4 rounded-xl text-lg shadow-sm hover:bg-accent/90 hover:shadow-md transition-all">
   投稿する
 </button>
 
 <!-- 小サイズ -->
-<button class="bg-gray-900 text-white font-medium px-4 py-2 rounded-lg text-sm shadow-sm hover:bg-gray-800 transition-all">
+<button class="bg-accent text-white font-medium px-4 py-2 rounded-lg text-sm shadow-sm hover:bg-accent/90 transition-all">
   保存
 </button>
 
 <!-- 無効状態 -->
-<button class="bg-gray-300 text-gray-500 font-semibold px-6 py-3 rounded-xl cursor-not-allowed" disabled>
+<button class="bg-accent/30 text-white/60 font-semibold px-6 py-3 rounded-xl cursor-not-allowed" disabled>
   投稿する
 </button>
 ```
 
 ### セカンダリボタン
 
-サブアクション用。白背景にグレーボーダー。
+サブアクション用。白背景にウォームブラウンボーダー。
 
 ```html
-<button class="bg-white text-gray-700 font-semibold px-6 py-3 rounded-xl border border-gray-300 shadow-sm hover:bg-gray-50 hover:shadow-md active:bg-gray-100 transition-all">
+<button class="bg-white text-accent font-semibold px-6 py-3 rounded-xl border-2 border-accent shadow-sm hover:bg-accent hover:text-white active:bg-accent/90 transition-all">
   キャンセル
 </button>
 ```
@@ -50,7 +50,7 @@
 軽いアクション用。背景なし。
 
 ```html
-<button class="text-gray-600 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-all">
+<button class="text-primary/80 font-medium px-4 py-2 rounded-lg hover:bg-accent/10 hover:text-accent transition-all">
   詳細を見る
 </button>
 ```
@@ -60,7 +60,7 @@
 アイコンのみのボタン。
 
 ```html
-<button class="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
+<button class="p-2 text-primary/60 hover:text-accent hover:bg-accent/10 rounded-lg transition-all">
   <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
     <!-- アイコン -->
   </svg>
@@ -91,7 +91,7 @@
 YouTube動画のサムネイルを大きく表示。
 
 ```html
-<article class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+<article class="bg-white rounded-2xl shadow-sm border border-accent/20 overflow-hidden hover:shadow-md transition-shadow">
   <!-- サムネイル -->
   <div class="aspect-video">
     <img
@@ -103,35 +103,38 @@ YouTube動画のサムネイルを大きく表示。
 
   <!-- コンテンツ -->
   <div class="p-5">
-    <!-- カテゴリバッジ -->
-    <div class="mb-3">
-      <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-        カテゴリ
-      </span>
+    <!-- ユーザー情報 -->
+    <div class="flex items-center gap-3 mb-3">
+      <img src="avatar.jpg" class="w-8 h-8 rounded-full" />
+      <span class="text-sm font-medium text-primary">ユーザー名</span>
+      <span class="text-xs text-primary/60">3時間前</span>
     </div>
 
     <!-- タイトル -->
-    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-      アクションプランのタイトル
+    <h3 class="font-bold text-primary text-lg mb-2 line-clamp-2">
+      動画タイトル
     </h3>
 
-    <!-- 統計情報 -->
-    <div class="flex items-center gap-4 text-sm text-gray-500">
-      <span class="flex items-center gap-1">
-        <svg class="w-4 h-4"><!-- ハートアイコン --></svg>
-        12
-      </span>
-      <span class="flex items-center gap-1">
-        <svg class="w-4 h-4"><!-- コメントアイコン --></svg>
-        3
-      </span>
-    </div>
+    <!-- アクションプラン -->
+    <p class="text-primary/80 text-sm mb-4 line-clamp-2">
+      アクションプランの内容
+    </p>
 
-    <!-- CTAボタン -->
-    <div class="mt-4">
-      <a href="#" class="block w-full text-center bg-gray-900 text-white font-semibold px-4 py-2.5 rounded-xl hover:bg-gray-800 transition-all">
-        詳細を見る
-      </a>
+    <!-- フッター -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4 text-primary/60 text-sm">
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4"><!-- いいねアイコン --></svg>
+          12
+        </span>
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4"><!-- コメントアイコン --></svg>
+          3
+        </span>
+      </div>
+      <span class="px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full">
+        達成済み
+      </span>
     </div>
   </div>
 </article>
@@ -142,33 +145,9 @@ YouTube動画のサムネイルを大きく表示。
 汎用的なカードコンポーネント。
 
 ```html
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-  <h3 class="text-lg font-semibold text-gray-900 mb-2">タイトル</h3>
-  <p class="text-gray-600">説明テキスト</p>
-</div>
-```
-
-### フィルターカード
-
-検索・フィルター用のカード。
-
-```html
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-  <!-- 検索フォーム -->
-  <div class="space-y-4">
-    <!-- 検索入力 -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">キーワード</label>
-      <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 transition-all" placeholder="検索..." />
-    </div>
-
-    <!-- フィルター -->
-    <div class="flex gap-2 flex-wrap">
-      <button class="px-4 py-2 rounded-full bg-gray-900 text-white text-sm font-medium">すべて</button>
-      <button class="px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors">達成済み</button>
-      <button class="px-4 py-2 rounded-full bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors">未達成</button>
-    </div>
-  </div>
+<div class="bg-white rounded-2xl shadow-sm border border-accent/20 p-5">
+  <h3 class="font-semibold text-primary mb-2">タイトル</h3>
+  <p class="text-primary/80 text-sm">内容テキスト</p>
 </div>
 ```
 
@@ -179,254 +158,109 @@ YouTube動画のサムネイルを大きく表示。
 ### テキスト入力
 
 ```html
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-2">
-    ラベル <span class="text-red-500">*</span>
+<div class="space-y-2">
+  <label class="block text-sm font-medium text-primary">
+    ラベル
   </label>
   <input
     type="text"
-    class="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 transition-all"
-    placeholder="入力してください"
+    class="w-full px-4 py-3 border-2 border-accent/30 rounded-xl text-primary placeholder-primary/40 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-colors"
+    placeholder="プレースホルダー"
   />
-  <p class="mt-1 text-sm text-gray-500">ヘルプテキスト</p>
 </div>
 ```
 
 ### テキストエリア
 
 ```html
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-2">
-    アクションプラン
+<div class="space-y-2">
+  <label class="block text-sm font-medium text-primary">
+    ラベル
   </label>
   <textarea
     rows="4"
-    class="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 transition-all resize-none"
-    placeholder="どんなアクションを起こしますか？"
+    class="w-full px-4 py-3 border-2 border-accent/30 rounded-xl text-primary placeholder-primary/40 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-colors resize-none"
+    placeholder="プレースホルダー"
   ></textarea>
 </div>
 ```
 
-### セレクトボックス
+### セレクト
 
 ```html
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-2">
-    カテゴリ
+<div class="space-y-2">
+  <label class="block text-sm font-medium text-primary">
+    ラベル
   </label>
-  <select class="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 transition-all">
+  <select class="w-full px-4 py-3 border-2 border-accent/30 rounded-xl text-primary bg-white focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-colors">
     <option value="">選択してください</option>
-    <option value="1">カテゴリ1</option>
-    <option value="2">カテゴリ2</option>
+    <option value="1">オプション1</option>
+    <option value="2">オプション2</option>
   </select>
 </div>
 ```
 
-### URL入力（YouTube用）
+### チェックボックス
 
 ```html
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-2">
-    YouTube URL <span class="text-red-500">*</span>
-  </label>
+<label class="flex items-center gap-3 cursor-pointer">
   <input
-    type="url"
-    class="w-full px-4 py-3 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500 focus:ring-2 focus:ring-gray-200 transition-all"
-    placeholder="https://www.youtube.com/watch?v=..."
+    type="checkbox"
+    class="w-5 h-5 rounded border-2 border-accent/30 text-accent focus:ring-accent/20"
   />
-  <p class="mt-1 text-sm text-gray-500">YouTube動画のURLを入力してください</p>
-</div>
+  <span class="text-sm text-primary">ラベルテキスト</span>
+</label>
 ```
 
 ### エラー状態
 
 ```html
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-2">
-    入力フィールド
+<div class="space-y-2">
+  <label class="block text-sm font-medium text-primary">
+    ラベル
   </label>
   <input
     type="text"
-    class="w-full px-4 py-3 rounded-xl border-2 border-red-500 text-gray-900 focus:ring-2 focus:ring-red-200 transition-all"
+    class="w-full px-4 py-3 border-2 border-red-500 rounded-xl text-primary placeholder-primary/40 focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none"
   />
-  <p class="mt-1 text-sm text-red-600">エラーメッセージ</p>
+  <p class="text-sm text-red-600">エラーメッセージ</p>
 </div>
 ```
 
 ---
 
-## タグ・バッジ
-
-### カテゴリタグ
-
-```html
-<span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-  カテゴリ名
-</span>
-```
+## バッジ・タグ
 
 ### ステータスバッジ
 
 ```html
 <!-- 達成済み -->
-<span class="inline-flex items-center gap-1 text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
-  <svg class="w-3 h-3"><!-- チェックアイコン --></svg>
+<span class="px-3 py-1 bg-accent/10 text-accent text-xs font-medium rounded-full">
   達成済み
 </span>
 
 <!-- 未達成 -->
-<span class="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-medium">
+<span class="px-3 py-1 bg-primary/10 text-primary/60 text-xs font-medium rounded-full">
   未達成
 </span>
-```
 
-### カウントバッジ
+<!-- 成功 -->
+<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+  完了
+</span>
 
-```html
-<span class="inline-flex items-center justify-center min-w-[20px] h-5 bg-gray-900 text-white text-xs font-bold rounded-full px-1.5">
-  3
+<!-- エラー -->
+<span class="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+  失敗
 </span>
 ```
 
----
-
-## ユーザー表示
-
-### アバター + 名前
+### カテゴリタグ
 
 ```html
-<div class="flex items-center gap-3">
-  <img
-    src="avatar.jpg"
-    alt="ユーザー名"
-    class="w-10 h-10 rounded-full object-cover"
-  />
-  <div>
-    <p class="text-sm font-medium text-gray-900">ユーザー名</p>
-    <p class="text-xs text-gray-500">2日前</p>
-  </div>
-</div>
-```
-
-### 小アバター
-
-```html
-<div class="flex items-center gap-2">
-  <img src="avatar.jpg" class="w-8 h-8 rounded-full" />
-  <span class="text-sm font-medium text-gray-900">ユーザー名</span>
-</div>
-```
-
-### アバタープレースホルダー
-
-```html
-<div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-  <svg class="w-5 h-5 text-gray-400">
-    <!-- ユーザーアイコン -->
-  </svg>
-</div>
-```
-
----
-
-## アラート・メッセージ
-
-### 成功メッセージ
-
-```html
-<div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
-  <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"><!-- チェックアイコン --></svg>
-  <div>
-    <p class="text-sm font-medium text-green-800">投稿が完了しました</p>
-  </div>
-</div>
-```
-
-### エラーメッセージ
-
-```html
-<div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-  <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"><!-- エラーアイコン --></svg>
-  <div>
-    <p class="text-sm font-medium text-red-800">エラーが発生しました</p>
-    <p class="text-sm text-red-700 mt-1">詳細なエラーメッセージ</p>
-  </div>
-</div>
-```
-
-### 情報メッセージ
-
-```html
-<div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-  <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"><!-- 情報アイコン --></svg>
-  <div>
-    <p class="text-sm font-medium text-blue-800">お知らせ</p>
-  </div>
-</div>
-```
-
----
-
-## いいね・コメント
-
-### いいねボタン
-
-```html
-<!-- 未いいね状態 -->
-<button class="flex items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors">
-  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2">
-    <!-- ハートアイコン（アウトライン） -->
-  </svg>
-  <span class="text-sm font-medium">12</span>
-</button>
-
-<!-- いいね済み状態 -->
-<button class="flex items-center gap-1.5 text-red-500 hover:text-red-600 transition-colors">
-  <svg class="w-5 h-5" fill="currentColor">
-    <!-- ハートアイコン（塗り） -->
-  </svg>
-  <span class="text-sm font-medium">13</span>
-</button>
-```
-
-### コメント表示
-
-```html
-<div class="bg-gray-50 rounded-xl p-4">
-  <!-- ユーザー情報 -->
-  <div class="flex items-center gap-2 mb-2">
-    <img src="avatar.jpg" class="w-8 h-8 rounded-full" />
-    <span class="text-sm font-medium text-gray-900">ユーザー名</span>
-    <span class="text-xs text-gray-500">2時間前</span>
-  </div>
-
-  <!-- コメント本文 -->
-  <p class="text-gray-700 text-sm">
-    コメントの内容がここに入ります。
-  </p>
-</div>
-```
-
----
-
-## 達成ボタン
-
-### 未達成状態
-
-```html
-<button class="flex items-center gap-2 bg-gray-900 text-white font-semibold px-6 py-3 rounded-xl shadow-sm hover:bg-gray-800 hover:shadow-md transition-all">
-  <svg class="w-5 h-5"><!-- チェックアイコン --></svg>
-  達成！
-</button>
-```
-
-### 達成済み状態
-
-```html
-<div class="flex items-center gap-2 bg-green-100 text-green-800 font-bold px-6 py-3 rounded-xl">
-  <svg class="w-5 h-5"><!-- チェックアイコン --></svg>
-  達成済み
-</div>
+<span class="inline-flex items-center gap-1 px-3 py-1 bg-cream text-primary text-xs font-medium rounded-full border border-accent/20">
+  🎥 エンターテイメント
+</span>
 ```
 
 ---
@@ -436,18 +270,21 @@ YouTube動画のサムネイルを大きく表示。
 ### ヘッダー
 
 ```html
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-  <div class="max-w-4xl mx-auto px-4">
+<header class="bg-white border-b border-accent/20 sticky top-0 z-50">
+  <div class="max-w-screen-xl mx-auto px-4">
     <div class="flex items-center justify-between h-16">
       <!-- ロゴ -->
-      <a href="/" class="text-xl font-bold text-gray-900">
-        ActionSpark
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold">?</span>
+        </div>
+        <span class="text-xl font-bold text-primary">mitadake?</span>
       </a>
 
       <!-- ナビゲーション -->
       <nav class="flex items-center gap-4">
-        <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">一覧</a>
-        <button class="bg-gray-900 text-white font-medium px-4 py-2 rounded-xl hover:bg-gray-800 transition-all">
+        <a href="/posts" class="text-primary/80 hover:text-accent transition-colors">一覧</a>
+        <button class="bg-accent text-white font-medium px-4 py-2 rounded-xl hover:bg-accent/90 transition-all">
           投稿
         </button>
       </nav>
@@ -456,15 +293,50 @@ YouTube動画のサムネイルを大きく表示。
 </header>
 ```
 
+### フッター
+
+```html
+<footer class="bg-white border-t border-accent/20">
+  <div class="max-w-screen-xl mx-auto px-4 py-8">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <!-- ロゴ -->
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 bg-accent rounded-md flex items-center justify-center">
+          <span class="text-white font-bold text-sm">?</span>
+        </div>
+        <span class="font-semibold text-primary">mitadake?</span>
+      </div>
+
+      <!-- リンク -->
+      <nav class="flex items-center gap-6 text-sm">
+        <a href="/terms" class="text-primary/60 hover:text-accent transition-colors">
+          利用規約
+        </a>
+        <a href="/privacy" class="text-primary/60 hover:text-accent transition-colors">
+          プライバシー
+        </a>
+        <a href="/contact" class="text-primary/60 hover:text-accent transition-colors">
+          お問い合わせ
+        </a>
+      </nav>
+    </div>
+
+    <div class="mt-6 pt-6 border-t border-accent/10 text-center">
+      <p class="text-sm text-primary/40">&copy; 2025 mitadake?</p>
+    </div>
+  </div>
+</footer>
+```
+
 ### パンくずリスト
 
 ```html
-<nav class="flex items-center gap-2 text-sm text-gray-500 mb-6">
-  <a href="/" class="hover:text-gray-900 transition-colors">ホーム</a>
+<nav class="flex items-center gap-2 text-sm text-primary/60 mb-6">
+  <a href="/" class="hover:text-accent transition-colors">ホーム</a>
   <span>/</span>
-  <a href="/posts" class="hover:text-gray-900 transition-colors">投稿一覧</a>
+  <a href="/posts" class="hover:text-accent transition-colors">投稿一覧</a>
   <span>/</span>
-  <span class="text-gray-900">投稿詳細</span>
+  <span class="text-primary">投稿詳細</span>
 </nav>
 ```
 
@@ -474,12 +346,12 @@ YouTube動画のサムネイルを大きく表示。
 
 ```html
 <div class="text-center py-12">
-  <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-    <svg class="w-8 h-8 text-gray-400"><!-- アイコン --></svg>
+  <div class="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+    <svg class="w-8 h-8 text-accent"><!-- アイコン --></svg>
   </div>
-  <h3 class="text-lg font-semibold text-gray-900 mb-2">投稿がありません</h3>
-  <p class="text-gray-500 mb-6">最初の投稿を作成しましょう</p>
-  <button class="bg-gray-900 text-white font-semibold px-6 py-3 rounded-xl hover:bg-gray-800 transition-all">
+  <h3 class="text-lg font-semibold text-primary mb-2">投稿がありません</h3>
+  <p class="text-primary/60 mb-6">最初の投稿を作成しましょう</p>
+  <button class="bg-accent text-white font-semibold px-6 py-3 rounded-xl hover:bg-accent/90 transition-all">
     投稿する
   </button>
 </div>
@@ -492,16 +364,39 @@ YouTube動画のサムネイルを大きく表示。
 ### スピナー
 
 ```html
-<div class="animate-spin w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full"></div>
+<div class="animate-spin w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full"></div>
 ```
 
 ### スケルトン
 
 ```html
 <div class="animate-pulse">
-  <div class="aspect-video bg-gray-200 rounded-xl mb-4"></div>
-  <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-  <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+  <div class="aspect-video bg-accent/10 rounded-xl mb-4"></div>
+  <div class="h-4 bg-accent/10 rounded w-3/4 mb-2"></div>
+  <div class="h-4 bg-accent/10 rounded w-1/2"></div>
+</div>
+```
+
+---
+
+## アラート・メッセージ
+
+### フラッシュメッセージ
+
+```html
+<!-- 成功 -->
+<div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+  <p class="text-green-700 font-medium">投稿を作成しました</p>
+</div>
+
+<!-- エラー -->
+<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+  <p class="text-red-700 font-medium">エラーが発生しました</p>
+</div>
+
+<!-- 情報 -->
+<div class="bg-cream border-l-4 border-accent p-4 rounded-r-lg">
+  <p class="text-primary font-medium">お知らせがあります</p>
 </div>
 ```
 
@@ -513,46 +408,23 @@ YouTube動画のサムネイルを大きく表示。
 
 **問題**: Railsの`f.submit`や`button_to`ヘルパーでTailwindクラスを指定しても、スタイルが正しく適用されないことがある。
 
-**原因**:
-- `f.submit`は`<input type="submit">`を生成し、一部のTailwindクラスが効かない
-- `button_to`はフォームを生成し、クラスの適用が期待通りにならないケースがある
-- ブラウザのデフォルトスタイルやCSSリセットが影響する場合がある
-
 **解決策**: 明示的な`<button>`タグを使用し、必要に応じてインラインスタイルを併用する。
 
 ```erb
 <%# NG: f.submit を使用 %>
-<%= f.submit "送信", class: "bg-pink-400 text-white px-5 py-2.5 rounded-full" %>
+<%= f.submit "送信", class: "bg-accent text-white px-5 py-2.5 rounded-xl" %>
 
 <%# OK: 明示的な <button> タグを使用 %>
-<button type="submit" class="bg-pink-400 text-white px-5 py-2.5 rounded-full">
+<button type="submit" class="bg-accent text-white px-5 py-2.5 rounded-xl">
   送信
 </button>
 
 <%# 確実: インラインスタイルを併用 %>
 <button type="submit"
-        class="rounded-full text-sm font-medium"
-        style="background-color: #f472b6; color: white; padding: 10px 20px;">
+        class="rounded-xl text-sm font-medium"
+        style="background-color: #8B7355; color: white; padding: 10px 20px;">
   送信
 </button>
-```
-
-### button_to の代替
-
-```erb
-<%# NG: button_to with block %>
-<%= button_to some_path, method: :post, class: "bg-gray-900 text-white" do %>
-  実行
-<% end %>
-
-<%# OK: form_with + button %>
-<%= form_with url: some_path, method: :post, local: true, class: "inline" do %>
-  <button type="submit"
-          class="inline-flex items-center gap-2 rounded-xl"
-          style="background-color: #111827; color: white; padding: 10px 24px;">
-    実行
-  </button>
-<% end %>
 ```
 
 ### 推奨カラーコード
@@ -561,14 +433,12 @@ YouTube動画のサムネイルを大きく表示。
 
 | Tailwindクラス | カラーコード |
 |---------------|-------------|
-| `bg-gray-900` | `#111827` |
-| `bg-gray-800` | `#1f2937` |
-| `bg-pink-400` | `#f472b6` |
-| `bg-pink-500` | `#ec4899` |
-| `bg-red-500` | `#ef4444` |
-| `bg-red-600` | `#dc2626` |
-| `text-white` | `#ffffff` |
+| `bg-cream` | `#FAF8F5` |
+| `bg-accent` | `#8B7355` |
+| `text-primary` | `#4A4035` |
+| `text-white` | `#FFFFFF` |
+| `border-accent/20` | `rgba(139, 115, 85, 0.2)` |
 
 ---
 
-*最終更新: 2025-12-05*
+*最終更新: 2025-12-08*

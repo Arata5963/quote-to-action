@@ -1,37 +1,80 @@
-# ActionSpark デザイントークン
+# mitadake? デザイントークン
 
-本ドキュメントでは、ActionSparkで使用するカラー、余白、角丸、影などの基本値を定義します。
+本ドキュメントでは、mitadake?で使用するカラー、余白、角丸、影などの基本値を定義します。
 
 ---
 
 ## カラーパレット
 
-### メインカラー（モノトーン）
+### コンセプト
 
-シンプルで落ち着いた印象を与えるモノトーン配色を採用。黄色は使用しません。
+温かみと親しみやすさを重視した「ウォームベージュ系」の配色。
+3色（＋白）のシンプルな構成で統一感を保つ。
 
-| 用途 | Tailwind | HEX | 使用場面 |
-|------|----------|-----|----------|
-| ページ背景 | `bg-gray-50` | #F9FAFB | ページ全体の背景 |
-| カード背景 | `bg-white` | #FFFFFF | カード、モーダル、入力欄 |
-| メインテキスト | `text-gray-900` | #111827 | 見出し、重要テキスト |
-| 本文テキスト | `text-gray-600` | #4B5563 | 本文、説明文 |
-| サブテキスト | `text-gray-500` | #6B7280 | キャプション、補足情報 |
-| ミューテッド | `text-gray-400` | #9CA3AF | プレースホルダー、無効状態 |
-| ボーダー | `border-gray-200` | #E5E7EB | カード境界、区切り線 |
-| ホバー背景 | `bg-gray-100` | #F3F4F6 | ホバー状態の背景 |
-| アクセント | `text-gray-700` | #374151 | インタラクション要素 |
+### メインカラー（3色＋白）
+
+| 用途 | Tailwind | HEX | 使用場面 | 使用比率 |
+|------|----------|-----|----------|----------|
+| ページ背景 | `bg-cream` | #FAF8F5 | ページ全体の背景 | 60% |
+| カード背景 | `bg-white` | #FFFFFF | カード、モーダル、入力欄 | - |
+| テキスト | `text-primary` | #4A4035 | 見出し、本文、すべてのテキスト | 25% |
+| ボタン・強調 | `bg-accent` / `text-accent` | #8B7355 | ボタン、リンク、バッジ、アイコン | 15% |
+
+### Tailwind設定
+
+```javascript
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        cream: '#FAF8F5',
+        primary: '#4A4035',
+        accent: '#8B7355',
+      }
+    }
+  }
+}
+```
+
+### テキストカラーのバリエーション
+
+透明度を使って濃淡を表現。追加の色は定義しない。
+
+| 用途 | Tailwind | 効果 | 使用場面 |
+|------|----------|------|----------|
+| メインテキスト | `text-primary` | 100% | 見出し、重要テキスト |
+| 本文テキスト | `text-primary/80` | 80% | 本文、説明文 |
+| サブテキスト | `text-primary/60` | 60% | キャプション、補足情報 |
+| ミューテッド | `text-primary/40` | 40% | プレースホルダー、無効状態 |
+
+### ボーダーカラー
+
+| 用途 | Tailwind | 効果 | 使用場面 |
+|------|----------|------|----------|
+| 標準ボーダー | `border-accent/20` | 20% | カード境界、区切り線 |
+| 薄いボーダー | `border-accent/10` | 10% | 軽い区切り |
+| フォーカス | `border-accent` | 100% | 入力欄フォーカス時 |
 
 ### プライマリボタン
 
 | 状態 | 背景 | テキスト |
 |------|------|----------|
-| 通常 | `bg-gray-900` | `text-white` |
-| ホバー | `bg-gray-800` | `text-white` |
-| 押下 | `bg-gray-700` | `text-white` |
-| 無効 | `bg-gray-300` | `text-gray-500` |
+| 通常 | `bg-accent` | `text-white` |
+| ホバー | `bg-accent/90` | `text-white` |
+| 押下 | `bg-accent/80` | `text-white` |
+| 無効 | `bg-accent/30` | `text-white/60` |
 
-### システムカラー
+### セカンダリボタン
+
+| 状態 | 背景 | テキスト | ボーダー |
+|------|------|----------|----------|
+| 通常 | `bg-transparent` | `text-accent` | `border-accent` |
+| ホバー | `bg-accent` | `text-white` | `border-accent` |
+
+### システムカラー（変更なし）
+
+ステータス表示にのみ使用。メインデザインには使わない。
 
 | 用途 | Tailwind | HEX | 使用場面 |
 |------|----------|-----|----------|
@@ -40,12 +83,27 @@
 | エラー | `text-red-600` / `bg-red-50` | #DC2626 | 削除、失敗、エラーメッセージ |
 | 情報 | `text-blue-600` / `bg-blue-50` | #2563EB | リンク、情報メッセージ |
 
-### 達成状態カラー
+---
 
-| 状態 | バッジ背景 | テキスト |
-|------|-----------|----------|
-| 達成済み | `bg-green-100` | `text-green-800` |
-| 未達成 | `bg-gray-100` | `text-gray-600` |
+## カラー置き換え対応表
+
+旧デザイン（モノトーン）から新デザイン（ウォームベージュ）への変換表。
+
+| 旧（gray系） | 新（warm系） | 用途 |
+|-------------|-------------|------|
+| `bg-gray-50` | `bg-cream` | ページ背景 |
+| `bg-white` | `bg-white` | カード背景（変更なし） |
+| `text-gray-900` | `text-primary` | メインテキスト |
+| `text-gray-600` | `text-primary/80` | 本文テキスト |
+| `text-gray-500` | `text-primary/60` | サブテキスト |
+| `text-gray-400` | `text-primary/40` | プレースホルダー |
+| `bg-gray-900` | `bg-accent` | プライマリボタン |
+| `bg-gray-800` | `bg-accent/90` | ボタンホバー |
+| `text-gray-700` | `text-accent` | リンク、強調 |
+| `border-gray-200` | `border-accent/20` | ボーダー |
+| `border-gray-100` | `border-accent/10` | 薄いボーダー |
+| `bg-gray-100` | `bg-cream` | ホバー背景 |
+| `hover:bg-gray-100` | `hover:bg-accent/10` | ホバー状態 |
 
 ---
 
@@ -53,7 +111,7 @@
 
 ### フォントファミリー
 
-```
+```css
 font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 ```
 
@@ -191,10 +249,10 @@ Tailwind: デフォルト（`font-sans`）を使用
 
 | 用途 | Tailwind | 使用場面 |
 |------|----------|----------|
-| カード境界 | `border border-gray-100` | カードの軽い境界 |
-| 入力フィールド | `border border-gray-300` | フォーム要素 |
-| セパレーター | `border-t border-gray-200` | セクション区切り |
-| フォーカス | `focus:border-gray-500` | フォーカス状態 |
+| カード境界 | `border border-accent/20` | カードの軽い境界 |
+| 入力フィールド | `border-2 border-accent/30` | フォーム要素 |
+| セパレーター | `border-t border-accent/20` | セクション区切り |
+| フォーカス | `focus:border-accent` | フォーカス状態 |
 
 ---
 
@@ -211,13 +269,13 @@ Tailwind: デフォルト（`font-sans`）を使用
 
 ```html
 <!-- ボタン -->
-<button class="transition-all hover:bg-gray-800">
+<button class="transition-all hover:bg-accent/90">
 
 <!-- カード -->
 <div class="transition-shadow hover:shadow-md">
 
 <!-- リンク -->
-<a class="transition-colors hover:text-gray-900">
+<a class="transition-colors hover:text-accent">
 ```
 
 ---
@@ -246,15 +304,15 @@ Tailwind: デフォルト（`font-sans`）を使用
 
 | 背景 | テキスト | コントラスト比 |
 |------|----------|---------------|
-| `bg-white` | `text-gray-900` | 17.4:1 |
-| `bg-white` | `text-gray-600` | 7.0:1 |
-| `bg-gray-50` | `text-gray-900` | 15.8:1 |
-| `bg-gray-900` | `text-white` | 17.4:1 |
+| `bg-cream` (#FAF8F5) | `text-primary` (#4A4035) | 7.2:1 ✅ |
+| `bg-white` | `text-primary` (#4A4035) | 8.1:1 ✅ |
+| `bg-accent` (#8B7355) | `text-white` | 4.5:1 ✅ |
+| `bg-cream` (#FAF8F5) | `text-accent` (#8B7355) | 3.8:1 ✅ (大きなテキスト) |
 
 ### フォーカス状態
 
 ```html
-<button class="focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+<button class="focus:outline-none focus:ring-2 focus:ring-accent/50 focus:ring-offset-2">
 ```
 
 ### 最小タッチターゲット
@@ -264,4 +322,4 @@ Tailwind: デフォルト（`font-sans`）を使用
 
 ---
 
-*最終更新: 2025-12-04*
+*最終更新: 2025-12-08*

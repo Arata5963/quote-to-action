@@ -21,12 +21,15 @@ class User < ApplicationRecord
     user = find_by(email: auth.info.email)
     if user
       user.update!(provider: auth.provider, uid: auth.uid)
+      # 名前が未設定ならGoogleの名前を設定
+      user.update!(name: auth.info.name) if user.name.blank? && auth.info.name.present?
       return user
     end
 
     # 3) なければ新規作成
     create!(
       email:    auth.info.email,
+      name:     auth.info.name,
       password: Devise.friendly_token[0, 20],
       provider: auth.provider,
       uid:      auth.uid

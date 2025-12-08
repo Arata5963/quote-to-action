@@ -27,15 +27,15 @@
     </script>
   </head>
 
-  <body class="min-h-screen bg-gray-50 flex flex-col">
+  <body class="min-h-screen bg-cream flex flex-col">
     <%= render "shared/header" %>
     <%= render "shared/flash_messages" %>
 
 
-    <main class="flex-1">
+    <main class="flex-1 pb-20">
       <%= yield %>
     </main>
 
-    <%= render "shared/footer" %>
+    <%= render "shared/bottom_nav" %>
   </body>
 </html>

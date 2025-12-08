@@ -18,9 +18,8 @@ Rails.application.routes.draw do
 
   get :home, to: "home#index"
 
-  get :mypage, to: "users#show"
-  get :edit_profile, to: "users#edit"
-  patch :update_profile, to: "users#update"
+  get :mypage, to: "users#edit"
+  patch :mypage, to: "users#update"
 
   resources :posts do
     get :autocomplete, on: :collection

@@ -1,115 +1,28 @@
 <%# app/views/shared/_header.html.erb %>
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+<header class="bg-white border-b border-accent/20 sticky top-0 z-40">
   <div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
     <div class="flex h-16 items-center justify-between">
 
       <%# 左側：ロゴ %>
       <div class="flex items-center">
-        <%= link_to root_path, class: "flex items-center gap-2 text-primary hover:text-primary-700 transition-colors" do %>
-          <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-            <svg class="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
-            </svg>
-          </div>
+        <%= link_to root_path, class: "flex items-center gap-2 text-primary hover:text-accent transition-colors" do %>
+          <%= image_tag "/favicon-32x32.png", alt: "mitadake?", class: "w-8 h-8 rounded-lg" %>
           <span class="text-xl font-bold tracking-tight">mitadake?</span>
         <% end %>
       </div>
 
-      <%# 右側：ナビゲーション %>
-      <div class="flex items-center gap-3">
-        <% if user_signed_in? %>
-          <%# 新規投稿ボタン（デスクトップ） %>
-          <%= link_to new_post_path, class: "hidden sm:flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-medium hover:bg-primary-800 transition-colors" do %>
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-            </svg>
-            <span>投稿</span>
-          <% end %>
-        <% end %>
+      <%# 右側：メニューボタン %>
+      <div class="flex items-center gap-3" data-controller="sidebar">
+        <button type="button"
+                data-action="click->sidebar#open"
+                class="p-2 text-primary/60 hover:text-primary hover:bg-accent/10 cursor-pointer rounded-lg transition-colors">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+          </svg>
+        </button>
 
-        <%# メニュー %>
-        <details class="relative" id="header-menu">
-          <summary class="p-2 text-primary-500 hover:text-primary hover:bg-gray-100 cursor-pointer list-none rounded-lg transition-colors">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-            </svg>
-          </summary>
-
-          <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-50">
-            <nav class="py-2">
-              <% if user_signed_in? %>
-                <%= link_to posts_path, class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                  </svg>
-                  <span>投稿一覧</span>
-                <% end %>
-
-                <%= link_to new_post_path, class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors sm:hidden" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-                  </svg>
-                  <span>新規投稿</span>
-                <% end %>
-
-                <%= link_to mypage_path, class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
-                  <span>マイページ</span>
-                <% end %>
-
-                <%= link_to usage_path, class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                  </svg>
-                  <span>使い方</span>
-                <% end %>
-
-                <div class="border-t border-gray-100 my-2"></div>
-
-                <%= link_to destroy_user_session_path,
-                      data: { "turbo-method": :delete },
-                      class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-                  </svg>
-                  <span>ログアウト</span>
-                <% end %>
-              <% else %>
-                <%= link_to posts_path, class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                  </svg>
-                  <span>投稿一覧</span>
-                <% end %>
-
-                <%= link_to usage_path, class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                  </svg>
-                  <span>使い方</span>
-                <% end %>
-
-                <div class="border-t border-gray-100 my-2"></div>
-
-                <%= link_to new_user_session_path, class: "flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10 17v-3H3v-4h7V7l5 5-5 5z"/>
-                  </svg>
-                  <span>ログイン</span>
-                <% end %>
-
-                <%= link_to new_user_registration_path, class: "flex items-center gap-3 px-4 py-2.5 text-primary font-medium hover:bg-accent-50 transition-colors" do %>
-                  <svg class="w-5 h-5 text-accent-600" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                  </svg>
-                  <span>新規登録</span>
-                <% end %>
-              <% end %>
-            </nav>
-          </div>
-        </details>
+        <%# サイドバー %>
+        <%= render "shared/sidebar" %>
       </div>
     </div>
   </div>

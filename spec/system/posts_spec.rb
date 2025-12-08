@@ -41,7 +41,7 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content("テストアクション")
 
         # 7. 成功メッセージが表示される
-        expect(page).to have_content("きっかけが投稿されました")
+        expect(page).to have_content("投稿しました！")
       end
 
       it "バリデーションエラーが表示される" do
@@ -140,7 +140,7 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_content("編集後のアクション")
 
         # 8. 成功メッセージが表示される
-        expect(page).to have_content("きっかけが更新されました")
+        expect(page).to have_content("投稿を更新しました")
       end
     end
   end
@@ -168,7 +168,7 @@ RSpec.describe "Posts", type: :system do
         expect(page).to have_current_path(posts_path)
 
         # 4. 成功メッセージが表示される
-        expect(page).to have_content("きっかけが削除されました")
+        expect(page).to have_content("投稿を削除しました")
 
         # 5. 投稿が表示されない
         expect(page).not_to have_content("削除するアクション")

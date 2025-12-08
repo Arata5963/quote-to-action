@@ -1,88 +1,85 @@
 <%# app/views/posts/index.html.erb %>
 
-<div class="min-h-screen bg-gray-50">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-
-    <%# ===== Page Header ===== %>
-    <header class="mb-8">
-      <div class="flex items-center justify-between">
-        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">みんなの投稿</h1>
-        <% if user_signed_in? %>
-          <%= link_to new_post_path,
-              class: "hidden sm:inline-flex items-center gap-2 rounded-xl bg-gray-900 text-white px-5 py-2.5 text-sm font-semibold shadow-sm hover:bg-gray-800 transition-colors" do %>
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            新規投稿
-          <% end %>
-        <% end %>
-      </div>
-    </header>
+<div class="min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
 
     <%# ===== Search / Filters Bar ===== %>
     <section class="mb-8">
-      <div class="rounded-2xl bg-white border border-gray-100 shadow-sm p-5">
+      <div class="rounded-2xl bg-white border border-accent/20 shadow-sm p-5">
         <%= search_form_for @q, url: posts_path, method: :get,
               html: { id: 'search_form', class: "space-y-4" } do |f| %>
 
-          <%# キーワード検索（メイン） %>
-          <div class="relative"
-               data-controller="autocomplete"
-               data-autocomplete-url-value="<%= autocomplete_posts_path %>"
-               data-autocomplete-min-length-value="2"
-               role="combobox">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
-              <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
+          <%# 検索フィールド + 検索ボタン（横並び） %>
+          <div class="flex gap-3">
+            <div class="relative flex-1"
+                 data-controller="autocomplete"
+                 data-autocomplete-url-value="<%= autocomplete_posts_path %>"
+                 data-autocomplete-min-length-value="2"
+                 role="combobox">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
+                <svg class="h-5 w-5 text-primary/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+              <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
+                    data: { autocomplete_target: "input" },
+                    placeholder: "キーワードで検索...",
+                    class: "w-full rounded-xl border-accent/20 bg-cream pl-12 pr-4 py-3 text-sm text-primary placeholder:text-primary/40 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-white transition-all" %>
+              <ul class="absolute z-20 w-full bg-white border border-accent/20 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
+                  data-autocomplete-target="results"
+                  hidden></ul>
             </div>
-            <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
-                  data: { autocomplete_target: "input" },
-                  placeholder: "キーワードで検索...",
-                  class: "w-full rounded-xl border-gray-200 bg-gray-50 pl-12 pr-4 py-3 text-sm placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 focus:bg-white transition-all" %>
-            <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
-                data-autocomplete-target="results"
-                hidden></ul>
+
+            <%# 検索ボタン %>
+            <button type="submit" class="rounded-xl bg-accent text-white px-6 py-3 text-sm font-medium hover:bg-accent/90 transition-colors flex-shrink-0">
+              検索
+            </button>
           </div>
 
           <%# フィルター（横並び） %>
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-4">
             <%# 表示タブ %>
-            <%= select_tag :tab,
-                  options_for_select(
-                    [
-                      ['全体', ''],
-                      user_signed_in? ? ['自分の投稿', 'mine'] : nil
-                    ].compact,
-                    params[:tab]
-                  ),
-                  class: "rounded-lg border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 focus:border-gray-400 focus:ring-2 focus:ring-gray-200",
-                  onchange: "document.getElementById('search_form').submit()" %>
+            <div>
+              <label class="text-xs text-primary/60 mb-1 block">投稿</label>
+              <%= select_tag :tab,
+                    options_for_select(
+                      [
+                        ['全体', ''],
+                        user_signed_in? ? ['自分の投稿', 'mine'] : nil
+                      ].compact,
+                      params[:tab]
+                    ),
+                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
+                    onchange: "document.getElementById('search_form').submit()" %>
+            </div>
 
             <%# カテゴリ %>
-            <%= select_tag :category,
-                  options_for_select(
-                    [['カテゴリ', '']] + Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
-                    params[:category]
-                  ),
-                  class: "rounded-lg border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 focus:border-gray-400 focus:ring-2 focus:ring-gray-200",
-                  onchange: "document.getElementById('search_form').submit()" %>
+            <div>
+              <label class="text-xs text-primary/60 mb-1 block">カテゴリ</label>
+              <%= select_tag :category,
+                    options_for_select(
+                      [['すべて', '']] + Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
+                      params[:category]
+                    ),
+                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
+                    onchange: "document.getElementById('search_form').submit()" %>
+            </div>
 
             <%# 達成状況 %>
-            <%= select_tag :achievement,
-                  options_for_select(
-                    [
-                      ['達成状況', ''],
-                      ['達成済み', 'achieved'],
-                      ['未達成', 'not_achieved']
-                    ],
-                    params[:achievement]
-                  ),
-                  class: "rounded-lg border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 focus:border-gray-400 focus:ring-2 focus:ring-gray-200",
-                  onchange: "document.getElementById('search_form').submit()" %>
-
-            <%# 検索ボタン %>
-            <button type="submit" class="rounded-lg text-sm font-medium transition-colors" style="background-color: #111827; color: white; padding: 8px 16px;">
-              検索
-            </button>
+            <div>
+              <label class="text-xs text-primary/60 mb-1 block">達成状況</label>
+              <%= select_tag :achievement,
+                    options_for_select(
+                      [
+                        ['すべて', ''],
+                        ['やったけど？', 'achieved'],
+                        ['みただけ？', 'not_achieved']
+                      ],
+                      params[:achievement]
+                    ),
+                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
+                    onchange: "document.getElementById('search_form').submit()" %>
+            </div>
           </div>
         <% end %>
       </div>
@@ -90,13 +87,13 @@
 
     <%# ===== Posts List ===== %>
     <% if @posts.empty? %>
-      <div class="rounded-2xl bg-white border border-gray-100 p-12 text-center shadow-sm">
-        <div class="mx-auto h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
-          <svg class="h-7 w-7 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <div class="rounded-2xl bg-white border border-accent/20 p-12 text-center shadow-sm">
+        <div class="mx-auto h-14 w-14 rounded-full bg-accent/10 flex items-center justify-center">
+          <svg class="h-7 w-7 text-primary/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
-        <h3 class="mt-4 text-xl font-bold text-gray-900">
+        <h3 class="mt-4 text-xl font-bold text-primary">
           <% if params[:q].present? %>
             検索条件に一致する投稿が見つかりませんでした
           <% elsif params[:category].present? %>
@@ -108,17 +105,17 @@
           <% end %>
         </h3>
         <% if user_signed_in? %>
-          <p class="mt-1 text-sm text-gray-500">最初の一歩を記録しよう。</p>
+          <p class="mt-1 text-sm text-primary/60">最初の一歩を記録しよう。</p>
           <%= link_to new_post_path,
-                class: "mt-6 inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 transition-colors" do %>
+                class: "mt-6 inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-accent/90 transition-colors" do %>
             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             投稿する
           <% end %>
         <% end %>
       </div>
     <% else %>
-      <%# 投稿リスト - シンプルな1カラム %>
-      <div class="space-y-4">
+      <%# 投稿リスト - 2カラムグリッド %>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <% @posts.each do |post| %>
           <%= render 'posts/post_card', post: post %>
         <% end %>
@@ -131,13 +128,3 @@
     <% end %>
   </div>
 </div>
-
-<%# Floating Action Button (mobile) %>
-<% if user_signed_in? %>
-  <div class="fixed bottom-6 right-6 z-50 sm:hidden">
-    <%= link_to new_post_path,
-          class: "flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg hover:bg-gray-800 transition-colors" do %>
-      <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-    <% end %>
-  </div>
-<% end %>
