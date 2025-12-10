@@ -2,7 +2,7 @@
 
 ## 概要
 
-ActionSparkはRuby on Rails 7.2.2を基盤とした、標準的なMVCアーキテクチャを採用しています。
+mitadake?はRuby on Rails 7.2.2を基盤とした、標準的なMVCアーキテクチャを採用しています。
 YouTube動画から学びを行動に変えるプラットフォームとして、Hotwire（Turbo + Stimulus）によるモダンなフロントエンド体験と、Sidekiqによるバックグラウンド処理を実現しています。
 
 ## アーキテクチャ全体像
@@ -52,10 +52,9 @@ app/
 │   ├── achievements_controller.rb   # 達成記録
 │   ├── comments_controller.rb       # コメント
 │   ├── likes_controller.rb          # いいね
-│   ├── users_controller.rb          # ユーザープロフィール
-│   ├── user_badges_controller.rb    # バッジ表示
+│   ├── users_controller.rb          # ユーザープロフィール（マイページ）
 │   ├── home_controller.rb           # ホーム
-│   ├── pages_controller.rb          # 静的ページ
+│   ├── pages_controller.rb          # 静的ページ（利用規約、プライバシー、使い方）
 │   └── users/                       # Devise関連
 │       └── omniauth_callbacks_controller.rb
 ├── models/
@@ -65,8 +64,7 @@ app/
 │   ├── achievement.rb
 │   ├── comment.rb
 │   ├── like.rb
-│   ├── reminder.rb                  # リマインダー
-│   └── user_badge.rb
+│   └── reminder.rb                  # リマインダー
 ├── views/
 │   ├── layouts/
 │   ├── posts/
@@ -85,9 +83,7 @@ app/
 │   └── controllers/                 # Stimulus コントローラー
 │       └── application.js           # Autocomplete登録
 ├── helpers/
-│   ├── application_helper.rb
-│   ├── posts_helper.rb              # カテゴリ表示等
-│   └── badges_helper.rb             # バッジ表示
+│   └── application_helper.rb
 └── assets/
     └── stylesheets/
 
@@ -127,9 +123,9 @@ class PostsController < ApplicationController
     query = params[:q].to_s.strip
     if query.length >= 2
       @suggestions = Post
-        .where("trigger_content ILIKE :q OR action_plan ILIKE :q", q: "%#{query}%")
+        .where("action_plan ILIKE :q OR youtube_title ILIKE :q", q: "%#{query}%")
         .limit(10)
-        .pluck(:trigger_content, :action_plan)
+        .pluck(:action_plan, :youtube_title)
         .flatten.compact.uniq
         .select { |s| s.downcase.include?(query.downcase) }
         .first(10)
@@ -143,8 +139,8 @@ class PostsController < ApplicationController
 
   def post_params
     params.require(:post).permit(
-      :youtube_url, :trigger_content, :action_plan, :category,
-      reminder_attributes: [:id, :remind_time, :_destroy]
+      :youtube_url, :action_plan, :category,
+      reminder_attributes: [:id, :remind_at, :_destroy]
     )
   end
 end
@@ -161,16 +157,16 @@ end
 ```ruby
 class Post < ApplicationRecord
   belongs_to :user
+  has_one :reminder, dependent: :destroy
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :likes, dependent: :destroy
-  has_one :reminder, dependent: :destroy
 
-  accepts_nested_attributes_for :reminder, allow_destroy: true
+  accepts_nested_attributes_for :reminder, allow_destroy: true, reject_if: :all_blank
 
   validates :youtube_url, presence: true
-  validates :trigger_content, presence: true, length: { maximum: 100 }
-  validates :action_plan, presence: true, length: { maximum: 100 }
+  validates :action_plan, presence: true, length: { minimum: 1, maximum: 100 }
+  validates :category, presence: true
 
   scope :recent, -> { order(created_at: :desc) }
 
@@ -206,11 +202,10 @@ class SendRemindersJob < ApplicationJob
   queue_as :default
 
   def perform
-    current_time = Time.current.strftime("%H:%M")
-    reminders = Reminder.where(remind_time: current_time)
-                        .includes(:user, :post)
+    # 現在時刻に該当し、達成済みでない投稿のリマインダーを取得
+    reminders = Reminder.sendable.includes(:user, :post)
 
-    reminders.each do |reminder|
+    reminders.find_each do |reminder|
       ReminderMailer.reminder_email(reminder).deliver_later
     end
   end
@@ -236,7 +231,7 @@ send_reminders:
 <div data-controller="autocomplete"
      data-autocomplete-url-value="<%= autocomplete_posts_path %>"
      data-autocomplete-min-length-value="2">
-  <%= f.search_field :trigger_content_or_action_plan_cont,
+  <%= f.search_field :action_plan_or_youtube_title_cont,
         data: { autocomplete_target: "input" } %>
   <ul data-autocomplete-target="results" hidden></ul>
 </div>
@@ -248,17 +243,18 @@ send_reminders:
 
 ```
 1. ユーザーがYouTube URLを入力
-2. フォームで trigger_content, action_plan, category を入力
-3. オプションでリマインダー時刻を設定
-4. PostsController#create で保存
-5. Reminder も nested_attributes で同時作成
+2. YouTube APIから動画タイトル・チャンネル名を自動取得
+3. フォームで action_plan, category を入力
+4. オプションでリマインダー日時を設定
+5. PostsController#create で保存
+6. Reminder も nested_attributes で同時作成
 ```
 
 ### リマインダー通知フロー
 
 ```
 1. sidekiq-scheduler が毎分 SendRemindersJob を実行
-2. 現在時刻と一致する remind_time を持つ Reminder を取得
+2. 現在時刻に該当し、達成済みでない投稿の Reminder を取得
 3. 各リマインダーに対して ReminderMailer でメール送信
 4. ユーザーがメールを受信し、投稿を確認
 ```
@@ -291,6 +287,6 @@ send_reminders:
 
 ---
 
-*最終更新: 2025-12-02*
+*最終更新: 2025-12-10*
 
 *関連ドキュメント*: `02_database.md`, `03_api_design.md`, `../03_library_guides/05_sidekiq.md`

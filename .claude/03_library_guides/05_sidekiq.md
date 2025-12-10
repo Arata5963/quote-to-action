@@ -3,7 +3,7 @@
 ## 概要
 
 Sidekiqは、Redisをバックエンドとした高性能なバックグラウンドジョブ処理ライブラリです。
-ActionSparkでは、リマインダー通知の定期実行に使用しています。
+mitadake?では、リマインダー通知の定期実行に使用しています。
 
 ## 使用ライブラリ
 
@@ -79,10 +79,8 @@ class SendRemindersJob < ApplicationJob
   queue_as :default
 
   def perform
-    current_time = Time.current.strftime("%H:%M")
-
-    reminders = Reminder.where(remind_time: current_time)
-                        .includes(:user, :post)
+    # 現在時刻に該当し、達成済みでない投稿のリマインダーを取得
+    reminders = Reminder.sendable.includes(:user, :post)
 
     reminders.find_each do |reminder|
       ReminderMailer.reminder_email(reminder).deliver_later
@@ -90,6 +88,23 @@ class SendRemindersJob < ApplicationJob
 
     Rails.logger.info "[SendRemindersJob] #{reminders.count}件のリマインダーを送信"
   end
+end
+```
+
+**Reminderモデルのスコープ**:
+```ruby
+class Reminder < ApplicationRecord
+  # 現在時刻に該当するリマインダーを取得
+  scope :due_now, -> {
+    now = Time.current
+    where(remind_at: now.beginning_of_minute..now.end_of_minute)
+  }
+
+  # 達成済みでない投稿のリマインダーのみ
+  scope :active, -> { joins(:post).where(posts: { achieved_at: nil }) }
+
+  # 送信対象（現在時刻かつアクティブ）
+  scope :sendable, -> { due_now.active }
 end
 ```
 
@@ -105,7 +120,7 @@ class ReminderMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: "【ActionSpark】アクションプランのリマインダー"
+      subject: "【mitadake?】アクションプランのリマインダー"
     )
   end
 end
@@ -120,7 +135,7 @@ end
 <p>アクションプランの実践時間です！</p>
 
 <div style="background: #f3f4f6; padding: 16px; border-radius: 8px;">
-  <h2>📹 <%= truncate(@post.trigger_content, length: 50) %></h2>
+  <h2><%= @post.youtube_title %></h2>
   <p><strong>アクションプラン:</strong> <%= @post.action_plan %></p>
 </div>
 
@@ -237,7 +252,7 @@ RSpec.describe SendRemindersJob, type: :job do
     let(:user) { create(:user) }
     let(:post) { create(:post, user: user) }
     let!(:reminder) do
-      create(:reminder, user: user, post: post, remind_time: Time.current.strftime("%H:%M"))
+      create(:reminder, user: user, post: post, remind_at: Time.current)
     end
 
     it 'リマインダーメールを送信する' do
@@ -247,11 +262,19 @@ RSpec.describe SendRemindersJob, type: :job do
     end
 
     it '該当時刻のリマインダーのみ処理する' do
-      other_reminder = create(:reminder, remind_time: '23:59')
+      other_reminder = create(:reminder, remind_at: 1.hour.from_now)
 
       expect {
         described_class.perform_now
       }.to have_enqueued_mail(ReminderMailer, :reminder_email).once
+    end
+
+    it '達成済み投稿のリマインダーは処理しない' do
+      post.update!(achieved_at: Time.current)
+
+      expect {
+        described_class.perform_now
+      }.not_to have_enqueued_mail(ReminderMailer, :reminder_email)
     end
   end
 end
@@ -340,6 +363,6 @@ end
 
 ---
 
-*最終更新: 2025-12-02*
+*最終更新: 2025-12-10*
 
 *関連ドキュメント*: `../01_technical_design/01_architecture.md`

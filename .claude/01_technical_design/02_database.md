@@ -13,36 +13,32 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 │ id          │───┐   │ id          │
 │ email       │   │   │ user_id     │←─┐
 │ name        │   └──→│ youtube_url │  │
-│ avatar      │       │ trigger_... │  │
-│ encrypted.. │   ┌──→│ action_plan │  │
-└─────────────┘   │   │ category    │  │
-      │           │   │ achieved_at │  │
-      │           │   └─────────────┘  │
-      ▼           │         │          │
-┌─────────────┐   │         │          │
-│ Achievement │   │         ▼          │
-├─────────────┤   │   ┌─────────────┐  │
-│ id          │   │   │   Comment   │  │
-│ user_id     │───┘   ├─────────────┤  │
-│ post_id     │───────│ id          │  │
-│ achieved_at │       │ user_id     │──┘
-└─────────────┘       │ post_id     │───┐
-                      │ content     │   │
-┌─────────────┐       └─────────────┘   │
-│    Like     │              │          │
-├─────────────┤              ▼          │
-│ id          │       ┌─────────────┐   │
-│ user_id     │───────│  Reminder   │   │
-│ post_id     │───────├─────────────┤   │
-└─────────────┘       │ id          │   │
-                      │ user_id     │───┤
-┌─────────────┐       │ post_id     │───┘
-│  UserBadge  │       │ remind_time │
-├─────────────┤       └─────────────┘
-│ id          │
-│ user_id     │
-│ badge_type  │
-└─────────────┘
+│ avatar      │       │ youtube_... │  │
+│ provider    │   ┌──→│ action_plan │  │
+│ uid         │   │   │ category    │  │
+│ encrypted.. │   │   │ achieved_at │  │
+└─────────────┘   │   └─────────────┘  │
+      │           │         │          │
+      │           │         │          │
+      ▼           │         ▼          │
+┌─────────────┐   │   ┌─────────────┐  │
+│ Achievement │   │   │   Comment   │  │
+├─────────────┤   │   ├─────────────┤  │
+│ id          │   │   │ id          │  │
+│ user_id     │───┘   │ user_id     │──┘
+│ post_id     │───────│ post_id     │───┐
+│ achieved_at │       │ content     │   │
+└─────────────┘       └─────────────┘   │
+                             │          │
+┌─────────────┐              ▼          │
+│    Like     │       ┌─────────────┐   │
+├─────────────┤       │  Reminder   │   │
+│ id          │       ├─────────────┤   │
+│ user_id     │───────│ id          │   │
+│ post_id     │───────│ user_id     │───┤
+└─────────────┘       │ post_id     │───┘
+                      │ remind_at   │
+                      └─────────────┘
 ```
 
 ## テーブル定義
@@ -77,9 +73,8 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 | youtube_url | string | NOT NULL | YouTube動画URL |
 | youtube_title | string | | YouTube動画タイトル（API自動取得） |
 | youtube_channel_name | string | | YouTubeチャンネル名（API自動取得） |
-| trigger_content | text | NOT NULL | 響いたポイント（1-100文字） |
-| action_plan | text | NOT NULL | アクションプラン（1-100文字） |
-| category | integer | NOT NULL | カテゴリ（YouTube公式enum） |
+| action_plan | text | | アクションプラン（1-100文字） |
+| category | integer | NOT NULL, default: 6 | カテゴリ（YouTube公式enum） |
 | achieved_at | datetime | | 達成日時（タスク型） |
 | created_at | datetime | NOT NULL | 作成日時 |
 | updated_at | datetime | NOT NULL | 更新日時 |
@@ -87,7 +82,6 @@ PostgreSQLを使用し、正規化されたリレーショナルデータベー�
 **インデックス**:
 - `index_posts_on_user_id`
 - `index_posts_on_category`
-- `index_posts_on_created_at`
 
 **カテゴリEnum定義（YouTube公式）**:
 ```ruby
@@ -147,14 +141,14 @@ end
 | id | bigint | PK | 主キー |
 | user_id | bigint | FK, NOT NULL | 達成ユーザー |
 | post_id | bigint | FK, NOT NULL | 対象投稿 |
-| achieved_at | datetime | NOT NULL | 達成日時 |
+| achieved_at | date | NOT NULL, default: CURRENT_DATE | 達成日 |
 | created_at | datetime | NOT NULL | 作成日時 |
 | updated_at | datetime | NOT NULL | 更新日時 |
 
 **インデックス**:
 - `index_achievements_on_user_id`
 - `index_achievements_on_post_id`
-- `index_achievements_on_user_id_and_post_id` (unique) - タスク型（1投稿1達成）
+- `idx_unique_achievements` (unique: user_id, post_id) - タスク型（1投稿1達成）
 
 ### reminders
 
@@ -163,13 +157,15 @@ end
 | id | bigint | PK | 主キー |
 | user_id | bigint | FK, NOT NULL | リマインダー対象ユーザー |
 | post_id | bigint | FK, NOT NULL | 対象投稿 |
-| remind_time | time | NOT NULL | 通知時刻（HH:MM） |
+| remind_at | datetime | NOT NULL | 通知日時 |
 | created_at | datetime | NOT NULL | 作成日時 |
 | updated_at | datetime | NOT NULL | 更新日時 |
 
 **インデックス**:
 - `index_reminders_on_user_id`
 - `index_reminders_on_post_id`
+- `index_reminders_on_remind_at`
+- `idx_unique_user_post_reminder` (unique: user_id, post_id)
 
 ### comments
 
@@ -178,13 +174,14 @@ end
 | id | bigint | PK | 主キー |
 | user_id | bigint | FK, NOT NULL | コメント者 |
 | post_id | bigint | FK, NOT NULL | 対象投稿 |
-| content | text | NOT NULL | コメント内容（max 500文字） |
+| content | string | NOT NULL | コメント内容 |
 | created_at | datetime | NOT NULL | 作成日時 |
 | updated_at | datetime | NOT NULL | 更新日時 |
 
 **インデックス**:
 - `index_comments_on_user_id`
 - `index_comments_on_post_id`
+- `index_comments_on_post_id_and_created_at`
 
 ### likes
 
@@ -200,36 +197,25 @@ end
 - `index_likes_on_user_id_and_post_id` (unique)
 - `index_likes_on_post_id`
 
-### user_badges
-
-| カラム | 型 | 制約 | 説明 |
-|--------|-----|------|------|
-| id | bigint | PK | 主キー |
-| user_id | bigint | FK, NOT NULL | バッジ所有ユーザー |
-| badge_type | integer | NOT NULL | バッジ種類（enum） |
-| created_at | datetime | NOT NULL | 作成日時 |
-| updated_at | datetime | NOT NULL | 更新日時 |
-
 ## アソシエーション
 
 ```ruby
 class User < ApplicationRecord
   has_many :posts, dependent: :destroy
+  has_many :reminders, dependent: :destroy
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :likes, dependent: :destroy
-  has_many :reminders, dependent: :destroy
-  has_many :user_badges, dependent: :destroy
 end
 
 class Post < ApplicationRecord
   belongs_to :user
+  has_one :reminder, dependent: :destroy
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :likes, dependent: :destroy
-  has_one :reminder, dependent: :destroy
 
-  accepts_nested_attributes_for :reminder, allow_destroy: true
+  accepts_nested_attributes_for :reminder, allow_destroy: true, reject_if: :all_blank
 end
 
 class Reminder < ApplicationRecord
@@ -327,6 +313,6 @@ docker compose exec -T db psql -U postgres action_spark_development < backup.sql
 
 ---
 
-*最終更新: 2025-12-03*
+*最終更新: 2025-12-10*
 
 *関連ドキュメント*: `01_architecture.md`, `06_security.md`
