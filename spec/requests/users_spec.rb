@@ -14,8 +14,10 @@ RSpec.describe 'Users', type: :request do
 
       it 'マイページの主要要素が表示される' do
         get mypage_path
-        expect(response.body).to include('達成カレンダー')
         expect(response.body).to include('プロフィール')
+        expect(response.body).to include('達成済み')
+        expect(response.body).to include('みただけ？')
+        expect(response.body).to include('達成カレンダー')
       end
 
       it '編集リンクが表示される' do

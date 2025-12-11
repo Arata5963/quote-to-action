@@ -56,6 +56,7 @@ RSpec.describe 'OmniauthCallbacks', type: :request do
     context '正常系: 既存ユーザーの場合' do
       let!(:existing_user) do
         User.create!(
+          name: 'Existing User',
           email: 'existing@example.com',
           provider: 'google_oauth2',
           uid: '987654321',

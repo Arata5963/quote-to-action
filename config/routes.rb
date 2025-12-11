@@ -21,6 +21,7 @@ Rails.application.routes.draw do
   get :mypage, to: "users#show"
   get :edit_profile, to: "users#edit"
   patch :mypage, to: "users#update"
+  get "users/:id", to: "users#show", as: :user_profile
 
   resources :posts do
     get :autocomplete, on: :collection
