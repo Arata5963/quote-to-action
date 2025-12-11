@@ -40,5 +40,70 @@ RSpec.describe Achievement, type: :model do
         expect(Achievement.recent.first).to eq(recent_achievement)
       end
     end
+
+    describe ".monthly_calendar_data" do
+      let(:user) { create(:user) }
+      let(:other_user) { create(:user) }
+
+      before do
+        # 今月の達成
+        create(:achievement, user: user, achieved_at: Date.new(2024, 12, 11))
+        create(:achievement, user: user, achieved_at: Date.new(2024, 12, 11))
+        create(:achievement, user: user, achieved_at: Date.new(2024, 12, 5))
+
+        # 先月の達成（含まれない）
+        create(:achievement, user: user, achieved_at: Date.new(2024, 11, 30))
+
+        # 他ユーザーの達成（含まれない）
+        create(:achievement, user: other_user, achieved_at: Date.new(2024, 12, 11))
+      end
+
+      it "指定月の達成を日付ごとにグループ化する" do
+        result = Achievement.monthly_calendar_data(user.id, 2024, 12)
+
+        expect(result[Date.new(2024, 12, 11)]).to eq(2)
+        expect(result[Date.new(2024, 12, 5)]).to eq(1)
+        expect(result.keys.count).to eq(2)
+      end
+
+      it "他の月の達成は含まれない" do
+        result = Achievement.monthly_calendar_data(user.id, 2024, 12)
+
+        expect(result.key?(Date.new(2024, 11, 30))).to be false
+      end
+
+      it "他ユーザーの達成は含まれない" do
+        result = Achievement.monthly_calendar_data(user.id, 2024, 12)
+
+        expect(result.values.sum).to eq(3)
+      end
+    end
+
+    describe ".current_month_count" do
+      include ActiveSupport::Testing::TimeHelpers
+
+      let(:user) { create(:user) }
+
+      around do |example|
+        travel_to Date.new(2024, 12, 15) do
+          example.run
+        end
+      end
+
+      before do
+        # 今月の達成
+        create(:achievement, user: user, achieved_at: Date.new(2024, 12, 11))
+        create(:achievement, user: user, achieved_at: Date.new(2024, 12, 5))
+
+        # 先月の達成（含まれない）
+        create(:achievement, user: user, achieved_at: Date.new(2024, 11, 30))
+      end
+
+      it "今月の達成数を返す" do
+        result = Achievement.current_month_count(user.id)
+
+        expect(result).to eq(2)
+      end
+    end
   end
 end

@@ -14,9 +14,13 @@ RSpec.describe 'Users', type: :request do
 
       it 'マイページの主要要素が表示される' do
         get mypage_path
-        expect(response.body).to include('マイページ')
-        expect(response.body).to include('プロフィール編集')
-        expect(response.body).to include('アカウント設定')
+        expect(response.body).to include('達成カレンダー')
+        expect(response.body).to include('プロフィール')
+      end
+
+      it '編集リンクが表示される' do
+        get mypage_path
+        expect(response.body).to include('編集')
       end
     end
 
@@ -52,12 +56,12 @@ RSpec.describe 'Users', type: :request do
     end
   end
 
-  describe 'PATCH /update_profile' do
+  describe 'PATCH /mypage' do
     context 'ログインしている場合' do
       before { sign_in user }
 
       it 'プロフィールを更新できる' do
-        patch update_profile_path, params: { user: { avatar: nil } }
+        patch mypage_path, params: { user: { name: 'テストユーザー' } }
 
         expect(response).to redirect_to(mypage_path)
         follow_redirect!
@@ -67,7 +71,7 @@ RSpec.describe 'Users', type: :request do
 
     context 'ログインしていない場合' do
       it 'ログインページにリダイレクトされる' do
-        patch update_profile_path, params: { user: { avatar: nil } }
+        patch mypage_path, params: { user: { name: 'テストユーザー' } }
         expect(response).to redirect_to(new_user_session_path)
       end
     end

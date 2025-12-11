@@ -1,23 +1,23 @@
 <%# app/views/users/edit.html.erb %>
-<% content_for :title, "マイページ" %>
+<% content_for :title, "プロフィール編集" %>
 
 <div class="min-h-screen py-8">
   <div class="max-w-2xl mx-auto px-4">
 
     <%# 戻るリンク %>
     <div class="mb-6">
-      <%= link_to posts_path, class: "inline-flex items-center gap-2 text-primary/60 hover:text-accent transition-colors" do %>
+      <%= link_to mypage_path, class: "inline-flex items-center gap-2 text-primary/60 hover:text-accent transition-colors" do %>
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
         </svg>
-        <span>投稿一覧に戻る</span>
+        <span>マイページに戻る</span>
       <% end %>
     </div>
 
     <div class="bg-white rounded-2xl border border-accent/20 shadow-sm p-6 lg:p-8">
 
       <%# ページタイトル %>
-      <h1 class="text-2xl font-bold text-primary mb-8">マイページ</h1>
+      <h1 class="text-2xl font-bold text-primary mb-8">プロフィール編集</h1>
 
       <%= form_with(model: @user, url: mypage_path, method: :patch, local: true, html: { multipart: true, class: "space-y-6" }) do |form| %>
         <%# エラーメッセージ表示 %>
@@ -95,9 +95,11 @@
         </div>
 
         <%# ボタンエリア %>
-        <div class="pt-4">
+        <div class="flex gap-4 pt-4">
+          <%= link_to "キャンセル", mypage_path,
+                class: "flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-accent/30 text-primary font-semibold hover:bg-cream transition-colors" %>
           <%= form.submit "更新する",
-                class: "w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent/90 transition-colors cursor-pointer" %>
+                class: "flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold hover:bg-accent/90 transition-colors cursor-pointer" %>
         </div>
       <% end %>
     </div>
