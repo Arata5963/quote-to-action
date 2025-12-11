@@ -11,6 +11,8 @@ class User < ApplicationRecord
 
   mount_uploader :avatar, ImageUploader
 
+  validates :name, presence: true
+
   # 既存メールがあればそれにGoogle情報を連携、なければ新規作成
   def self.from_omniauth(auth)
     # 1) すでに連携済みならそのまま返す

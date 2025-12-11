@@ -18,6 +18,7 @@ RSpec.describe "Authentication", type: :system do
       expect(page).to have_content("新規登録")
 
       # 3. フォームに入力（実際のフィールドIDを使用）
+      fill_in "user_name", with: "テストユーザー"
       fill_in "user_email", with: "test@example.com"
       fill_in "user_password", with: "password123"
       fill_in "user_password_confirmation", with: "password123"
@@ -37,6 +38,7 @@ RSpec.describe "Authentication", type: :system do
       visit new_user_registration_path
 
       # 2. パスワードを短くして登録を試みる
+      fill_in "user_name", with: "テストユーザー"
       fill_in "user_email", with: "test@example.com"
       fill_in "user_password", with: "short"
       fill_in "user_password_confirmation", with: "short"

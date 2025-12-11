@@ -2,6 +2,7 @@
 FactoryBot.define do
   factory :user do
     # 基本のユーザー（メール＋パスワードでログイン）
+    name { Faker::Name.name }
     email { Faker::Internet.unique.email }
     password { "password123" }
 

@@ -6,9 +6,16 @@
 
     <%# 戻るリンク %>
     <div class="mb-6">
-      <%= link_to posts_path, class: "inline-flex items-center gap-1 text-sm text-primary/60 hover:text-primary transition-colors" do %>
-        <span>←</span>
-        <span>投稿一覧に戻る</span>
+      <% if params[:from] == 'mypage' %>
+        <%= link_to mypage_path, class: "inline-flex items-center gap-1 text-sm text-primary/60 hover:text-primary transition-colors" do %>
+          <span>←</span>
+          <span>マイページに戻る</span>
+        <% end %>
+      <% else %>
+        <%= link_to posts_path, class: "inline-flex items-center gap-1 text-sm text-primary/60 hover:text-primary transition-colors" do %>
+          <span>←</span>
+          <span>投稿一覧に戻る</span>
+        <% end %>
       <% end %>
     </div>
 
@@ -37,7 +44,7 @@
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
           <%# ユーザーアイコン %>
-          <div class="flex items-center gap-2">
+          <%= link_to user_profile_path(@post.user), class: "flex items-center gap-2 hover:opacity-80 transition-opacity" do %>
             <% if @post.user.avatar.present? %>
               <%= image_tag @post.user.avatar.url,
                     alt: display_name(@post.user),
@@ -50,7 +57,7 @@
               </div>
             <% end %>
             <span class="text-sm font-medium text-primary/80"><%= display_name(@post.user) %></span>
-          </div>
+          <% end %>
           <%# カテゴリタグ %>
           <span class="text-xs bg-accent/10 text-primary/80 px-3 py-1 rounded-full">
             <%= category_name_without_icon(@post.category) %>
