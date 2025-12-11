@@ -1,5 +1,7 @@
 # app/models/post.rb
 class Post < ApplicationRecord
+  include Recommendable
+
   belongs_to :user
   has_one :reminder, dependent: :destroy
   has_many :achievements, dependent: :destroy

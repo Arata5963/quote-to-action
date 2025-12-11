@@ -1,3 +1,4 @@
+# app/controllers/achievements_controller.rb
 class AchievementsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_post
@@ -5,7 +6,10 @@ class AchievementsController < ApplicationController
   def create
     # タスク型：Postモデル側で達成管理
     if @post.achieved?
-      redirect_to @post, alert: "既に達成済みです"
+      respond_to do |format|
+        format.html { redirect_to @post, alert: "既に達成済みです" }
+        format.turbo_stream { redirect_to @post, alert: "既に達成済みです" }
+      end
       return
     end
 
@@ -19,9 +23,18 @@ class AchievementsController < ApplicationController
       )
     end
 
-    redirect_to @post, notice: t("achievements.create.success")
+    # 推薦投稿を取得
+    @recommended_posts = @post.recommended_posts(limit: 3)
+
+    respond_to do |format|
+      format.html { redirect_to @post, notice: t("achievements.create.success") }
+      format.turbo_stream
+    end
   rescue ActiveRecord::RecordInvalid => e
-    redirect_to @post, alert: e.message
+    respond_to do |format|
+      format.html { redirect_to @post, alert: e.message }
+      format.turbo_stream { redirect_to @post, alert: e.message }
+    end
   end
 
   def destroy

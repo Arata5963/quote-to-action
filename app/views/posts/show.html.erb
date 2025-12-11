@@ -82,25 +82,9 @@
             <% end %>
 
             <%# 達成ボタン %>
-            <% if @post.achieved? %>
-              <span class="inline-flex items-center gap-1 text-xs bg-accent text-white px-3 py-1.5 rounded-full" title="達成済み">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                やったけど？
-              </span>
-            <% else %>
-              <%= form_with url: post_achievements_path(@post), method: :post, local: true, class: "inline" do %>
-                <button type="submit"
-                        class="inline-flex items-center gap-1 text-xs border border-accent/30 text-primary/60 px-3 py-1.5 rounded-full hover:bg-accent hover:text-white hover:border-accent transition-colors"
-                        title="達成を記録">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                  </svg>
-                  みただけ？
-                </button>
-              <% end %>
-            <% end %>
+            <div id="achievement_button_<%= @post.id %>">
+              <%= render "achievements/button", post: @post %>
+            </div>
           <% end %>
         </div>
       </div>

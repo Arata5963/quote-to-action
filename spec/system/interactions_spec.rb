@@ -21,11 +21,11 @@ RSpec.describe "Interactions", type: :system do
       it "達成記録を作成できる" do
         visit post_path(post_record)
 
-        # 達成ボタンをクリック
-        click_button "達成する"
+        # 達成ボタンをクリック（「みただけ？」ボタン）
+        click_button "みただけ？"
 
-        # 達成記録が作成される
-        expect(page).to have_content "達成済み"
+        # 達成記録が作成される（「やったけど？」表示に変わる）
+        expect(page).to have_content "やったけど？"
 
         # 達成回数が表示される（詳細ページで確認）
         # post.achievements.count が 1 になったことを確認
@@ -39,10 +39,10 @@ RSpec.describe "Interactions", type: :system do
 
         visit post_path(post_record)
 
-        # 達成済み表示になる（タスク型）
-        expect(page).to have_content "達成済み"
-        # 「達成する」ボタンは表示されない
-        expect(page).not_to have_button "達成する"
+        # 達成済み表示になる（タスク型）- 「やったけど？」表示
+        expect(page).to have_content "やったけど？"
+        # 「みただけ？」ボタンは表示されない
+        expect(page).not_to have_button "みただけ？"
       end
     end
 
@@ -57,7 +57,7 @@ RSpec.describe "Interactions", type: :system do
         visit post_path(post_record)
 
         # 他人の投稿には達成ボタンが表示されない
-        expect(page).not_to have_button "達成する"
+        expect(page).not_to have_button "みただけ？"
       end
     end
   end
