@@ -31,8 +31,8 @@ RSpec.describe ApplicationHelper, type: :helper do
       expect(meta[:site]).to eq('mitadake?')
     end
 
-    it 'タイトルを返す' do
-      expect(meta[:title]).to eq('見て終わり→やってみる')
+    it 'タイトルはデフォルトで空文字列（ページごとに設定される）' do
+      expect(meta[:title]).to eq('')
     end
 
     it 'ディスクリプションを返す' do
@@ -53,13 +53,13 @@ RSpec.describe ApplicationHelper, type: :helper do
       expect(meta[:og][:site_name]).to eq('mitadake?')
       expect(meta[:og][:type]).to eq('website')
       expect(meta[:og][:url]).to eq('http://example.com/test')
-      expect(meta[:og][:image]).to eq('http://example.com/ogp-image.svg')
+      expect(meta[:og][:image]).to eq('http://example.com/ogp-image.png')
     end
 
     it 'Twitter カードタグを含む（画像URL含む）' do
       expect(meta[:twitter]).to be_a(Hash)
       expect(meta[:twitter][:card]).to eq('summary_large_image')
-      expect(meta[:twitter][:image]).to eq('http://example.com/ogp-image.svg')
+      expect(meta[:twitter][:image]).to eq('http://example.com/ogp-image.png')
     end
 
     it 'メタの基本キー（reverse/charset/separator）を含む' do

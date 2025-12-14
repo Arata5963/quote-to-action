@@ -37,6 +37,30 @@ RSpec.describe "Achievements", type: :request do
         expect(achievement.achieved_at).to eq(Date.current)
       end
 
+      it "投稿のachieved_atが設定される" do
+        post post_achievements_path(post_record)
+
+        post_record.reload
+        expect(post_record.achieved_at).to be_present
+      end
+
+      context "Turbo Streamリクエストの場合" do
+        it "Turbo Streamレスポンスを返す" do
+          post post_achievements_path(post_record),
+               headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+          expect(response).to have_http_status(:ok)
+          expect(response.media_type).to eq Mime[:turbo_stream]
+        end
+
+        it "達成ボタンを更新するストリームを含む" do
+          post post_achievements_path(post_record),
+               headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+          expect(response.body).to include("turbo-stream")
+        end
+      end
+
       context "既に達成済みの場合" do
         before do
           # タスク型モデル：post.achieved_at を設定
@@ -56,6 +80,15 @@ RSpec.describe "Achievements", type: :request do
           expect(response).to redirect_to(post_path(post_record))
           follow_redirect!
           expect(response.body).to include("既に達成済みです")
+        end
+
+        context "Turbo Streamリクエストの場合" do
+          it "リダイレクトされる" do
+            post post_achievements_path(post_record),
+                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+            expect(response).to redirect_to(post_path(post_record))
+          end
         end
       end
     end
@@ -89,6 +122,31 @@ RSpec.describe "Achievements", type: :request do
         post post_achievements_path(post_record)
 
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "達成記録の保存に失敗した場合" do
+      let!(:post_record) { create(:post, user: user) }
+
+      before do
+        sign_in user
+        # Achievementの保存を失敗させる
+        allow_any_instance_of(Achievement).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(Achievement.new))
+      end
+
+      it "HTMLリクエストでエラーメッセージを表示してリダイレクト" do
+        post post_achievements_path(post_record)
+
+        expect(response).to redirect_to(post_path(post_record))
+      end
+
+      context "Turbo Streamリクエストの場合" do
+        it "リダイレクトされる" do
+          post post_achievements_path(post_record),
+               headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+          expect(response).to redirect_to(post_path(post_record))
+        end
       end
     end
   end

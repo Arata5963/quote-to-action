@@ -73,24 +73,88 @@ RSpec.describe "Posts", type: :request do
         expect(response.body).to include("音楽アクション")
         expect(response.body).not_to include("教育アクション")
       end
+
+      it "無効なカテゴリは無視される" do
+        post1 = create(:post, action_plan: "アクション1", category: "music")
+
+        get posts_path, params: { category: "invalid_category" }
+
+        expect(response).to have_http_status(200)
+        expect(response.body).to include("アクション1")
+      end
+    end
+
+    context "達成状況絞り込み" do
+      let!(:achieved_post) { create(:post, action_plan: "達成済みアクション", achieved_at: Time.current) }
+      let!(:not_achieved_post) { create(:post, action_plan: "未達成アクション", achieved_at: nil) }
+
+      it "達成済みのみ表示できる" do
+        get posts_path, params: { achievement: "achieved" }
+
+        expect(response.body).to include("達成済みアクション")
+        expect(response.body).not_to include("未達成アクション")
+      end
+
+      it "未達成のみ表示できる" do
+        get posts_path, params: { achievement: "not_achieved" }
+
+        expect(response.body).to include("未達成アクション")
+        expect(response.body).not_to include("達成済みアクション")
+      end
+
+      it "無効な達成状況パラメータは無視される" do
+        get posts_path, params: { achievement: "invalid" }
+
+        expect(response).to have_http_status(200)
+        expect(response.body).to include("達成済みアクション")
+        expect(response.body).to include("未達成アクション")
+      end
     end
 
     context "タブ絞り込み" do
       let(:user) { create(:user) }
       let(:other_user) { create(:user) }
 
-      before do
-        sign_in user
+      context "ログイン時" do
+        before do
+          sign_in user
+        end
+
+        it "「自分」タブで自分の投稿のみ表示される" do
+          my_post = create(:post, user: user, action_plan: "自分のアクション")
+          others_post = create(:post, user: other_user, action_plan: "他人のアクション")
+
+          get posts_path, params: { tab: "mine" }
+
+          expect(response.body).to include("自分のアクション")
+          expect(response.body).not_to include("他人のアクション")
+        end
       end
 
-      it "「自分」タブで自分の投稿のみ表示される" do
-        my_post = create(:post, user: user, action_plan: "自分のアクション")
-        others_post = create(:post, user: other_user, action_plan: "他人のアクション")
+      context "未ログイン時" do
+        it "「自分」タブは無視される（全投稿が表示される）" do
+          post1 = create(:post, user: user, action_plan: "投稿1")
+          post2 = create(:post, user: other_user, action_plan: "投稿2")
 
-        get posts_path, params: { tab: "mine" }
+          get posts_path, params: { tab: "mine" }
 
-        expect(response.body).to include("自分のアクション")
-        expect(response.body).not_to include("他人のアクション")
+          expect(response).to have_http_status(200)
+          expect(response.body).to include("投稿1")
+          expect(response.body).to include("投稿2")
+        end
+      end
+    end
+
+    context "Ransack検索" do
+      let!(:post1) { create(:post, action_plan: "Rubyプログラミング") }
+      let!(:post2) { create(:post, action_plan: "Python入門") }
+
+      it "action_planで検索できる" do
+        get posts_path, params: { q: { action_plan_cont: "Ruby" } }
+
+        expect(response).to have_http_status(200)
+        expect(response.body).to include("Rubyプログラミング")
+        expect(response.body).not_to include("Python入門")
       end
     end
   end
@@ -101,6 +165,15 @@ RSpec.describe "Posts", type: :request do
   describe "GET /posts/:id" do
     let(:user) { create(:user) }
     let(:post_record) { create(:post, user: user, action_plan: "テストアクション") }
+
+    context "未ログインの場合" do
+      it "投稿の詳細が表示される（公開ページ）" do
+        get post_path(post_record)
+
+        expect(response).to have_http_status(200)
+        expect(response.body).to include("テストアクション")
+      end
+    end
 
     context "投稿が存在する場合" do
       it "投稿の詳細が表示される" do
@@ -264,7 +337,25 @@ RSpec.describe "Posts", type: :request do
         get edit_post_path(post_record)
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("編集")
+        expect(response.body).to include("更新する")
+      end
+
+      it "リマインダーがない場合も編集フォームが表示される" do
+        post_without_reminder = create(:post, user: user)
+
+        get edit_post_path(post_without_reminder)
+
+        expect(response).to have_http_status(200)
+        expect(response.body).to include("リマインダー")
+      end
+
+      it "既存リマインダーがある場合は編集できる" do
+        post_with_reminder = create(:post, user: user)
+        create(:reminder, user: user, post: post_with_reminder, create_post: false)
+
+        get edit_post_path(post_with_reminder)
+
+        expect(response).to have_http_status(200)
       end
     end
 
@@ -349,7 +440,7 @@ RSpec.describe "Posts", type: :request do
           patch post_path(post_record), params: invalid_params
 
           expect(response).to have_http_status(:unprocessable_entity)
-          expect(response.body).to include("編集")
+          expect(response.body).to include("更新する")
         end
       end
     end

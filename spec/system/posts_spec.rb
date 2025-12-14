@@ -23,8 +23,9 @@ RSpec.describe "Posts", type: :system do
         # 1. 新規投稿ページに直接アクセス
         visit new_post_path
 
-        # 2. 新規投稿フォームが表示される
-        expect(page).to have_content("新しい投稿を作成")
+        # 2. 新規投稿フォームが表示される（投稿ボタンがある）
+        expect(page).to have_button("投稿する")
+        expect(page).to have_content("YouTube URL")
 
         # 3. フォームに入力
         fill_in "post_youtube_url", with: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
@@ -118,28 +119,26 @@ RSpec.describe "Posts", type: :system do
       end
 
       it "投稿を編集できる" do
-        # 1. 投稿詳細ページにアクセス
-        visit post_path(post_record)
+        # 1. 編集ページに直接アクセス
+        visit edit_post_path(post_record)
 
-        # 2. 編集リンクをクリック（"編集"というテキストリンク）
-        click_link "編集"
+        # 2. 編集フォームが表示される（更新ボタンがある）
+        expect(page).to have_button("更新する")
+        expect(page).to have_content("YouTube URL")
 
-        # 3. 編集フォームが表示される
-        expect(page).to have_content("投稿を編集")
-
-        # 4. 内容を変更
+        # 3. 内容を変更
         fill_in "post_action_plan", with: "編集後のアクション"
 
-        # 5. 更新ボタンをクリック
+        # 4. 更新ボタンをクリック
         click_button "更新する"
 
-        # 6. 詳細ページにリダイレクトされる
+        # 5. 詳細ページにリダイレクトされる
         expect(page).to have_current_path(post_path(post_record))
 
-        # 7. 更新された内容が表示される
+        # 6. 更新された内容が表示される
         expect(page).to have_content("編集後のアクション")
 
-        # 8. 成功メッセージが表示される
+        # 7. 成功メッセージが表示される
         expect(page).to have_content("投稿を更新しました")
       end
     end
