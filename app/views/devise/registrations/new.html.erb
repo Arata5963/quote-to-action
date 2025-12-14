@@ -29,22 +29,21 @@
                 class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
-        <div>
-          <%= f.label :password, "パスワード", class: "block text-sm font-medium text-primary mb-1" %>
-          <%= f.password_field :password, autocomplete: "new-password",
-                placeholder: "パスワードを入力",
-                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
-          <% if @minimum_password_length %>
-            <p class="text-xs text-primary/60 mt-1"><%= @minimum_password_length %>文字以上で入力してください</p>
-          <% end %>
-        </div>
+        <%= render 'shared/password_field',
+              form: f,
+              field_name: :password,
+              label_text: "パスワード",
+              placeholder: "パスワードを入力",
+              autocomplete: "new-password",
+              show_hint: true,
+              minimum_length: @minimum_password_length %>
 
-        <div>
-          <%= f.label :password_confirmation, "パスワード（確認用）", class: "block text-sm font-medium text-primary mb-1" %>
-          <%= f.password_field :password_confirmation, autocomplete: "new-password",
-                placeholder: "パスワードを再入力",
-                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
-        </div>
+        <%= render 'shared/password_field',
+              form: f,
+              field_name: :password_confirmation,
+              label_text: "パスワード（確認用）",
+              placeholder: "パスワードを再入力",
+              autocomplete: "new-password" %>
 
         <div class="pt-2">
           <%= f.submit "登録する",
