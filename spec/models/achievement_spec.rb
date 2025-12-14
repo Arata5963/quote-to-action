@@ -66,7 +66,7 @@ RSpec.describe Achievement, type: :model do
 
       it "複数件を正しい順序で返す" do
         middle_achievement = create(:achievement, user: user, achieved_at: 2.days.ago)
-        expect(Achievement.recent.to_a).to eq([recent_achievement, middle_achievement, old_achievement])
+        expect(Achievement.recent.to_a).to eq([ recent_achievement, middle_achievement, old_achievement ])
       end
     end
 

@@ -175,7 +175,7 @@ RSpec.describe 'Users', type: :request do
           # Userモデルにバリデーションがある場合のテスト
           allow_any_instance_of(User).to receive(:update).and_return(false)
           allow_any_instance_of(User).to receive(:errors).and_return(
-            double(any?: true, count: 1, full_messages: ['名前が無効です'])
+            double(any?: true, count: 1, full_messages: [ '名前が無効です' ])
           )
         end
 
