@@ -77,6 +77,16 @@ RSpec.describe "Comments", type: :request do
         expect(response).to redirect_to(new_user_session_path)
       end
     end
+
+    context "投稿が存在しない場合" do
+      before { sign_in user }
+
+      it "一覧ページにリダイレクトされる" do
+        post post_comments_path(post_id: 99999), params: { comment: { content: "コメント" } }
+
+        expect(response).to redirect_to(posts_path)
+      end
+    end
   end
 
   # ====================
@@ -138,6 +148,16 @@ RSpec.describe "Comments", type: :request do
         delete post_comment_path(post_record, comment)
 
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "コメントが存在しない場合" do
+      before { sign_in user }
+
+      it "投稿詳細ページにリダイレクトされる" do
+        delete post_comment_path(post_record, id: 99999)
+
+        expect(response).to redirect_to(post_path(post_record))
       end
     end
   end

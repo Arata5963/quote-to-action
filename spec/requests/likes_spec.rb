@@ -23,6 +23,24 @@ RSpec.describe "Likes", type: :request do
           post post_likes_path(post_record)
           expect(response).to redirect_to(posts_path)
         end
+
+        context "Turbo Streamリクエストの場合" do
+          it "Turbo Streamレスポンスを返す" do
+            post post_likes_path(post_record),
+                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+            expect(response).to have_http_status(:ok)
+            expect(response.media_type).to eq Mime[:turbo_stream]
+          end
+
+          it "いいねボタンを更新するストリームを含む" do
+            post post_likes_path(post_record),
+                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+            expect(response.body).to include("turbo-stream")
+            expect(response.body).to include("like_button_#{post_record.id}")
+          end
+        end
       end
 
       context "既にいいね済みの場合" do
@@ -37,6 +55,38 @@ RSpec.describe "Likes", type: :request do
         it "投稿一覧ページにリダイレクトされる" do
           post post_likes_path(post_record)
           expect(response).to redirect_to(posts_path)
+        end
+
+        context "Turbo Streamリクエストの場合" do
+          it "Turbo Streamレスポンスを返す" do
+            post post_likes_path(post_record),
+                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+            expect(response).to have_http_status(:ok)
+            expect(response.media_type).to eq Mime[:turbo_stream]
+          end
+        end
+      end
+
+      context "いいね保存に失敗した場合" do
+        before do
+          allow_any_instance_of(Like).to receive(:save).and_return(false)
+          allow_any_instance_of(Like).to receive_message_chain(:errors, :full_messages, :first).and_return("エラー")
+        end
+
+        it "HTMLリクエストでエラーメッセージを表示" do
+          post post_likes_path(post_record)
+          expect(response).to redirect_to(posts_path)
+        end
+
+        context "Turbo Streamリクエストの場合" do
+          it "Turbo Streamレスポンスを返す" do
+            post post_likes_path(post_record),
+                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+            expect(response).to have_http_status(:ok)
+            expect(response.media_type).to eq Mime[:turbo_stream]
+          end
         end
       end
     end
@@ -69,6 +119,24 @@ RSpec.describe "Likes", type: :request do
       it "投稿一覧ページにリダイレクトされる" do
         delete post_like_path(post_record, like)
         expect(response).to redirect_to(posts_path)
+      end
+
+      context "Turbo Streamリクエストの場合" do
+        it "Turbo Streamレスポンスを返す" do
+          delete post_like_path(post_record, like),
+                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+          expect(response).to have_http_status(:ok)
+          expect(response.media_type).to eq Mime[:turbo_stream]
+        end
+
+        it "いいねボタンを更新するストリームを含む" do
+          delete post_like_path(post_record, like),
+                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+          expect(response.body).to include("turbo-stream")
+          expect(response.body).to include("like_button_#{post_record.id}")
+        end
       end
     end
 
@@ -120,6 +188,17 @@ RSpec.describe "Likes", type: :request do
             delete post_like_path(post_record, others_like)
           }.not_to change(Like, :count)
           expect(response).to redirect_to(posts_path)
+        end
+
+        context "Turbo Streamリクエストで他人のlikeを削除しようとした場合" do
+          it "Turbo Streamレスポンスを返す" do
+            others_like = create(:like, user: other, post: post_record)
+            delete post_like_path(post_record, others_like),
+                   headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+            expect(response).to have_http_status(:ok)
+            expect(response.media_type).to eq Mime[:turbo_stream]
+          end
         end
 
         it "二重削除時は2回目でnot found相当（件数は変わらない）" do

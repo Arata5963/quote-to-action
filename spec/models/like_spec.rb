@@ -16,6 +16,30 @@ RSpec.describe Like, type: :model do
       should validate_uniqueness_of(:user_id)
         .scoped_to(:post_id)
     end
+
+    describe "二重いいねの防止" do
+      let(:user) { create(:user) }
+      let(:post_record) { create(:post) }
+      let!(:existing_like) { create(:like, user: user, post: post_record) }
+
+      it "同じユーザーが同じ投稿に二重いいねできない" do
+        duplicate = build(:like, user: user, post: post_record)
+        expect(duplicate).not_to be_valid
+        expect(duplicate.errors[:user_id]).to be_present
+      end
+
+      it "異なるユーザーは同じ投稿にいいねできる" do
+        other_user = create(:user)
+        other_like = build(:like, user: other_user, post: post_record)
+        expect(other_like).to be_valid
+      end
+
+      it "同じユーザーが異なる投稿にいいねできる" do
+        other_post = create(:post)
+        other_like = build(:like, user: user, post: other_post)
+        expect(other_like).to be_valid
+      end
+    end
   end
 
   # ====================
@@ -24,6 +48,16 @@ RSpec.describe Like, type: :model do
   describe "associations" do
     it { should belong_to(:user) }
     it { should belong_to(:post) }
+
+    it "userが必須" do
+      like = build(:like, user: nil)
+      expect(like).not_to be_valid
+    end
+
+    it "postが必須" do
+      like = build(:like, post: nil)
+      expect(like).not_to be_valid
+    end
   end
 
   # ====================
@@ -76,6 +110,26 @@ RSpec.describe Like, type: :model do
         another_like = build(:like, user: user, post: another_post)
         expect(another_like).to be_valid
       end
+    end
+  end
+
+  describe "ビジネスロジック" do
+    let(:user) { create(:user) }
+    let(:post_record) { create(:post) }
+
+    it "いいねを削除できる" do
+      like = create(:like, user: user, post: post_record)
+      expect { like.destroy }.to change(Like, :count).by(-1)
+    end
+
+    it "投稿のいいね数をカウントできる" do
+      create_list(:like, 3, post: post_record)
+      expect(post_record.likes.count).to eq(3)
+    end
+
+    it "ユーザーのいいね数をカウントできる" do
+      create_list(:like, 2, user: user)
+      expect(user.likes.count).to eq(2)
     end
   end
 end

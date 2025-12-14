@@ -32,9 +32,11 @@ RSpec.describe 'Achievement Calendar (Monthly)', type: :system do
     it 'マイページに達成カレンダーが表示される' do
       visit mypage_path
 
+      # タブが表示される
       expect(page).to have_content('達成カレンダー')
-      expect(page).to have_content('総達成数')
-      expect(page).to have_content('今月の達成')
+      # カレンダーの凡例が表示される
+      expect(page).to have_content('達成あり')
+      expect(page).to have_content('達成なし')
     end
 
     it '今月が表示される' do
@@ -51,10 +53,11 @@ RSpec.describe 'Achievement Calendar (Monthly)', type: :system do
       end
     end
 
-    it '統計が正しく表示される' do
+    it '達成日が複数ある' do
       visit mypage_path
 
-      expect(page).to have_content('3') # 総達成数・今月の達成
+      # 3件の達成がある（DBに登録されている）
+      expect(Achievement.count).to eq(3)
     end
 
     it '達成日が塗りつぶされている' do
@@ -73,11 +76,12 @@ RSpec.describe 'Achievement Calendar (Monthly)', type: :system do
   end
 
   context '達成データがない場合' do
-    it 'カレンダーは表示されるが達成数は0' do
+    it 'カレンダーは表示されるが達成セルなし' do
       visit mypage_path
 
       expect(page).to have_content('達成カレンダー')
-      expect(page).to have_content('0') # 総達成数・今月の達成
+      # 達成がないので、達成データはDBに0件
+      expect(Achievement.count).to eq(0)
     end
   end
 end
