@@ -19,12 +19,12 @@
                 class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
-        <div>
-          <%= f.label :password, "パスワード", class: "block text-sm font-medium text-primary mb-1" %>
-          <%= f.password_field :password, autocomplete: "current-password",
-                placeholder: "パスワードを入力",
-                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
-        </div>
+        <%= render 'shared/password_field',
+              form: f,
+              field_name: :password,
+              label_text: "パスワード",
+              placeholder: "パスワードを入力",
+              autocomplete: "current-password" %>
 
         <% if devise_mapping.rememberable? %>
           <div class="flex items-center">
