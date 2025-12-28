@@ -32,6 +32,9 @@ class UsersController < ApplicationController
       # 他のユーザーの投稿一覧（達成済み・未達成）
       @achieved_posts = @user.posts.where.not(achieved_at: nil).recent
       @unachieved_posts = @user.posts.where(achieved_at: nil).recent
+
+      # すきな動画
+      @favorite_videos = @user.favorite_videos
     else
       # ログイン必須
       authenticate_user!
@@ -57,26 +60,72 @@ class UsersController < ApplicationController
       # ユーザーの投稿一覧（達成済み・未達成）
       @achieved_posts = @user.posts.where.not(achieved_at: nil).recent
       @unachieved_posts = @user.posts.where(achieved_at: nil).recent
+
+      # すきな動画
+      @favorite_videos = @user.favorite_videos
     end
   end
 
   def edit
     @user = current_user
+    build_favorite_videos
   end
 
   def update
     @user = current_user
 
-    if @user.update(user_params)
+    success = false
+    ActiveRecord::Base.transaction do
+      if @user.update(user_params)
+        save_favorite_videos
+        success = true
+      else
+        raise ActiveRecord::Rollback
+      end
+    end
+
+    if success
       redirect_to mypage_path, notice: "プロフィールを更新しました"
     else
+      build_favorite_videos
       render :edit, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordInvalid
+    build_favorite_videos
+    render :edit, status: :unprocessable_entity
   end
 
   private
 
   def user_params
-    params.require(:user).permit(:name, :avatar, :avatar_cache)
+    params.require(:user).permit(:name, :avatar, :avatar_cache, :favorite_quote, :favorite_quote_url)
+  end
+
+  def build_favorite_videos
+    @favorite_videos = (1..3).map do |position|
+      @user.favorite_videos.find_by(position: position) ||
+        @user.favorite_videos.build(position: position)
+    end
+  end
+
+  def save_favorite_videos
+    return unless params[:favorite_videos].present?
+
+    params[:favorite_videos].each do |position, video_params|
+      position = position.to_i
+      url = video_params[:youtube_url].presence
+
+      existing = @user.favorite_videos.find_by(position: position)
+
+      if url.present?
+        if existing
+          existing.update!(youtube_url: url)
+        else
+          @user.favorite_videos.create!(youtube_url: url, position: position)
+        end
+      elsif existing
+        existing.destroy!
+      end
+    end
   end
 end

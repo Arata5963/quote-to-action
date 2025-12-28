@@ -36,8 +36,8 @@
             </button>
           </div>
 
-          <%# フィルター（横並び） %>
-          <div class="flex flex-wrap gap-4">
+          <%# フィルター（横並び・中央寄せ） %>
+          <div class="flex flex-wrap gap-4 justify-center">
             <%# 表示タブ %>
             <div>
               <label class="text-xs text-primary/60 mb-1 block">投稿</label>
@@ -76,6 +76,22 @@
                         ['みただけ？', 'not_achieved']
                       ],
                       params[:achievement]
+                    ),
+                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
+                    onchange: "document.getElementById('search_form').submit()" %>
+            </div>
+
+            <%# リマインダー %>
+            <div>
+              <label class="text-xs text-primary/60 mb-1 block">リマインダー</label>
+              <%= select_tag :reminder,
+                    options_for_select(
+                      [
+                        ['すべて', ''],
+                        ['設定あり', 'with_reminder'],
+                        ['設定なし', 'without_reminder']
+                      ],
+                      params[:reminder]
                     ),
                     class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
                     onchange: "document.getElementById('search_form').submit()" %>

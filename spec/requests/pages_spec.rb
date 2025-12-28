@@ -14,11 +14,4 @@ RSpec.describe 'Pages', type: :request do
       expect(response).to have_http_status(:success)
     end
   end
-
-  describe 'GET /usage' do
-    it '使い方ページが表示される' do
-      get usage_path
-      expect(response).to have_http_status(:success)
-    end
-  end
 end

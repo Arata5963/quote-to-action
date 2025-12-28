@@ -22,10 +22,10 @@ module ApplicationHelper
       canonical: request.original_url,
       separator: "|",
       icon: [
-        { href: "/favicon.ico" },
-        { href: "/apple-touch-icon.png", rel: "apple-touch-icon", sizes: "180x180", type: "image/png" },
-        { href: "/favicon-32x32.png", rel: "icon", sizes: "32x32", type: "image/png" },
-        { href: "/favicon-16x16.png", rel: "icon", sizes: "16x16", type: "image/png" }
+        { href: "/favicon.ico?v=2" },
+        { href: "/apple-touch-icon.png?v=2", rel: "apple-touch-icon", sizes: "180x180", type: "image/png" },
+        { href: "/favicon-32x32.png?v=2", rel: "icon", sizes: "32x32", type: "image/png" },
+        { href: "/favicon-16x16.png?v=2", rel: "icon", sizes: "16x16", type: "image/png" }
       ],
       og: {
         site_name: "mitadake?",

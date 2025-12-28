@@ -1,7 +1,7 @@
 <%# app/views/users/show.html.erb %>
 <% content_for :title, @is_own_page ? "マイページ" : "#{@user.name}のプロフィール" %>
 
-<div class="min-h-screen py-8">
+<div class="min-h-screen py-8 bg-cream">
   <div class="max-w-2xl mx-auto px-4">
 
     <%# 戻るリンク %>
@@ -15,37 +15,53 @@
     </div>
 
     <%# プロフィール表示 %>
-    <div class="bg-white rounded-2xl border border-accent/20 shadow-sm p-6 lg:p-8">
+    <div class="bg-white rounded-2xl border border-accent/20 shadow-sm p-4">
 
-      <% if @is_own_page %>
-        <%# 編集リンク（自分のページのみ） %>
-        <div class="flex justify-end mb-4">
-          <%= link_to edit_profile_path, class: "flex items-center gap-2 px-4 py-2 rounded-xl bg-cream hover:bg-accent/10 text-primary hover:text-accent transition-colors" do %>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-            <span class="text-sm font-medium">編集</span>
-          <% end %>
-        </div>
-      <% end %>
-
-      <%# プロフィール画像・ユーザー名 %>
-      <div class="flex items-center gap-6">
+      <%# プロフィール画像・ユーザー名・ひとこと・編集ボタン %>
+      <div class="flex items-center gap-4">
         <div class="flex-shrink-0">
           <% if @user.avatar.present? %>
             <%= image_tag @user.avatar.url, alt: "プロフィール画像",
-                  class: "h-24 w-24 rounded-full object-cover border-2 border-accent/20" %>
+                  class: "h-14 w-14 rounded-full object-cover border-2 border-accent/20" %>
           <% else %>
-            <div class="h-24 w-24 bg-accent/10 rounded-full flex items-center justify-center border-2 border-accent/20">
-              <svg class="h-12 w-12 text-primary/40" fill="currentColor" viewBox="0 0 20 20">
+            <div class="h-14 w-14 bg-accent/10 rounded-full flex items-center justify-center border-2 border-accent/20">
+              <svg class="h-7 w-7 text-primary/40" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
               </svg>
             </div>
           <% end %>
         </div>
-        <div>
-          <h2 class="text-xl font-semibold text-primary"><%= @user.name.presence || "名無しさん" %></h2>
+        <div class="flex-1 min-w-0">
+          <h2 class="text-lg font-semibold text-primary truncate"><%= @user.name.presence || "名無しさん" %></h2>
+          <%# ひとこと自己紹介 %>
+          <div class="mt-1">
+            <% if @user.favorite_quote.present? %>
+              <%= link_to @user.favorite_quote_url.presence || "#", target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center gap-1.5 text-primary/70 hover:text-accent transition-colors" do %>
+                <svg class="w-4 h-4 text-accent flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+                </svg>
+                <span class="text-sm">「<%= @user.favorite_quote %>」</span>
+              <% end %>
+            <% elsif @is_own_page %>
+              <%= link_to edit_profile_path, class: "inline-flex items-center gap-1 text-xs text-primary/50 hover:text-accent transition-colors" do %>
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>ひとこと自己紹介を設定する</span>
+              <% end %>
+            <% end %>
+          </div>
         </div>
+
+        <% if @is_own_page %>
+          <%# 編集ボタン %>
+          <%= link_to edit_profile_path, class: "flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-cream hover:bg-accent/10 text-primary hover:text-accent transition-colors" do %>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            <span class="text-sm font-medium">編集</span>
+          <% end %>
+        <% end %>
       </div>
 
     </div>
@@ -61,75 +77,44 @@
                     data-tabs-target="tab"
                     data-action="click->tabs#switch"
                     data-tab-index="0">
-              達成済み
+              達成カレンダー
             </button>
             <button type="button"
                     class="mypage-tab flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer"
                     data-tabs-target="tab"
                     data-action="click->tabs#switch"
                     data-tab-index="1">
-              みただけ？
-            </button>
-            <button type="button"
-                    class="mypage-tab flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer"
-                    data-tabs-target="tab"
-                    data-action="click->tabs#switch"
-                    data-tab-index="2">
-              達成カレンダー
+              お気に入り動画
             </button>
           </div>
         </div>
 
         <%# タブコンテンツ %>
-        <%# 達成済み %>
-        <div class="p-4" data-tabs-target="panel" data-panel-index="0">
-          <% if @achieved_posts.any? %>
-            <div class="space-y-4">
-              <% @achieved_posts.each do |post| %>
-                <%= render 'posts/post_card', post: post, from: 'mypage' %>
-              <% end %>
-            </div>
-          <% else %>
-            <div class="py-12 text-center">
-              <div class="text-primary/40 mb-4">
-                <svg class="w-12 h-12 mx-auto" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-              </div>
-              <p class="text-primary/60">達成済みの投稿がありません</p>
-            </div>
-          <% end %>
-        </div>
-
-        <%# みただけ？ %>
-        <div class="p-4 hidden" data-tabs-target="panel" data-panel-index="1">
-          <% if @unachieved_posts.any? %>
-            <div class="space-y-4">
-              <% @unachieved_posts.each do |post| %>
-                <%= render 'posts/post_card', post: post, from: 'mypage' %>
-              <% end %>
-            </div>
-          <% else %>
-            <div class="py-12 text-center">
-              <div class="text-primary/40 mb-4">
-                <svg class="w-12 h-12 mx-auto" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                </svg>
-              </div>
-              <p class="text-primary/60">未達成の投稿がありません</p>
-              <%= link_to "新しい投稿を作成する", new_post_path, class: "inline-block mt-4 px-4 py-2 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent/90 transition-colors" %>
-            </div>
-          <% end %>
-        </div>
-
         <%# 達成カレンダー %>
-        <div class="p-4 hidden" data-tabs-target="panel" data-panel-index="2">
+        <div class="p-4" data-tabs-target="panel" data-panel-index="0">
           <%= render "achievement_calendar" %>
+        </div>
+
+        <%# お気に入り動画 %>
+        <div class="p-4 hidden" data-tabs-target="panel" data-panel-index="1">
+          <% if @favorite_videos.any? %>
+            <%= render "favorite_videos_slider", videos: @favorite_videos %>
+          <% else %>
+            <div class="py-12 text-center">
+              <div class="text-primary/40 mb-4">
+                <svg class="w-12 h-12 mx-auto" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm3-6l-4 3V8l4 3z"/>
+                </svg>
+              </div>
+              <p class="text-primary/60">お気に入り動画が登録されていません</p>
+              <%= link_to "お気に入り動画を登録する", edit_profile_path, class: "inline-block mt-4 px-4 py-2 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent/90 transition-colors" %>
+            </div>
+          <% end %>
         </div>
       </div>
 
     <% else %>
-      <%# 他ユーザーのページ: タブセクション（達成済み/みただけ？/達成カレンダー） %>
+      <%# 他ユーザーのページ: タブセクション %>
       <div class="mt-6 bg-white rounded-2xl border border-accent/20 shadow-sm overflow-hidden" data-controller="tabs">
         <%# タブヘッダー %>
         <div class="border-b border-accent/10">
@@ -139,69 +124,38 @@
                     data-tabs-target="tab"
                     data-action="click->tabs#switch"
                     data-tab-index="0">
-              達成済み
+              達成カレンダー
             </button>
             <button type="button"
                     class="mypage-tab flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer"
                     data-tabs-target="tab"
                     data-action="click->tabs#switch"
                     data-tab-index="1">
-              みただけ？
-            </button>
-            <button type="button"
-                    class="mypage-tab flex-1 px-4 py-3 text-sm font-medium transition-colors cursor-pointer"
-                    data-tabs-target="tab"
-                    data-action="click->tabs#switch"
-                    data-tab-index="2">
-              達成カレンダー
+              お気に入り動画
             </button>
           </div>
         </div>
 
         <%# タブコンテンツ %>
-        <%# 達成済み %>
-        <div class="p-4" data-tabs-target="panel" data-panel-index="0">
-          <% if @achieved_posts.any? %>
-            <div class="space-y-4">
-              <% @achieved_posts.each do |post| %>
-                <%= render 'posts/post_card', post: post %>
-              <% end %>
-            </div>
-          <% else %>
-            <div class="py-12 text-center">
-              <div class="text-primary/40 mb-4">
-                <svg class="w-12 h-12 mx-auto" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-              </div>
-              <p class="text-primary/60">達成済みの投稿がありません</p>
-            </div>
-          <% end %>
-        </div>
-
-        <%# みただけ？ %>
-        <div class="p-4 hidden" data-tabs-target="panel" data-panel-index="1">
-          <% if @unachieved_posts.any? %>
-            <div class="space-y-4">
-              <% @unachieved_posts.each do |post| %>
-                <%= render 'posts/post_card', post: post %>
-              <% end %>
-            </div>
-          <% else %>
-            <div class="py-12 text-center">
-              <div class="text-primary/40 mb-4">
-                <svg class="w-12 h-12 mx-auto" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-                </svg>
-              </div>
-              <p class="text-primary/60">未達成の投稿がありません</p>
-            </div>
-          <% end %>
-        </div>
-
         <%# 達成カレンダー %>
-        <div class="p-4 hidden" data-tabs-target="panel" data-panel-index="2">
+        <div class="p-4" data-tabs-target="panel" data-panel-index="0">
           <%= render "achievement_calendar" %>
+        </div>
+
+        <%# お気に入り動画 %>
+        <div class="p-4 hidden" data-tabs-target="panel" data-panel-index="1">
+          <% if @favorite_videos.any? %>
+            <%= render "favorite_videos_slider", videos: @favorite_videos %>
+          <% else %>
+            <div class="py-12 text-center">
+              <div class="text-primary/40 mb-4">
+                <svg class="w-12 h-12 mx-auto" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm3-6l-4 3V8l4 3z"/>
+                </svg>
+              </div>
+              <p class="text-primary/60">お気に入り動画が登録されていません</p>
+            </div>
+          <% end %>
         </div>
       </div>
     <% end %>

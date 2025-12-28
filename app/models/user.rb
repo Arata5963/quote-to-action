@@ -8,10 +8,19 @@ class User < ApplicationRecord
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :likes, dependent: :destroy
+  has_many :favorite_videos, -> { order(:position) }, dependent: :destroy
 
   mount_uploader :avatar, ImageUploader
 
   validates :name, presence: true
+
+  # すきな言葉（両方入力 or 両方空）
+  validates :favorite_quote, length: { maximum: 50 }, allow_blank: true
+  validates :favorite_quote_url, format: {
+    with: %r{\A(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+},
+    message: "は有効なYouTube URLを入力してください"
+  }, allow_blank: true
+  validate :favorite_quote_consistency
 
   # 既存メールがあればそれにGoogle情報を連携、なければ新規作成
   def self.from_omniauth(auth)
@@ -40,5 +49,17 @@ class User < ApplicationRecord
 
   def total_achievements_count
     achievements.count
+  end
+
+  private
+
+  # すきな言葉と動画URLは両方入力 or 両方空
+  def favorite_quote_consistency
+    quote_present = favorite_quote.present?
+    url_present = favorite_quote_url.present?
+
+    if quote_present != url_present
+      errors.add(:base, "すきな言葉と動画URLは両方入力するか、両方空にしてください")
+    end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_08_060840) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_28_015939) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -34,6 +34,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_08_060840) do
     t.index ["post_id", "created_at"], name: "index_comments_on_post_id_and_created_at"
     t.index ["post_id"], name: "index_comments_on_post_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
+  end
+
+  create_table "favorite_videos", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "youtube_url", null: false
+    t.string "youtube_title"
+    t.string "youtube_channel_name"
+    t.integer "position", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "position"], name: "index_favorite_videos_on_user_id_and_position", unique: true
+    t.index ["user_id"], name: "index_favorite_videos_on_user_id"
   end
 
   create_table "likes", force: :cascade do |t|
@@ -84,6 +96,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_08_060840) do
     t.string "provider"
     t.string "uid"
     t.string "name"
+    t.string "favorite_quote", limit: 50
+    t.string "favorite_quote_url"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -92,6 +106,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_08_060840) do
   add_foreign_key "achievements", "users"
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
+  add_foreign_key "favorite_videos", "users"
   add_foreign_key "likes", "posts"
   add_foreign_key "likes", "users"
   add_foreign_key "posts", "users"

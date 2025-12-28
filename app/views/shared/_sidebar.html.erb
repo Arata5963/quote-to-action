@@ -28,7 +28,6 @@
         <% end %>
         <div>
           <p class="font-medium text-primary"><%= display_name(current_user) %></p>
-          <p class="text-xs text-primary/60"><%= current_user.email %></p>
         </div>
       </div>
     <% else %>
@@ -51,17 +50,6 @@
   <%# メニュー部分 %>
   <nav class="flex-1 overflow-y-auto py-4">
     <% if user_signed_in? %>
-      <%= link_to usage_path,
-            data: { action: "click->sidebar#close" },
-            class: "flex items-center gap-3 px-4 py-3 text-primary/80 hover:bg-accent/10 transition-colors" do %>
-        <svg class="w-5 h-5 text-primary/40" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-        </svg>
-        <span>使い方</span>
-      <% end %>
-
-      <div class="border-t border-accent/10 my-3 mx-4"></div>
-
       <%= link_to terms_path,
             data: { action: "click->sidebar#close" },
             class: "flex items-center gap-3 px-4 py-3 text-primary/80 hover:bg-accent/10 transition-colors" do %>
@@ -102,17 +90,6 @@
       <% end %>
 
     <% else %>
-      <%= link_to usage_path,
-            data: { action: "click->sidebar#close" },
-            class: "flex items-center gap-3 px-4 py-3 text-primary/80 hover:bg-accent/10 transition-colors" do %>
-        <svg class="w-5 h-5 text-primary/40" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-        </svg>
-        <span>使い方</span>
-      <% end %>
-
-      <div class="border-t border-accent/10 my-3 mx-4"></div>
-
       <%= link_to new_user_session_path,
             data: { action: "click->sidebar#close" },
             class: "flex items-center gap-3 px-4 py-3 text-primary/80 hover:bg-accent/10 transition-colors" do %>

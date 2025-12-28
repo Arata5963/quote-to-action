@@ -26,6 +26,14 @@ class PostsController < ApplicationController
       @posts = @posts.where(achieved_at: nil)
     end
 
+    # ===== リマインダー絞り込み =====
+    case params[:reminder]
+    when "with_reminder"
+      @posts = @posts.joins(:reminder)
+    when "without_reminder"
+      @posts = @posts.left_joins(:reminder).where(reminders: { id: nil })
+    end
+
     @posts = @posts.recent.page(params[:page]).per(20)
   end
 
