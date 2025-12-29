@@ -26,6 +26,12 @@ Rails.application.routes.draw do
   get :bookshelf, to: "bookshelves#show"
   get "users/:id/bookshelf", to: "bookshelves#show", as: :user_bookshelf
 
+  # 通知
+  resources :notifications, only: [ :index ] do
+    post :mark_as_read, on: :member
+    post :mark_all_as_read, on: :collection
+  end
+
   resources :posts do
     get :autocomplete, on: :collection
     resources :achievements, only: [ :create, :destroy ]

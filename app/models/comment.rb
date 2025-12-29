@@ -9,6 +9,22 @@ class Comment < ApplicationRecord
   belongs_to :post
 
   # ====================
+  # 通知設定
+  # ====================
+  # コメント時に投稿者に通知を送る（自分の投稿には通知しない）
+  acts_as_notifiable :users,
+    targets: ->(comment, _key) { [ comment.post.user ] unless comment.user == comment.post.user },
+    group: :post,
+    notifier: :user,
+    email_allowed: false,
+    notifiable_path: :post_path_for_notification
+
+  # ====================
+  # コールバック
+  # ====================
+  after_create :send_notification
+
+  # ====================
   # バリデーション(入力値検証)
   # ====================
   # コメント本文は必須
@@ -31,4 +47,14 @@ class Comment < ApplicationRecord
   # コメントを古い順に並べる
   # チャット風の表示をしたい場合に使用
   scope :oldest_first, -> { order(created_at: :asc) }
+
+  private
+
+  def post_path_for_notification
+    Rails.application.routes.url_helpers.post_path(post)
+  end
+
+  def send_notification
+    notify :users if user != post.user
+  end
 end
