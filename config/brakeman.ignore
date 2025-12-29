@@ -1,0 +1,10 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "136fbcc6bbb6163f89b6107cffd2feee1463e944dfac8535c9012679a36bbeea",
+      "note": "YouTube URLはバリデーション済みで安全（format: /\\A...\\z/ で制限済み）"
+    }
+  ],
+  "updated": "2024-12-29",
+  "brakeman_version": "7.1.0"
+}

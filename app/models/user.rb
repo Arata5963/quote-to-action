@@ -19,7 +19,7 @@ class User < ApplicationRecord
   # すきな言葉（両方入力 or 両方空）
   validates :favorite_quote, length: { maximum: 50 }, allow_blank: true
   validates :favorite_quote_url, format: {
-    with: %r{\A(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+},
+    with: %r{\A(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+(\?.*)?(?:#.*)?\z},
     message: "は有効なYouTube URLを入力してください"
   }, allow_blank: true
   validate :favorite_quote_consistency
