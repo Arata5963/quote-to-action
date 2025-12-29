@@ -47,16 +47,28 @@
         </h3>
       <% end %>
 
-      <%# 下部: 達成状況（mt-autoで下部固定） %>
-      <div class="flex items-center gap-2 mt-auto pt-2">
+      <%# 下部: 達成状況・期日バッジ（mt-autoで下部固定） %>
+      <div class="flex items-center gap-2 mt-auto pt-2 flex-wrap">
         <% if post.achieved? %>
           <span class="text-xs bg-accent text-white px-2.5 py-1 rounded-full">
             達成済み
           </span>
         <% else %>
-          <span class="text-xs border border-accent/30 text-primary/50 px-2.5 py-1 rounded-full">
-            みただけ？
-          </span>
+          <%# 期日バッジ %>
+          <% if post.deadline_passed? %>
+            <span class="text-xs bg-primary/10 text-primary/60 px-2.5 py-1 rounded-full">
+              📅 期日超過
+            </span>
+          <% elsif post.deadline_near? %>
+            <span class="text-xs bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full">
+              <% days = post.days_until_deadline %>
+              ⏰ <% if days == 0 %>今日まで<% else %>あと<%= days %>日<% end %>
+            </span>
+          <% else %>
+            <span class="text-xs border border-accent/30 text-primary/50 px-2.5 py-1 rounded-full">
+              みただけ？
+            </span>
+          <% end %>
         <% end %>
       </div>
 

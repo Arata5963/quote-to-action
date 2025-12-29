@@ -28,6 +28,6 @@ class CreateActivityNotificationTables < ActiveRecord::Migration[7.2]
 
       t.timestamps null: false
     end
-    add_index :subscriptions, [:target_type, :target_id, :key], unique: true
+    add_index :subscriptions, [ :target_type, :target_id, :key ], unique: true
   end
 end

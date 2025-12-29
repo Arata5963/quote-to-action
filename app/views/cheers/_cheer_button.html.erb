@@ -4,34 +4,34 @@
 <div id="cheer_button_<%= post.id %>" class="flex items-center gap-1.5">
   <% if user_signed_in? %>
     <% if post.cheered_by?(current_user) %>
-      <%# 応援済み（赤く塗りつぶし） %>
+      <%# 応援済み（オレンジで塗りつぶし） %>
       <% cheer = post.cheers.find_by(user: current_user) %>
       <%= button_to post_cheer_path(post, cheer),
                     method: :delete,
                     data: { turbo_frame: "_top" },
-                    class: "inline-flex items-center gap-1 text-red-500 hover:text-red-600 transition-colors" do %>
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    class: "inline-flex items-center gap-1 text-orange-500 hover:text-orange-600 transition-colors" do %>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
         </svg>
         <span class="text-sm font-medium"><%= post.cheers.count %></span>
       <% end %>
     <% else %>
-      <%# 未応援（薄い赤・枠線のみ） %>
+      <%# 未応援（薄いオレンジ・枠線のみ） %>
       <%= button_to post_cheers_path(post),
                     method: :post,
                     data: { turbo_frame: "_top" },
-                    class: "inline-flex items-center gap-1 text-red-400 hover:text-red-500 transition-colors" do %>
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    class: "inline-flex items-center gap-1 text-orange-400 hover:text-orange-500 transition-colors" do %>
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
         </svg>
         <span class="text-sm font-medium"><%= post.cheers.count %></span>
       <% end %>
     <% end %>
   <% else %>
-    <%# 未ログイン（薄い赤） %>
-    <div class="inline-flex items-center gap-1 text-red-400">
-      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    <%# 未ログイン（薄いオレンジ） %>
+    <div class="inline-flex items-center gap-1 text-orange-400">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
       </svg>
       <span class="text-sm font-medium"><%= post.cheers.count %></span>
     </div>

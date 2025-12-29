@@ -227,6 +227,101 @@ RSpec.describe Post, type: :model do
     end
   end
 
+  describe "#deadline_near?" do
+    context "期日が3日以内の場合" do
+      it "今日期日の場合trueを返す" do
+        post = build(:post, deadline: Date.current)
+        expect(post.deadline_near?).to be true
+      end
+
+      it "3日後期日の場合trueを返す" do
+        post = build(:post, deadline: Date.current + 3.days)
+        expect(post.deadline_near?).to be true
+      end
+    end
+
+    context "期日が4日以上先の場合" do
+      it "falseを返す" do
+        post = build(:post, deadline: Date.current + 4.days)
+        expect(post.deadline_near?).to be false
+      end
+    end
+
+    context "期日が過ぎている場合" do
+      it "falseを返す" do
+        post = build(:post, deadline: Date.current - 1.day)
+        expect(post.deadline_near?).to be false
+      end
+    end
+
+    context "期日が設定されていない場合" do
+      it "falseを返す" do
+        post = build(:post, deadline: nil)
+        expect(post.deadline_near?).to be false
+      end
+    end
+  end
+
+  describe "#deadline_passed?" do
+    context "期日が過ぎている場合" do
+      it "trueを返す" do
+        post = build(:post, deadline: Date.current - 1.day)
+        expect(post.deadline_passed?).to be true
+      end
+    end
+
+    context "期日が今日の場合" do
+      it "falseを返す" do
+        post = build(:post, deadline: Date.current)
+        expect(post.deadline_passed?).to be false
+      end
+    end
+
+    context "期日が未来の場合" do
+      it "falseを返す" do
+        post = build(:post, deadline: Date.current + 1.day)
+        expect(post.deadline_passed?).to be false
+      end
+    end
+
+    context "期日が設定されていない場合" do
+      it "falseを返す" do
+        post = build(:post, deadline: nil)
+        expect(post.deadline_passed?).to be false
+      end
+    end
+  end
+
+  describe "#days_until_deadline" do
+    context "期日が未来の場合" do
+      it "正の日数を返す" do
+        post = build(:post, deadline: Date.current + 5.days)
+        expect(post.days_until_deadline).to eq(5)
+      end
+    end
+
+    context "期日が今日の場合" do
+      it "0を返す" do
+        post = build(:post, deadline: Date.current)
+        expect(post.days_until_deadline).to eq(0)
+      end
+    end
+
+    context "期日が過去の場合" do
+      it "負の日数を返す" do
+        post = build(:post, deadline: Date.current - 3.days)
+        expect(post.days_until_deadline).to eq(-3)
+      end
+    end
+
+    context "期日が設定されていない場合" do
+      it "nilを返す" do
+        post = build(:post, deadline: nil)
+        expect(post.days_until_deadline).to be_nil
+      end
+    end
+  end
+
   describe "YouTube情報自動取得" do
     let(:user) { create(:user) }
     let(:youtube_url) { 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }

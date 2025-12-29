@@ -76,6 +76,27 @@ class Post < ApplicationRecord
     achieved_at.present?
   end
 
+  # 期日が近い（3日以内）かどうか
+  def deadline_near?
+    return false unless deadline.present?
+
+    deadline >= Date.current && deadline <= Date.current + 3.days
+  end
+
+  # 期日を過ぎているかどうか
+  def deadline_passed?
+    return false unless deadline.present?
+
+    deadline < Date.current
+  end
+
+  # 期日までの日数（負の場合は超過日数）
+  def days_until_deadline
+    return nil unless deadline.present?
+
+    (deadline - Date.current).to_i
+  end
+
   # 達成する
   def achieve!
     update!(achieved_at: Time.current) unless achieved?
