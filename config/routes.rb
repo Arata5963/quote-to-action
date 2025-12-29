@@ -30,7 +30,7 @@ Rails.application.routes.draw do
     get :autocomplete, on: :collection
     resources :achievements, only: [ :create, :destroy ]
     resources :comments, only: [ :create, :destroy ]
-    resources :likes, only: [ :create, :destroy ]
+    resources :cheers, only: [ :create, :destroy ]
     resource :recommendation, only: [ :show ]
   end
 

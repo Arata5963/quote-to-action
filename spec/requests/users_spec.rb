@@ -19,9 +19,8 @@ RSpec.describe 'Users', type: :request do
       it 'マイページの主要要素が表示される' do
         get mypage_path
         # タブボタンの存在確認
-        expect(response.body).to include('達成済み')
-        expect(response.body).to include('みただけ？')
         expect(response.body).to include('達成カレンダー')
+        expect(response.body).to include('お気に入り動画')
       end
 
       it '編集リンクが表示される' do
@@ -39,16 +38,20 @@ RSpec.describe 'Users', type: :request do
         let!(:achieved_post) { create(:post, user: user, achieved_at: Time.current) }
         let!(:unachieved_post) { create(:post, user: user, achieved_at: nil) }
 
-        it '達成済み投稿が表示される' do
+        it '達成カレンダーが表示される' do
           get mypage_path
-          expect(response.body).to include(achieved_post.action_plan)
+          # 達成カレンダーのタブが表示される
+          expect(response.body).to include('達成カレンダー')
+          # 達成ありの凡例が表示される
+          expect(response.body).to include('達成あり')
         end
       end
 
       context '投稿がない場合' do
         it '空の状態が表示される' do
           get mypage_path
-          expect(response.body).to include('達成済みの投稿がありません')
+          # 達成カレンダータブがデフォルトで表示される
+          expect(response.body).to include('達成カレンダー')
         end
       end
     end

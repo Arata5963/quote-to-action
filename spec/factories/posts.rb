@@ -4,7 +4,7 @@ FactoryBot.define do
     # 必須項目
     association :user
     action_plan { Faker::Lorem.sentence(word_count: 10) }
-    category { Post.categories.keys.sample }
+    deadline { Date.current + 7.days }
     youtube_url { "https://www.youtube.com/watch?v=#{Faker::Alphanumeric.alphanumeric(number: 11)}" }
     youtube_title { Faker::Lorem.sentence(word_count: 5) }
     youtube_channel_name { Faker::Name.name }

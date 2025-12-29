@@ -3,12 +3,9 @@ class Post < ApplicationRecord
   include Recommendable
 
   belongs_to :user
-  has_one :reminder, dependent: :destroy
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
-  has_many :likes, dependent: :destroy
-
-  accepts_nested_attributes_for :reminder, allow_destroy: true, reject_if: :all_blank
+  has_many :cheers, dependent: :destroy
 
   scope :recent, -> { order(created_at: :desc) }
 
@@ -23,27 +20,6 @@ class Post < ApplicationRecord
     message: "は有効なYouTube URLを入力してください"
   }
 
-  # YouTube公式カテゴリEnum
-  enum :category, {
-    film_animation: 1,
-    autos_vehicles: 2,
-    music: 10,
-    pets_animals: 15,
-    sports: 17,
-    travel_events: 19,
-    gaming: 20,
-    people_blogs: 22,
-    comedy: 23,
-    entertainment: 24,
-    news_politics: 25,
-    howto_style: 26,
-    education: 27,
-    science_technology: 28,
-    nonprofits_activism: 29
-  }, prefix: true
-
-  validates :category, presence: true
-
   def self.ransackable_attributes(_auth_object = nil)
     %w[action_plan youtube_title youtube_channel_name created_at]
   end
@@ -52,8 +28,8 @@ class Post < ApplicationRecord
     %w[user achievements]
   end
 
-  def liked_by?(user)
-    likes.exists?(user_id: user.id)
+  def cheered_by?(user)
+    cheers.exists?(user_id: user.id)
   end
 
   # YouTube動画ID抽出

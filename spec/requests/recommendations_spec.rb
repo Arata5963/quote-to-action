@@ -4,14 +4,14 @@ require "rails_helper"
 RSpec.describe "Recommendations", type: :request do
   let(:user) { create(:user) }
   let(:other_user) { create(:user) }
-  let(:post_record) { create(:post, user: user, category: :education) }
+  let(:post_record) { create(:post, user: user) }
 
   describe "GET /posts/:post_id/recommendation" do
     context "ログイン済みの場合" do
       before { sign_in user }
 
       context "Turbo Streamリクエストの場合" do
-        let!(:recommended_posts) { create_list(:post, 3, user: other_user, category: :education) }
+        let!(:recommended_posts) { create_list(:post, 3, user: other_user) }
 
         it "Turbo Streamレスポンスを返す" do
           get post_recommendation_path(post_record),

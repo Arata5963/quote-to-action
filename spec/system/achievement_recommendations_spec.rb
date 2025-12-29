@@ -13,9 +13,9 @@ RSpec.describe "AchievementRecommendations", type: :system do
 
   describe "達成後のレコメンドモーダル" do
     context "推薦投稿がある場合" do
-      let!(:my_post) { create(:post, user: user, category: :education) }
+      let!(:my_post) { create(:post, user: user) }
       let!(:recommended_posts) do
-        create_list(:post, 3, user: other_user, category: :education)
+        create_list(:post, 3, user: other_user)
       end
 
       before do
@@ -38,7 +38,7 @@ RSpec.describe "AchievementRecommendations", type: :system do
     end
 
     context "推薦投稿がない場合" do
-      let!(:my_post) { create(:post, user: user, category: :education) }
+      let!(:my_post) { create(:post, user: user) }
 
       before do
         sign_in user
@@ -58,9 +58,9 @@ RSpec.describe "AchievementRecommendations", type: :system do
     # Turbo Streamのモーダル表示はJavaScript統合テストで確認
     # ここではビューのレンダリングテストを行う
 
-    let(:post_record) { create(:post, user: user, category: :education) }
+    let(:post_record) { create(:post, user: user) }
     let!(:recommended_posts) do
-      create_list(:post, 3, user: other_user, category: :education,
+      create_list(:post, 3, user: other_user,
                   youtube_title: "おすすめ動画",
                   youtube_channel_name: "テストチャンネル")
     end

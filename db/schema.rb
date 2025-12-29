@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_28_015939) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_29_040707) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -23,6 +23,16 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_28_015939) do
     t.index ["post_id"], name: "index_achievements_on_post_id"
     t.index ["user_id", "post_id"], name: "idx_unique_achievements", unique: true
     t.index ["user_id"], name: "index_achievements_on_user_id"
+  end
+
+  create_table "cheers", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "post_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id"], name: "index_cheers_on_post_id"
+    t.index ["user_id", "post_id"], name: "index_cheers_on_user_id_and_post_id", unique: true
+    t.index ["user_id"], name: "index_cheers_on_user_id"
   end
 
   create_table "comments", force: :cascade do |t|
@@ -48,40 +58,18 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_28_015939) do
     t.index ["user_id"], name: "index_favorite_videos_on_user_id"
   end
 
-  create_table "likes", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.bigint "post_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["post_id"], name: "index_likes_on_post_id"
-    t.index ["user_id", "post_id"], name: "index_likes_on_user_id_and_post_id", unique: true
-    t.index ["user_id"], name: "index_likes_on_user_id"
-  end
-
   create_table "posts", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.text "action_plan"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "category", default: 6, null: false
     t.string "youtube_url", null: false
     t.datetime "achieved_at"
     t.string "youtube_title"
     t.string "youtube_channel_name"
-    t.index ["category"], name: "index_posts_on_category"
+    t.date "deadline"
+    t.index ["deadline"], name: "index_posts_on_deadline"
     t.index ["user_id"], name: "index_posts_on_user_id"
-  end
-
-  create_table "reminders", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "post_id", null: false
-    t.datetime "remind_at", null: false
-    t.index ["post_id"], name: "index_reminders_on_post_id"
-    t.index ["remind_at"], name: "index_reminders_on_remind_at"
-    t.index ["user_id", "post_id"], name: "idx_unique_user_post_reminder", unique: true
-    t.index ["user_id"], name: "index_reminders_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -104,12 +92,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_28_015939) do
 
   add_foreign_key "achievements", "posts"
   add_foreign_key "achievements", "users"
+  add_foreign_key "cheers", "posts"
+  add_foreign_key "cheers", "users"
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
   add_foreign_key "favorite_videos", "users"
-  add_foreign_key "likes", "posts"
-  add_foreign_key "likes", "users"
   add_foreign_key "posts", "users"
-  add_foreign_key "reminders", "posts"
-  add_foreign_key "reminders", "users"
 end

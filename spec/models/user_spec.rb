@@ -103,9 +103,8 @@ RSpec.describe User, type: :model do
   describe "associations" do
     it { should have_many(:posts).dependent(:destroy) }
     it { should have_many(:achievements).dependent(:destroy) }
-    it { should have_many(:reminders).dependent(:destroy) }
     it { should have_many(:comments).dependent(:destroy) }
-    it { should have_many(:likes).dependent(:destroy) }
+    it { should have_many(:cheers).dependent(:destroy) }
     it { should have_many(:favorite_videos).dependent(:destroy) }
   end
 
@@ -115,7 +114,7 @@ RSpec.describe User, type: :model do
       post = create(:post, user: user)
       create(:achievement, user: user, post: post, achieved_at: Date.current)
       create(:comment, user: user, post: post)
-      create(:like, user: user, post: post)
+      create(:cheer, user: user, post: post)
 
       expect {
         user.destroy
@@ -124,7 +123,7 @@ RSpec.describe User, type: :model do
           Post.where(user_id: user.id).count,
           Achievement.where(user_id: user.id).count,
           Comment.where(user_id: user.id).count,
-          Like.where(user_id: user.id).count
+          Cheer.where(user_id: user.id).count
         ]
       }.from([ 1, 1, 1, 1 ]).to([ 0, 0, 0, 0 ])
     end

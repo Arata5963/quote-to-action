@@ -53,18 +53,6 @@
                     onchange: "document.getElementById('search_form').submit()" %>
             </div>
 
-            <%# カテゴリ %>
-            <div>
-              <label class="text-xs text-primary/60 mb-1 block">カテゴリ</label>
-              <%= select_tag :category,
-                    options_for_select(
-                      [['すべて', '']] + Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
-                      params[:category]
-                    ),
-                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
-                    onchange: "document.getElementById('search_form').submit()" %>
-            </div>
-
             <%# 達成状況 %>
             <div>
               <label class="text-xs text-primary/60 mb-1 block">達成状況</label>
@@ -81,17 +69,17 @@
                     onchange: "document.getElementById('search_form').submit()" %>
             </div>
 
-            <%# リマインダー %>
+            <%# 期日 %>
             <div>
-              <label class="text-xs text-primary/60 mb-1 block">リマインダー</label>
-              <%= select_tag :reminder,
+              <label class="text-xs text-primary/60 mb-1 block">期日</label>
+              <%= select_tag :deadline,
                     options_for_select(
                       [
                         ['すべて', ''],
-                        ['設定あり', 'with_reminder'],
-                        ['設定なし', 'without_reminder']
+                        ['期日あり', 'with_deadline'],
+                        ['期限切れ', 'overdue']
                       ],
-                      params[:reminder]
+                      params[:deadline]
                     ),
                     class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
                     onchange: "document.getElementById('search_form').submit()" %>
@@ -112,8 +100,6 @@
         <h3 class="mt-4 text-xl font-bold text-primary">
           <% if params[:q].present? %>
             検索条件に一致する投稿が見つかりませんでした
-          <% elsif params[:category].present? %>
-            <%= category_name_without_icon(params[:category]) %> の投稿がまだありません
           <% elsif params[:tab] == 'mine' %>
             あなたの投稿がまだありません
           <% else %>

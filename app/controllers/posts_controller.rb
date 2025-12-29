@@ -6,16 +6,11 @@ class PostsController < ApplicationController
 
   def index
     @q = Post.ransack(params[:q])
-    @posts = @q.result(distinct: true).includes(:user, :achievements, :likes, :comments)
+    @posts = @q.result(distinct: true).includes(:user, :achievements, :cheers, :comments)
 
     # ===== タブ絞り込み =====
     if params[:tab] == "mine" && user_signed_in?
       @posts = @posts.where(user: current_user)
-    end
-
-    # ===== カテゴリ絞り込み =====
-    if params[:category].present? && Post.categories.key?(params[:category])
-      @posts = @posts.where(category: params[:category])
     end
 
     # ===== 達成状況絞り込み =====
@@ -26,12 +21,12 @@ class PostsController < ApplicationController
       @posts = @posts.where(achieved_at: nil)
     end
 
-    # ===== リマインダー絞り込み =====
-    case params[:reminder]
-    when "with_reminder"
-      @posts = @posts.joins(:reminder)
-    when "without_reminder"
-      @posts = @posts.left_joins(:reminder).where(reminders: { id: nil })
+    # ===== 期日絞り込み =====
+    case params[:deadline]
+    when "with_deadline"
+      @posts = @posts.where.not(deadline: nil)
+    when "overdue"
+      @posts = @posts.where("deadline < ?", Date.current).where(achieved_at: nil)
     end
 
     @posts = @posts.recent.page(params[:page]).per(20)
@@ -42,7 +37,6 @@ class PostsController < ApplicationController
 
   def new
     @post = current_user.posts.build
-    @post.build_reminder
   end
 
   def create
@@ -56,7 +50,6 @@ class PostsController < ApplicationController
   end
 
   def edit
-    @post.build_reminder unless @post.reminder
   end
 
   def update
@@ -110,9 +103,6 @@ class PostsController < ApplicationController
   end
 
   def post_params
-    params.require(:post).permit(
-      :action_plan, :category, :youtube_url,
-      reminder_attributes: [ :id, :remind_at, :_destroy ]
-    )
+    params.require(:post).permit(:action_plan, :deadline, :youtube_url)
   end
 end

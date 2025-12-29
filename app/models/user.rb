@@ -4,10 +4,9 @@ class User < ApplicationRecord
          :omniauthable, omniauth_providers: [ :google_oauth2 ]
 
   has_many :posts, dependent: :destroy
-  has_many :reminders, dependent: :destroy
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
-  has_many :likes, dependent: :destroy
+  has_many :cheers, dependent: :destroy
   has_many :favorite_videos, -> { order(:position) }, dependent: :destroy
 
   mount_uploader :avatar, ImageUploader
