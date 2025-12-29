@@ -9,6 +9,16 @@ class Post < ApplicationRecord
 
   scope :recent, -> { order(created_at: :desc) }
 
+  # 期日関連スコープ
+  scope :deadline_near, -> { where(deadline: Date.current..(Date.current + 3.days)).order(deadline: :asc) }
+  scope :deadline_passed, -> { where("deadline < ?", Date.current).order(deadline: :asc) }
+  scope :deadline_other, -> { where("deadline > ?", Date.current + 3.days).order(deadline: :asc) }
+  scope :with_deadline, -> { where.not(deadline: nil) }
+
+  # 達成状況スコープ
+  scope :not_achieved, -> { where(achieved_at: nil) }
+  scope :achieved, -> { where.not(achieved_at: nil) }
+
   before_save :fetch_youtube_info, if: :should_fetch_youtube_info?
 
   validates :action_plan, presence: true, length: { minimum: 1, maximum: 100 }
