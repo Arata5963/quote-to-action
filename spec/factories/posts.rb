@@ -14,6 +14,21 @@ FactoryBot.define do
       achieved_at { Time.current }
     end
 
+    # 期日が近い（3日以内）
+    trait :deadline_near do
+      deadline { Date.current + rand(0..3).days }
+    end
+
+    # 期日超過
+    trait :deadline_passed do
+      deadline { Date.current - rand(1..7).days }
+    end
+
+    # 期日なし
+    trait :without_deadline do
+      deadline { nil }
+    end
+
     # 関連データ付き
     trait :with_achievements do
       transient do

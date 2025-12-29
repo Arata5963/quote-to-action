@@ -46,6 +46,80 @@ RSpec.describe Post, type: :model do
     end
   end
 
+  describe "期日スコープ" do
+    let!(:today_post) { create(:post, deadline: Date.current) }
+    let!(:tomorrow_post) { create(:post, deadline: Date.current + 1.day) }
+    let!(:three_days_post) { create(:post, deadline: Date.current + 3.days) }
+    let!(:four_days_post) { create(:post, deadline: Date.current + 4.days) }
+    let!(:passed_post) { create(:post, deadline: Date.current - 1.day) }
+    let!(:no_deadline_post) { create(:post, deadline: nil) }
+
+    describe ".deadline_near" do
+      it "3日以内の投稿を期日順で返す" do
+        expect(Post.deadline_near).to eq([ today_post, tomorrow_post, three_days_post ])
+      end
+
+      it "期日超過の投稿を含まない" do
+        expect(Post.deadline_near).not_to include(passed_post)
+      end
+
+      it "4日以上先の投稿を含まない" do
+        expect(Post.deadline_near).not_to include(four_days_post)
+      end
+    end
+
+    describe ".deadline_passed" do
+      it "期日超過の投稿を返す" do
+        expect(Post.deadline_passed).to include(passed_post)
+      end
+
+      it "期日内の投稿を含まない" do
+        expect(Post.deadline_passed).not_to include(today_post)
+        expect(Post.deadline_passed).not_to include(tomorrow_post)
+      end
+    end
+
+    describe ".deadline_other" do
+      it "4日以上先の投稿を返す" do
+        expect(Post.deadline_other).to include(four_days_post)
+      end
+
+      it "3日以内の投稿を含まない" do
+        expect(Post.deadline_other).not_to include(today_post)
+        expect(Post.deadline_other).not_to include(three_days_post)
+      end
+    end
+
+    describe ".with_deadline" do
+      it "期日が設定されている投稿を返す" do
+        expect(Post.with_deadline).to include(today_post, passed_post, four_days_post)
+      end
+
+      it "期日が設定されていない投稿を含まない" do
+        expect(Post.with_deadline).not_to include(no_deadline_post)
+      end
+    end
+  end
+
+  describe "達成状況スコープ" do
+    let!(:achieved_post) { create(:post, :achieved) }
+    let!(:not_achieved_post) { create(:post) }
+
+    describe ".achieved" do
+      it "達成済みの投稿を返す" do
+        expect(Post.achieved).to include(achieved_post)
+        expect(Post.achieved).not_to include(not_achieved_post)
+      end
+    end
+
+    describe ".not_achieved" do
+      it "未達成の投稿を返す" do
+        expect(Post.not_achieved).to include(not_achieved_post)
+        expect(Post.not_achieved).not_to include(achieved_post)
+      end
+    end
+  end
+
   describe "#youtube_video_id" do
     context "youtube.com/watch形式のURL" do
       let(:post) { build(:post, youtube_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ') }
