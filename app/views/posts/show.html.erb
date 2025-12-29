@@ -92,6 +92,28 @@
         </div>
       </div>
 
+      <%# ステータスバッジ（期日・達成状況） %>
+      <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <% if @post.achieved? %>
+          <span class="text-sm bg-accent text-white px-3 py-1.5 rounded-full font-medium">
+            ✅ 達成済み
+          </span>
+        <% elsif @post.deadline_passed? %>
+          <span class="text-sm bg-primary/10 text-primary/60 px-3 py-1.5 rounded-full font-medium">
+            📅 期日超過
+          </span>
+        <% elsif @post.deadline_near? %>
+          <span class="text-sm bg-orange-100 text-orange-600 px-3 py-1.5 rounded-full font-medium">
+            <% days = @post.days_until_deadline %>
+            ⏰ <% if days == 0 %>今日まで<% else %>あと<%= days %>日<% end %>
+          </span>
+        <% elsif @post.deadline.present? %>
+          <span class="text-sm border border-accent/30 text-primary/50 px-3 py-1.5 rounded-full">
+            📅 <%= l(@post.deadline, format: :short) %>まで
+          </span>
+        <% end %>
+      </div>
+
       <%# アクションプランセクション %>
       <div class="bg-cream rounded-xl p-4 mb-4">
         <p class="text-xs text-primary/60 mb-1">アクションプラン</p>
