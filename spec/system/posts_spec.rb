@@ -71,10 +71,10 @@ RSpec.describe "Posts", type: :system do
   # 投稿一覧表示
   # ====================
   describe "投稿一覧" do
-    let!(:post1) { create(:post, action_plan: "投稿1のアクション", created_at: 2.days.ago) }
-    let!(:post2) { create(:post, action_plan: "投稿2のアクション", created_at: 1.day.ago) }
+    let!(:post1) { create(:post, action_plan: "投稿1のアクション", deadline: Date.current + 2.days) }
+    let!(:post2) { create(:post, action_plan: "投稿2のアクション", deadline: Date.current + 1.day) }
 
-    it "投稿が新しい順に表示される" do
+    it "投稿が期日グループごとに表示される" do
       # 1. トップページにアクセス
       visit root_path
 
@@ -82,7 +82,15 @@ RSpec.describe "Posts", type: :system do
       expect(page).to have_content("投稿1のアクション")
       expect(page).to have_content("投稿2のアクション")
 
-      # 3. 新しい順に並んでいる（投稿2が先）
+      # 3. 期日グループヘッダーが表示される
+      expect(page).to have_content("期日が近い")
+    end
+
+    it "期日が近い順に表示される" do
+      # 1. トップページにアクセス
+      visit root_path
+
+      # 2. 期日が近い順に並んでいる（投稿2が先 - 明日の方が近い）
       post2_position = page.body.index("投稿2のアクション")
       post1_position = page.body.index("投稿1のアクション")
       expect(post2_position).to be < post1_position
