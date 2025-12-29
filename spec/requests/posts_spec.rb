@@ -26,11 +26,12 @@ RSpec.describe "Posts", type: :request do
         expect(response.body).to include("アクション3")
       end
 
-      it "新しい順に表示される" do
+      it "フィルター使用時は新しい順に表示される" do
         old_post = create(:post, action_plan: "古いアクション", created_at: 2.days.ago)
         new_post = create(:post, action_plan: "新しいアクション", created_at: 1.day.ago)
 
-        get posts_path
+        # フィルター使用で通常表示モードに
+        get posts_path, params: { achievement: "not_achieved" }
 
         # 新しい投稿が先に表示される（HTML内の出現順）
         old_pos = response.body.index("古いアクション")
@@ -40,12 +41,39 @@ RSpec.describe "Posts", type: :request do
       end
     end
 
-    context "ページネーション" do
+    context "グループ表示" do
+      it "デフォルトで期日グループに分かれて表示される" do
+        near_post = create(:post, action_plan: "期日近いアクション", deadline: Date.current + 2.days)
+        passed_post = create(:post, action_plan: "期日超過アクション", deadline: Date.current - 1.day)
+        other_post = create(:post, action_plan: "まだ余裕アクション", deadline: Date.current + 5.days)
+
+        get posts_path
+
+        expect(response.body).to include("期日が近い")
+        expect(response.body).to include("期日超過")
+        expect(response.body).to include("まだ余裕あり")
+        expect(response.body).to include("期日近いアクション")
+        expect(response.body).to include("期日超過アクション")
+        expect(response.body).to include("まだ余裕アクション")
+      end
+
+      it "達成済みグループが表示される" do
+        achieved_post = create(:post, action_plan: "達成済みアクション", achieved_at: Time.current)
+
+        get posts_path
+
+        expect(response.body).to include("達成済み")
+        expect(response.body).to include("達成済みアクション")
+      end
+    end
+
+    context "ページネーション（フィルター使用時）" do
       it "1ページ目に20件まで表示される" do
         # 21件の投稿を作成
         21.times { |i| create(:post, action_plan: "アクション#{i}") }
 
-        get posts_path
+        # フィルター使用で通常表示モード（ページネーション有効）
+        get posts_path, params: { achievement: "not_achieved" }
 
         # 20件分表示される
         expect(response.body.scan(/アクション\d+/).size).to eq(20)
@@ -55,7 +83,8 @@ RSpec.describe "Posts", type: :request do
         # 21件の投稿を作成
         21.times { |i| create(:post, action_plan: "アクション#{i}") }
 
-        get posts_path, params: { page: 2 }
+        # フィルター使用で通常表示モード
+        get posts_path, params: { achievement: "not_achieved", page: 2 }
 
         expect(response).to have_http_status(200)
         # 2ページ目には1件だけ表示される

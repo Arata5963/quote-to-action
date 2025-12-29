@@ -6,30 +6,42 @@ class PostsController < ApplicationController
 
   def index
     @q = Post.ransack(params[:q])
-    @posts = @q.result(distinct: true).includes(:user, :achievements, :cheers, :comments)
+    base_scope = @q.result(distinct: true).includes(:user, :achievements, :cheers, :comments)
 
     # ===== タブ絞り込み =====
     if params[:tab] == "mine" && user_signed_in?
-      @posts = @posts.where(user: current_user)
+      base_scope = base_scope.where(user: current_user)
     end
 
     # ===== 達成状況絞り込み =====
     case params[:achievement]
     when "achieved"
-      @posts = @posts.where.not(achieved_at: nil)
+      base_scope = base_scope.where.not(achieved_at: nil)
     when "not_achieved"
-      @posts = @posts.where(achieved_at: nil)
+      base_scope = base_scope.where(achieved_at: nil)
     end
 
     # ===== 期日絞り込み =====
     case params[:deadline]
     when "with_deadline"
-      @posts = @posts.where.not(deadline: nil)
+      base_scope = base_scope.where.not(deadline: nil)
     when "overdue"
-      @posts = @posts.where("deadline < ?", Date.current).where(achieved_at: nil)
+      base_scope = base_scope.where("deadline < ?", Date.current).where(achieved_at: nil)
     end
 
-    @posts = @posts.recent.page(params[:page]).per(20)
+    # ===== グループ表示 or 通常表示 =====
+    if using_filters?
+      # フィルター使用時は従来の単一リスト表示
+      @posts = base_scope.recent.page(params[:page]).per(20)
+      @group_display = false
+    else
+      # デフォルト表示は期日グループ表示
+      @posts_near = base_scope.not_achieved.deadline_near
+      @posts_passed = base_scope.not_achieved.deadline_passed
+      @posts_other = base_scope.not_achieved.deadline_other
+      @posts_achieved = base_scope.achieved.recent.limit(10)
+      @group_display = true
+    end
   end
 
   def show
@@ -104,5 +116,13 @@ class PostsController < ApplicationController
 
   def post_params
     params.require(:post).permit(:action_plan, :deadline, :youtube_url)
+  end
+
+  # フィルター（検索、タブ、達成状況、期日）が使用されているか
+  def using_filters?
+    params[:q].present? && params.dig(:q, :action_plan_or_youtube_title_or_youtube_channel_name_cont).present? ||
+      params[:tab].present? ||
+      params[:achievement].present? ||
+      params[:deadline].present?
   end
 end
