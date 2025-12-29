@@ -5,7 +5,7 @@ class FavoriteVideo < ApplicationRecord
   # バリデーション
   validates :youtube_url, presence: true
   validates :youtube_url, format: {
-    with: %r{\A(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+},
+    with: %r{\A(https?://)?(www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]+(\?.*)?(?:#.*)?\z},
     message: "は有効なYouTube URLを入力してください"
   }
   validates :position, presence: true,
