@@ -23,6 +23,15 @@
         <span class="text-xs mt-1">投稿</span>
       <% end %>
 
+      <%# 本棚 %>
+      <%= link_to bookshelf_path,
+            class: "flex flex-col items-center justify-center flex-1 h-full #{current_page?(bookshelf_path) ? 'text-accent' : 'text-primary/60'} transition-colors" do %>
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9h-4v1h4v2h-4v1h4v2H9V4h10v7z"/>
+        </svg>
+        <span class="text-xs mt-1">本棚</span>
+      <% end %>
+
       <%# マイページ %>
       <%= link_to mypage_path,
             class: "flex flex-col items-center justify-center flex-1 h-full #{current_page?(mypage_path) ? 'text-accent' : 'text-primary/60'} transition-colors" do %>

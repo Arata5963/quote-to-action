@@ -158,3 +158,341 @@ span.flatpickr-weekday {
 .flatpickr-time .flatpickr-am-pm:hover {
   background: rgba(139, 115, 85, 0.1);
 }
+
+/* ===== フィルムストリップギャラリー ===== */
+.filmstrip-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* 1本のフィルムストリップ */
+.filmstrip {
+  display: flex;
+  flex-direction: column;
+  background: #E5DDD5;
+  border: 2px solid #C9B99A;
+  border-radius: 4px;
+  overflow: hidden;
+  /* スマホでは横スクロール可能 */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filmstrip::-webkit-scrollbar {
+  height: 6px;
+}
+
+.filmstrip::-webkit-scrollbar-track {
+  background: #E5DDD5;
+}
+
+.filmstrip::-webkit-scrollbar-thumb {
+  background: #C9B99A;
+  border-radius: 3px;
+}
+
+/* 上下のパーフォレーション（ブラウンの穴） */
+.filmstrip-perf {
+  height: 14px;
+  min-width: max-content;
+  background: #E5DDD5;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+}
+
+.filmstrip-perf::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 5px;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(139, 115, 85, 0.5) 0px,
+    rgba(139, 115, 85, 0.5) 5px,
+    transparent 5px,
+    transparent 14px
+  );
+  border-radius: 1px;
+}
+
+/* フレームコンテナ（コマを横に連結） */
+.filmstrip-frames {
+  display: flex;
+  justify-content: flex-start;
+  background: #E5DDD5;
+  padding: 4px 0;
+  min-width: max-content;
+}
+
+/* 各フレーム（コマ） */
+.filmstrip-frame {
+  flex-shrink: 0;
+  /* スマホ: 大きめのコマ（画面幅の30%） */
+  width: 28vw;
+  max-width: 200px;
+  min-width: 100px;
+  aspect-ratio: 4 / 3;
+  background: #FAF8F5;
+  border: 2px solid #C9B99A;
+  border-radius: 2px;
+  margin: 0 2px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.filmstrip-frame:first-child {
+  margin-left: 4px;
+}
+
+.filmstrip-frame:last-child {
+  margin-right: 4px;
+}
+
+/* タブレット: 5本/段 */
+@media (min-width: 641px) {
+  .filmstrip-frame {
+    width: 18vw;
+    max-width: 180px;
+  }
+}
+
+/* PC: 7本/段 */
+@media (min-width: 1025px) {
+  .filmstrip-frame {
+    width: 13vw;
+    max-width: 180px;
+  }
+}
+
+.filmstrip-frame:hover {
+  transform: scale(1.08);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.filmstrip-frame--empty {
+  background: #D0C4B8;
+}
+
+.filmstrip-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ===== 日付別フィルム表示 ===== */
+
+/* 月切り替えナビ */
+.film-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background: #E5DDD5;
+  border: 2px solid #C9B99A;
+  border-radius: 0.5rem;
+}
+
+.film-month-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #C9B99A;
+  border-radius: 50%;
+  color: #4A4035;
+  transition: background 0.2s ease;
+}
+
+.film-month-btn:hover {
+  background: #8B7355;
+  color: #fff;
+}
+
+.film-month-btn--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.film-month-label {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #4A4035;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* 日付カレンダー */
+.film-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* 各日付の行 */
+.film-day {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  min-height: 60px;
+}
+
+.film-day--empty {
+  opacity: 0.5;
+}
+
+/* 日付ラベル */
+.film-day-label {
+  flex-shrink: 0;
+  width: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: #f5f0e8;
+  border-radius: 0.5rem;
+}
+
+.film-day-date {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #4A4035;
+  line-height: 1;
+}
+
+.film-day-weekday {
+  font-size: 0.625rem;
+  color: #8B7355;
+  margin-top: 2px;
+}
+
+/* フィルムストリップエリア */
+.film-day-strip {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ミニフィルムストリップ */
+.filmstrip-mini {
+  display: flex;
+  flex-direction: column;
+  background: #E5DDD5;
+  border: 2px solid #C9B99A;
+  border-radius: 4px;
+  min-width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* パーフォレーション（ブラウンの穴） */
+.filmstrip-mini-perf {
+  height: 10px;
+  background: #E5DDD5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 4px;
+  gap: 6px;
+  overflow: hidden;
+}
+
+/* 穴を複数生成（ブラウンで控えめに） */
+.filmstrip-mini-perf::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 4px;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(139, 115, 85, 0.5) 0px,
+    rgba(139, 115, 85, 0.5) 4px,
+    transparent 4px,
+    transparent 12px
+  );
+  border-radius: 1px;
+}
+
+.filmstrip-mini-frames {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  gap: 6px;
+  min-height: 70px;
+  background: #E5DDD5;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filmstrip-mini-frames::-webkit-scrollbar {
+  height: 6px;
+}
+
+.filmstrip-mini-frames::-webkit-scrollbar-track {
+  background: #E5DDD5;
+}
+
+.filmstrip-mini-frames::-webkit-scrollbar-thumb {
+  background: #C9B99A;
+  border-radius: 3px;
+}
+
+.filmstrip-mini-frame {
+  flex-shrink: 0;
+  width: 90px;
+  aspect-ratio: 4 / 3;
+  background: #FAF8F5;
+  border: 2px solid #C9B99A;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.filmstrip-mini-frame:hover {
+  transform: scale(1.1);
+  z-index: 10;
+}
+
+.filmstrip-mini-frame--empty {
+  background: #D0C4B8;
+}
+
+.filmstrip-mini-frame--empty:hover {
+  transform: none;
+}
+
+.filmstrip-mini-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* レスポンシブ */
+@media (min-width: 641px) {
+  .film-day-label {
+    width: 56px;
+  }
+
+  .filmstrip-mini-frame {
+    width: 100px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .film-day-label {
+    width: 64px;
+  }
+
+  .filmstrip-mini-frame {
+    width: 120px;
+  }
+}

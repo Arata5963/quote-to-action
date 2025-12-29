@@ -23,6 +23,9 @@ Rails.application.routes.draw do
   patch :mypage, to: "users#update"
   get "users/:id", to: "users#show", as: :user_profile
 
+  get :bookshelf, to: "bookshelves#show"
+  get "users/:id/bookshelf", to: "bookshelves#show", as: :user_bookshelf
+
   resources :posts do
     get :autocomplete, on: :collection
     resources :achievements, only: [ :create, :destroy ]
