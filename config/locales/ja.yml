@@ -169,3 +169,13 @@ ja:
       already_cheered: "既に応援済みです"
     destroy:
       success: "応援を取り消しました"
+
+  # NotificationsController関連のメッセージ
+  notifications:
+    title: "通知"
+    marked_all_as_read: "すべての通知を既読にしました"
+    empty: "通知はありません"
+    cheer:
+      text: "%{notifier_name}さんがあなたの投稿を応援しました"
+    comment:
+      text: "%{notifier_name}さんがあなたの投稿にコメントしました"

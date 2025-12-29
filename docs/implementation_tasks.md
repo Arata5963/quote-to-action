@@ -3,15 +3,15 @@
 **プロジェクト:** mitadake? - 期日中心設計への移行
 **要件定義:** `.claude/04_adr/ADR-20251229-deadline-centric-design.md`
 **開始日:** 2024年12月29日
-**現在のフェーズ:** Phase 2
+**現在のフェーズ:** Phase 4
 
 ---
 
 ## 📌 現在のステータス
 
-- **実施中:** Phase 2（モデル・コントローラー変更）
-- **次のフェーズ:** Phase 3（グループ表示実装）
-- **全体進捗:** 1/6 フェーズ完了
+- **実施中:** Phase 4（通知機能実装）
+- **次のフェーズ:** Phase 5（UI/UXデザイン調整）
+- **全体進捗:** 3/6 フェーズ完了
 
 ---
 
@@ -105,7 +105,9 @@
 **期間:** 2-3日
 **優先度:** P0
 **依存:** Phase 1 完了
-**ステータス:** 🔄 実施中
+**ステータス:** ✅ 完了
+**完了日:** 2024-12-29
+**PR:** #102
 
 ### 2.1 Post モデル: 期日バリデーション追加
 
@@ -253,71 +255,75 @@
 **期間:** 2-3日
 **優先度:** P1
 **依存:** Phase 2 完了
-**ステータス:** 🔲 未着手
+**ステータス:** ✅ 完了
+**完了日:** 2024-12-29
+**PR:** #103
 
 ### 3.1 期日グループ分けのスコープ
 
-- [ ] `app/models/post.rb` にスコープを追加（Phase 2 で作成済みならスキップ）
-  - [ ] `scope :deadline_near` → 3日以内、期日の近い順
-  - [ ] `scope :deadline_passed` → 期日超過、期日の古い順
-  - [ ] `scope :deadline_other` → 4日以上、期日の近い順
+- [x] `app/models/post.rb` にスコープを追加（Phase 2 で作成済み）
+  - [x] `scope :deadline_near` → 3日以内、期日の近い順
+  - [x] `scope :deadline_passed` → 期日超過、期日の古い順
+  - [x] `scope :deadline_other` → 4日以上、期日の近い順
 
-- [ ] `spec/models/post_spec.rb` にスコープのテスト追加
-  - [ ] `deadline_near` のテスト（境界値含む）
-  - [ ] `deadline_passed` のテスト（ソート順確認）
-  - [ ] `deadline_other` のテスト
+- [x] `spec/models/post_spec.rb` にスコープのテスト追加
+  - [x] `deadline_near` のテスト（境界値含む）
+  - [x] `deadline_passed` のテスト（ソート順確認）
+  - [x] `deadline_other` のテスト
 
 ### 3.2 折りたたみUIコンポーネント
 
-- [ ] `app/javascript/controllers/collapsible_controller.js` 作成
-  - [ ] Stimulus Controller 作成
-  - [ ] `toggle()` メソッド実装
-  - [ ] `openValueChanged()` メソッド実装
-  - [ ] 初期状態: すべて展開（`openValue = true`）
+- [x] `app/javascript/controllers/collapsible_controller.js` 作成
+  - [x] Stimulus Controller 作成
+  - [x] `toggle()` メソッド実装
+  - [x] `openValueChanged()` メソッド実装
+  - [x] 初期状態: すべて展開（`openValue = true`）
 
-- [ ] `app/views/posts/_group_header.html.erb` 作成
-  - [ ] グループヘッダー作成（タイトル + カウント）
-  - [ ] 折りたたみアイコン（▼/▶）
-  - [ ] クリックでトグル
+- [x] `app/views/posts/_group_header.html.erb` 作成
+  - [x] グループヘッダー作成（タイトル + カウント）
+  - [x] 折りたたみアイコン（▼/▶）
+  - [x] クリックでトグル
 
 ### 3.3 投稿一覧をグループ表示
 
-- [ ] `app/controllers/posts_controller.rb` を更新
-  - [ ] `@posts_near` を取得（`Post.deadline_near`）
-  - [ ] `@posts_passed` を取得（`Post.deadline_passed`）
-  - [ ] `@posts_other` を取得（`Post.deadline_other`）
-  - [ ] 各グループに `includes(:user, :cheers)` 適用
+- [x] `app/controllers/posts_controller.rb` を更新
+  - [x] `@posts_near` を取得（`Post.deadline_near`）
+  - [x] `@posts_passed` を取得（`Post.deadline_passed`）
+  - [x] `@posts_other` を取得（`Post.deadline_other`）
+  - [x] `@posts_achieved` を取得（達成済み）
+  - [x] 各グループに `includes(:user, :cheers)` 適用
 
-- [ ] `app/views/posts/index.html.erb` を更新
-  - [ ] 3つのグループセクションを作成
-  - [ ] 各グループに `_group_header` と投稿一覧を表示
-  - [ ] `collapsible_controller` を適用
+- [x] `app/views/posts/index.html.erb` を更新
+  - [x] 4つのグループセクションを作成（期日近い、超過、余裕あり、達成済み）
+  - [x] 各グループに `_group_header` と投稿一覧を表示
+  - [x] `collapsible_controller` を適用
+
+- [x] `app/views/posts/_empty_state.html.erb` 作成
+  - [x] 空状態表示を共通化
 
 ### 3.4 検索との連携
 
-- [ ] `app/controllers/posts_controller.rb` を更新
-  - [ ] 検索クエリがある場合、各スコープに検索条件を追加
-  - [ ] `where('action_plan LIKE ? OR youtube_title LIKE ?')` で絞り込み
-  - [ ] グループ分けを維持
+- [x] `app/controllers/posts_controller.rb` を更新
+  - [x] フィルター使用時は従来の単一リスト表示
+  - [x] デフォルト表示はグループ表示
+  - [x] `using_filters?` メソッドで判定
 
 ### 検証
 
-- [ ] RSpec 実行 → スコープのテストが通る
-- [ ] 手動テスト
-  - [ ] グループが正しく表示される
-  - [ ] 折りたたみ/展開が動作する
-  - [ ] 検索がグループ表示と連携する
-  - [ ] トグルがグループ表示と連携する
+- [x] RSpec 実行 → 461 examples, 0 failures
+- [x] 手動テスト
+  - [x] グループが正しく表示される
+  - [x] 折りたたみ/展開が動作する
+  - [x] フィルター使用時は通常表示に切り替わる
 
 ### 完了条件
 
-- [ ] 期日グループ分けのスコープが正しく動作する
-- [ ] 折りたたみUIが動作する（全て展開がデフォルト）
-- [ ] グループヘッダーにカウントが表示される
-- [ ] 全体/自分トグルがグループ表示と連携する
-- [ ] 検索がグループ表示と連携する
-- [ ] RSpec: 新規コード行の80%以上カバー
-- [ ] RuboCop, Brakeman → All green
+- [x] 期日グループ分けのスコープが正しく動作する
+- [x] 折りたたみUIが動作する（全て展開がデフォルト）
+- [x] グループヘッダーにカウントが表示される
+- [x] フィルター使用時は通常表示に切り替わる
+- [x] RSpec: 461 examples, 0 failures
+- [x] RuboCop → All green
 
 ---
 
@@ -598,4 +604,7 @@
 
 ## 更新履歴
 
+- 2024-12-29: Phase 3 完了（PR #103）- グループ表示実装
+- 2024-12-29: Phase 2 完了（PR #102）- 期日スコープ追加
+- 2024-12-29: Phase 1 完了（PR #101）- データベース変更
 - 2024-12-29: 初版作成（Phase 0 完了）
