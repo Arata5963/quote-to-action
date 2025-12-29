@@ -2,18 +2,6 @@
 require 'rails_helper'
 
 RSpec.describe ApplicationHelper, type: :helper do
-  describe '#category_name_without_icon' do
-    it 'カテゴリ名を返す' do
-      result = helper.category_name_without_icon('music')
-      expect(result).to eq('音楽')
-    end
-
-    it 'i18nから正しく取得する' do
-      result = helper.category_name_without_icon('education')
-      expect(result).to eq('教育')
-    end
-  end
-
   describe '#default_meta_tags' do
     before do
       # request オブジェクトをモック
@@ -77,8 +65,8 @@ RSpec.describe ApplicationHelper, type: :helper do
     it 'ファビコン設定を含む（最低限のエントリ確認）' do
       expect(meta[:icon]).to be_an(Array)
       expect(meta[:icon].length).to be > 0
-      # 最低限の存在チェック（過剰に厳密にしない）
-      expect(meta[:icon]).to include(a_hash_including(href: '/favicon.ico'))
+      # 最低限の存在チェック（バージョン付きURLも許容）
+      expect(meta[:icon].any? { |icon| icon[:href].to_s.start_with?('/favicon.ico') }).to be true
     end
   end
 end

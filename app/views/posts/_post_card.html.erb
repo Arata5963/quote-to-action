@@ -34,9 +34,9 @@
           <span class="text-sm font-medium text-primary truncate"><%= display_name(post.user) %></span>
         <% end %>
 
-        <%# いいねボタン %>
-        <div id="like_button_<%= post.id %>" class="flex-shrink-0">
-          <%= render 'likes/like_button_minimal', post: post %>
+        <%# 応援ボタン %>
+        <div id="cheer_button_<%= post.id %>" class="flex-shrink-0">
+          <%= render 'cheers/cheer_button_minimal', post: post %>
         </div>
       </div>
 
@@ -47,11 +47,8 @@
         </h3>
       <% end %>
 
-      <%# 下部: カテゴリ + 達成状況（mt-autoで下部固定） %>
+      <%# 下部: 達成状況（mt-autoで下部固定） %>
       <div class="flex items-center gap-2 mt-auto pt-2">
-        <span class="text-xs bg-accent/10 text-primary/70 px-2.5 py-1 rounded-full">
-          <%= category_name_without_icon(post.category) %>
-        </span>
         <% if post.achieved? %>
           <span class="text-xs bg-accent text-white px-2.5 py-1 rounded-full">
             達成済み

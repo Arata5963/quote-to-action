@@ -40,30 +40,6 @@ RSpec.describe Post, type: :model do
     end
   end
 
-  describe 'category enum' do
-    let(:user) { create(:user) }
-
-    it '各カテゴリが正しく設定できる' do
-      Post.categories.each_key do |category|
-        post = build(:post, user: user, category: category)
-        expect(post).to be_valid
-        expect(post.category).to eq(category)
-      end
-    end
-
-    it 'category_music? などのクエリメソッドが使える' do
-      post = create(:post, user: user, category: :music)
-      expect(post.category_music?).to be true
-      expect(post.category_education?).to be false
-    end
-
-    it '存在しないカテゴリを設定するとエラー' do
-      expect {
-        build(:post, user: user, category: :invalid_category)
-      }.to raise_error(ArgumentError)
-    end
-  end
-
   describe 'dependent destroy' do
     let(:user) { create(:user) }
     let(:post) { create(:post, user: user) }
@@ -84,23 +60,23 @@ RSpec.describe Post, type: :model do
       }.to change(Comment, :count).by(-1)
     end
 
-    it '投稿を削除するといいねも削除される' do
-      create(:like, user: user, post: post)
+    it '投稿を削除すると応援も削除される' do
+      create(:cheer, user: user, post: post)
 
       expect {
         post.destroy
-      }.to change(Like, :count).by(-1)
+      }.to change(Cheer, :count).by(-1)
     end
 
     it '投稿を削除すると全ての関連データが削除される' do
       create(:achievement, user: user, post: post, achieved_at: Date.current)
       create(:comment, user: user, post: post)
-      create(:like, user: user, post: post)
+      create(:cheer, user: user, post: post)
 
       expect {
         post.destroy
       }.to change {
-        [ Achievement.count, Comment.count, Like.count ]
+        [ Achievement.count, Comment.count, Cheer.count ]
       }.from([ 1, 1, 1 ]).to([ 0, 0, 0 ])
     end
   end

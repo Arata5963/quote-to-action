@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :like do
+  factory :cheer do
     association :user
     association :post
   end

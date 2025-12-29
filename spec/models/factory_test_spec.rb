@@ -43,12 +43,12 @@ RSpec.describe "Factory の動作確認", type: :model do
     end
   end
 
-  describe "Like Factory" do
-    it "基本的な Like を作成できる" do
-      like = create(:like)
-      expect(like).to be_persisted
-      expect(like.user).to be_present
-      expect(like.post).to be_present
+  describe "Cheer Factory" do
+    it "基本的な Cheer を作成できる" do
+      cheer = create(:cheer)
+      expect(cheer).to be_persisted
+      expect(cheer.user).to be_present
+      expect(cheer.post).to be_present
     end
   end
 end

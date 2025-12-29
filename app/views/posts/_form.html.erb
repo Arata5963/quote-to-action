@@ -57,45 +57,20 @@
                 class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
         </div>
 
-        <%# カテゴリ選択 %>
+        <%# 期日設定 %>
         <div>
-          <%= form.label :category, class: "block text-sm font-semibold text-primary mb-2" do %>
-            カテゴリ <span class="text-red-500">*</span>
+          <%= form.label :deadline, class: "block text-sm font-semibold text-primary mb-2" do %>
+            期日
           <% end %>
-          <%= form.select :category,
-                Post.categories.keys.map { |k| [category_name_without_icon(k), k] },
-                { prompt: "カテゴリを選択してください" },
-                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
-        </div>
-
-        <%# リマインダー設定 %>
-        <div class="p-4 rounded-xl border border-accent/20">
-          <div class="flex items-center gap-3 mb-3">
-            <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
-            </svg>
-            <span class="text-sm font-semibold text-primary"><%= t('reminders.label') %></span>
+          <div data-controller="flatpickr">
+            <%= form.text_field :deadline,
+                  value: post.deadline&.strftime("%Y-%m-%d"),
+                  data: { flatpickr_target: "input" },
+                  class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary focus:border-accent focus:ring-1 focus:ring-accent transition-colors cursor-pointer",
+                  placeholder: "期日を設定（任意）",
+                  readonly: true %>
           </div>
-          <%= form.fields_for :reminder, post.reminder || post.build_reminder do |reminder_form| %>
-            <div class="flex items-center gap-4">
-              <div class="flex-1" data-controller="flatpickr">
-                <%= reminder_form.label :remind_at, t('reminders.datetime_label'), class: "sr-only" %>
-                <%= reminder_form.text_field :remind_at,
-                      value: reminder_form.object&.remind_at&.strftime("%Y-%m-%d %H:%M"),
-                      data: { flatpickr_target: "input" },
-                      class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary focus:border-accent focus:ring-1 focus:ring-accent transition-colors cursor-pointer",
-                      placeholder: t('reminders.placeholder'),
-                      readonly: true %>
-              </div>
-              <% if post.reminder&.persisted? %>
-                <label class="flex items-center gap-2 text-sm text-primary/80 cursor-pointer">
-                  <%= reminder_form.check_box :_destroy, class: "rounded border-accent/30 text-accent focus:ring-accent" %>
-                  <span>解除</span>
-                </label>
-              <% end %>
-            </div>
-          <% end %>
-          <p class="mt-2 text-xs text-primary/60"><%= t('reminders.help_text') %></p>
+          <p class="mt-2 text-xs text-primary/60">いつまでに達成するか目標を設定できます</p>
         </div>
 
         <%# ボタンエリア %>

@@ -1,10 +1,5 @@
 # app/helpers/application_helper.rb
 module ApplicationHelper
-  # カテゴリ名を返す
-  def category_name_without_icon(category_key)
-    I18n.t("enums.post.category.#{category_key}", default: category_key.to_s.humanize)
-  end
-
   # ユーザー表示名を返す（名前未設定時は「名無しさん」）
   def display_name(user)
     user.name.presence || "名無しさん"

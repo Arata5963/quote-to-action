@@ -3,7 +3,6 @@ require 'rails_helper'
 RSpec.describe Post, type: :model do
   describe "validations" do
     it { should validate_presence_of(:action_plan) }
-    it { should validate_presence_of(:category) }
     it { should validate_presence_of(:youtube_url) }
     it { should validate_length_of(:action_plan).is_at_most(100) }
 
@@ -17,23 +16,23 @@ RSpec.describe Post, type: :model do
     it { should belong_to(:user) }
     it { should have_many(:achievements) }
     it { should have_many(:comments) }
-    it { should have_many(:likes) }
+    it { should have_many(:cheers) }
   end
-  describe "#liked_by?" do
+  describe "#cheered_by?" do
     let(:user) { create(:user) }
     let(:post) { create(:post) }
 
-    context "いいねしている場合" do
-      before { create(:like, post: post, user: user) }
+    context "応援している場合" do
+      before { create(:cheer, post: post, user: user) }
 
       it "true を返す" do
-        expect(post.liked_by?(user)).to be true
+        expect(post.cheered_by?(user)).to be true
       end
     end
 
-    context "いいねしていない場合" do
+    context "応援していない場合" do
       it "false を返す" do
-        expect(post.liked_by?(user)).to be false
+        expect(post.cheered_by?(user)).to be false
       end
     end
   end

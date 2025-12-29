@@ -119,9 +119,9 @@ RSpec.describe "Interactions", type: :system do
   end
 
   # ====================
-  # いいね
+  # 応援
   # ====================
-  describe "いいね" do
+  describe "応援" do
     let(:user) { create(:user) }
     let!(:post_record) { create(:post) }
 
@@ -129,54 +129,54 @@ RSpec.describe "Interactions", type: :system do
       sign_in user
     end
 
-    it "いいねできる" do
+    it "応援できる" do
       # 投稿一覧ページに移動
       visit posts_path
 
-      # いいね数を確認（初期状態：0）
-      expect(Like.count).to eq(0)
+      # 応援数を確認（初期状態：0）
+      expect(Cheer.count).to eq(0)
 
-      # いいねボタン領域を特定し、その中のformを送信
-      within(first("#like_button_#{post_record.id}")) do
+      # 応援ボタン領域を特定し、その中のformを送信
+      within(first("#cheer_button_#{post_record.id}")) do
         # button_to で生成されたフォームを送信
         find("form").click_button
       end
 
-      # いいねが作成される
-      expect(Like.count).to eq(1)
-      expect(Like.last.user).to eq(user)
-      expect(Like.last.post).to eq(post_record)
+      # 応援が作成される
+      expect(Cheer.count).to eq(1)
+      expect(Cheer.last.user).to eq(user)
+      expect(Cheer.last.post).to eq(post_record)
     end
 
-    it "いいねを取り消せる" do
-      # 事前にいいねを作成
-      create(:like, user: user, post: post_record)
+    it "応援を取り消せる" do
+      # 事前に応援を作成
+      create(:cheer, user: user, post: post_record)
 
       # 投稿一覧ページに移動
       visit posts_path
 
-      # いいね数を確認（初期状態：1）
-      expect(Like.count).to eq(1)
+      # 応援数を確認（初期状態：1）
+      expect(Cheer.count).to eq(1)
 
-      # いいね取り消しボタン領域を特定し、その中のformを送信
-      within(first("#like_button_#{post_record.id}")) do
+      # 応援取り消しボタン領域を特定し、その中のformを送信
+      within(first("#cheer_button_#{post_record.id}")) do
         # button_to で生成されたフォームを送信
         find("form").click_button
       end
 
-      # いいねが削除される
-      expect(Like.count).to eq(0)
+      # 応援が削除される
+      expect(Cheer.count).to eq(0)
     end
 
-    it "いいね数が表示される" do
-      # 事前にいいねを2つ作成
-      create_list(:like, 2, post: post_record)
+    it "応援数が表示される" do
+      # 事前に応援を2つ作成
+      create_list(:cheer, 2, post: post_record)
 
       # 投稿詳細ページに移動
       visit post_path(post_record)
 
-      # いいね数が表示される（DBレコードで確認）
-      expect(Like.where(post: post_record).count).to eq(2)
+      # 応援数が表示される（DBレコードで確認）
+      expect(Cheer.where(post: post_record).count).to eq(2)
     end
   end
 

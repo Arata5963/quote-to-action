@@ -189,7 +189,7 @@ RSpec.describe User, type: :model do
       post = create(:post, user: user)
       create(:achievement, user: user, post: post, achieved_at: Date.current)
       create(:comment, user: user, post: post)
-      create(:like, user: user, post: post)
+      create(:cheer, user: user, post: post)
     end
 
     it 'ユーザー削除時に関連する全てのレコードが削除される' do
@@ -199,7 +199,7 @@ RSpec.describe User, type: :model do
         .and change { Post.count }.by(-1)
         .and change { Achievement.count }.by(-1)
         .and change { Comment.count }.by(-1)
-        .and change { Like.count }.by(-1)
+        .and change { Cheer.count }.by(-1)
     end
   end
 end
