@@ -4,12 +4,12 @@
 class ResetForYoutubePivot < ActiveRecord::Migration[7.2]
   def up
     # 既存データを全削除（破壊的変更）
-    # 関連テーブルから順に削除（外部キー制約のため）
-    Achievement.delete_all
-    Like.delete_all
-    Comment.delete_all
-    Post.delete_all
-    UserBadge.delete_all
+    # SQLで直接削除（モデル名変更に依存しない）
+    execute "DELETE FROM achievements" if table_exists?(:achievements)
+    execute "DELETE FROM likes" if table_exists?(:likes)
+    execute "DELETE FROM comments" if table_exists?(:comments)
+    execute "DELETE FROM posts" if table_exists?(:posts)
+    execute "DELETE FROM user_badges" if table_exists?(:user_badges)
 
     # ユーザーアカウントは残す（認証情報を保持）
   end
