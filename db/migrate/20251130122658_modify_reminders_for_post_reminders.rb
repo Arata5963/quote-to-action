@@ -1,7 +1,7 @@
 class ModifyRemindersForPostReminders < ActiveRecord::Migration[7.2]
   def change
     # 既存データを削除（要件通り）
-    Reminder.delete_all if table_exists?(:reminders)
+    execute("DELETE FROM reminders") if table_exists?(:reminders)
 
     # 既存カラムを削除
     remove_column :reminders, :enabled, :boolean if column_exists?(:reminders, :enabled)

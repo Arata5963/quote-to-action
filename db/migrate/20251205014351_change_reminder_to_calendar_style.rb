@@ -1,7 +1,7 @@
 class ChangeReminderToCalendarStyle < ActiveRecord::Migration[7.2]
   def up
     # 既存リマインダーを全削除（time→datetime変換不可のため）
-    Reminder.delete_all
+    execute("DELETE FROM reminders")
 
     # remind_time (time) を削除
     remove_column :reminders, :remind_time

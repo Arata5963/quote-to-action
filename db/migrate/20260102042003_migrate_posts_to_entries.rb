@@ -87,7 +87,7 @@ class MigratePostsToEntries < ActiveRecord::Migration[7.2]
 
   def down
     # PostEntry を削除
-    PostEntry.delete_all
+    execute("DELETE FROM post_entries")
 
     # ユニーク制約を削除
     remove_index :posts, %i[user_id youtube_video_id]
