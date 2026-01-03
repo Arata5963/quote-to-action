@@ -1,0 +1,14 @@
+<%# app/views/posts/_posts_page.html.erb %>
+<%# Turbo Stream用: 追加投稿 + もっと見るボタン更新 %>
+
+<%# 追加の投稿をメインコンテナに追加 %>
+<%= turbo_stream.append "posts-container" do %>
+  <% posts.each do |post| %>
+    <%= render 'posts/post_card_note', post: post %>
+  <% end %>
+<% end %>
+
+<%# もっと見るボタンを更新（次ページがあれば新しいボタン、なければ削除） %>
+<%= turbo_stream.replace "load-more-container" do %>
+  <%= render 'posts/load_more_button', posts: posts %>
+<% end %>

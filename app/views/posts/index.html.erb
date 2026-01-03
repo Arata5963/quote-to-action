@@ -1,12 +1,12 @@
 <%# app/views/posts/index.html.erb %>
-<%# セクション表示レイアウト（note.com/Zenn風） %>
+<%# シンプルな時系列表示 + もっと見るボタン %>
 
 <div class="min-h-screen bg-white">
   <%# ===== 検索バー ===== %>
   <div class="border-b border-gray-100">
-    <div class="max-w-xl mx-auto px-4 py-2">
+    <div class="flex justify-center px-4 py-2">
       <%= search_form_for @q, url: posts_path, method: :get,
-            html: { id: 'search_form' } do |f| %>
+            html: { id: 'search_form', style: 'width: 380px;' } do |f| %>
         <div class="relative"
              data-controller="autocomplete"
              data-autocomplete-url-value="<%= autocomplete_posts_path %>"
@@ -30,166 +30,56 @@
   </div>
 
   <%# ===== メインコンテンツ ===== %>
-  <div class="max-w-[1200px] mx-auto px-4 py-5">
-    <% if @section_display %>
-      <%# ===== セクション表示（エントリータイプ別） ===== %>
-      <% all_empty = @posts_with_memos.empty? && @posts_with_quotes.empty? && @posts_with_actions.empty? && @posts_with_blogs.empty? && @posts_recent.empty? %>
-
-      <% if all_empty %>
-        <%# 空状態 %>
-        <div class="py-16 text-center">
-          <span class="text-5xl block mb-4">📺</span>
-          <p class="text-gray-700 font-medium mb-2">まだアウトプットがありません</p>
-          <p class="text-sm text-gray-500 mb-6">YouTube動画を見たら記録してみましょう</p>
-          <% if user_signed_in? %>
-            <%= link_to new_post_path, class: "inline-flex items-center gap-2 px-6 py-2.5 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600 transition-colors" do %>
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-              </svg>
-              最初のアウトプットを記録
-            <% end %>
-          <% else %>
-            <%= link_to new_user_session_path, class: "inline-flex items-center gap-2 px-6 py-2.5 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600 transition-colors" do %>
-              ログインして始める
-            <% end %>
-          <% end %>
+  <div class="max-w-4xl mx-auto px-8 md:px-12 py-5">
+    <% if @filter_user.present? %>
+      <%# ユーザーフィルター時のヘッダー %>
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold text-gray-900">投稿一覧</h1>
+          <span class="text-gray-400">by</span>
+          <span class="text-gray-600"><%= @filter_user.name %></span>
         </div>
-      <% else %>
-        <div class="space-y-10">
-          <%# ===== 📝 メモ ===== %>
-          <% if @posts_with_memos.present? %>
-            <section>
-              <%= link_to posts_path(type: "memo"), class: "flex items-center gap-2 mb-4 group" do %>
-                <span class="text-lg">📝</span>
-                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">メモ</h2>
-                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
-              <% end %>
-              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
-                <% @posts_with_memos.each do |post| %>
-                  <%= render 'posts/post_card_note', post: post, show_memo: true %>
-                <% end %>
-              </div>
-            </section>
-          <% end %>
+        <%= link_to user_profile_path(@filter_user), class: "text-sm text-gray-500 hover:text-gray-700" do %>
+          ← 戻る
+        <% end %>
+      </div>
+    <% end %>
 
-          <%# ===== 💬 引用 ===== %>
-          <% if @posts_with_quotes.present? %>
-            <section>
-              <%= link_to posts_path(type: "quote"), class: "flex items-center gap-2 mb-4 group" do %>
-                <span class="text-lg">💬</span>
-                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">引用</h2>
-                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
-              <% end %>
-              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
-                <% @posts_with_quotes.each do |post| %>
-                  <%= render 'posts/post_card_note', post: post, show_quote: true %>
-                <% end %>
-              </div>
-            </section>
+    <%# ===== 投稿一覧 ===== %>
+    <% if @posts.blank? %>
+      <%# 空状態 %>
+      <div class="py-16 text-center">
+        <span class="text-5xl block mb-4">📺</span>
+        <p class="text-gray-700 font-medium mb-2">まだアウトプットがありません</p>
+        <p class="text-sm text-gray-500 mb-6">YouTube動画を見たら記録してみましょう</p>
+        <% if user_signed_in? %>
+          <%= link_to new_post_path, class: "inline-flex items-center gap-2 px-6 py-2.5 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600 transition-colors" do %>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            最初のアウトプットを記録
           <% end %>
-
-          <%# ===== 🎯 アクション ===== %>
-          <% if @posts_with_actions.present? %>
-            <section>
-              <%= link_to posts_path(type: "action"), class: "flex items-center gap-2 mb-4 group" do %>
-                <span class="text-lg">🎯</span>
-                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">アクション</h2>
-                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
-              <% end %>
-              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
-                <% @posts_with_actions.each do |post| %>
-                  <%= render 'posts/post_card_note', post: post, show_action: true %>
-                <% end %>
-              </div>
-            </section>
+        <% else %>
+          <%= link_to new_user_session_path, class: "inline-flex items-center gap-2 px-6 py-2.5 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600 transition-colors" do %>
+            ログインして始める
           <% end %>
-
-          <%# ===== 📰 ブログ ===== %>
-          <% if @posts_with_blogs.present? %>
-            <section>
-              <%= link_to posts_path(type: "blog"), class: "flex items-center gap-2 mb-4 group" do %>
-                <span class="text-lg">📰</span>
-                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">ブログ</h2>
-                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
-              <% end %>
-              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
-                <% @posts_with_blogs.each do |post| %>
-                  <%= render 'posts/post_card_note', post: post, show_blog: true %>
-                <% end %>
-              </div>
-            </section>
-          <% end %>
-
-          <%# ===== 🕐 最近の投稿 ===== %>
-          <% if @posts_recent.present? %>
-            <section>
-              <div class="flex items-center gap-2 mb-4">
-                <span class="text-lg">🕐</span>
-                <h2 class="text-base font-bold text-gray-900">最近の投稿</h2>
-              </div>
-              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
-                <% @posts_recent.each do |post| %>
-                  <%= render 'posts/post_card_note', post: post %>
-                <% end %>
-              </div>
-            </section>
-          <% end %>
-        </div>
-      <% end %>
-
+        <% end %>
+      </div>
     <% else %>
-      <%# ===== フィルター使用時：従来の単一リスト表示 ===== %>
-
-      <%# タイプ別フィルター時のヘッダー %>
-      <% if @current_type.present? %>
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center gap-2">
-            <% case @current_type
-               when "memo" %>
-              <span class="text-xl">📝</span>
-              <h1 class="text-lg font-bold text-gray-900">メモ一覧</h1>
-            <% when "quote" %>
-              <span class="text-xl">💬</span>
-              <h1 class="text-lg font-bold text-gray-900">引用一覧</h1>
-            <% when "action" %>
-              <span class="text-xl">🎯</span>
-              <h1 class="text-lg font-bold text-gray-900">アクション一覧</h1>
-            <% when "blog" %>
-              <span class="text-xl">📰</span>
-              <h1 class="text-lg font-bold text-gray-900">ブログ一覧</h1>
-            <% end %>
-          </div>
-          <%= link_to posts_path, class: "text-sm text-gray-500 hover:text-gray-700" do %>
-            ← 一覧に戻る
-          <% end %>
-        </div>
-      <% end %>
-
-      <% if @posts.empty? %>
-        <div class="py-16 text-center">
-          <span class="text-5xl block mb-4">🔍</span>
-          <p class="text-gray-700 font-medium mb-2">検索結果がありません</p>
-          <p class="text-sm text-gray-500">別のキーワードで検索してみてください</p>
-        </div>
-      <% else %>
-        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
+      <div data-controller="load-more">
+        <%# 投稿グリッド %>
+        <div id="posts-container"
+             data-load-more-target="container"
+             class="grid gap-4"
+             style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
           <% @posts.each do |post| %>
-            <% show_option = case @current_type
-                             when "memo" then { show_memo: true }
-                             when "quote" then { show_quote: true }
-                             when "action" then { show_action: true }
-                             when "blog" then { show_blog: true }
-                             else {}
-                             end %>
-            <%= render 'posts/post_card_note', post: post, **show_option %>
+            <%= render 'posts/post_card_note', post: post %>
           <% end %>
         </div>
 
-        <%# ページネーション %>
-        <div class="mt-6 flex justify-center">
-          <%= paginate @posts %>
-        </div>
-      <% end %>
+        <%# もっと見るボタン %>
+        <%= render 'posts/load_more_button', posts: @posts %>
+      </div>
     <% end %>
   </div>
 </div>
