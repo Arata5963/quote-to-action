@@ -1,12 +1,126 @@
 [x-cloak] { display: none !important; }
 
 /* ===== スクロールバー非表示 ===== */
-.hide-scrollbar {
+.hide-scrollbar,
+.scrollbar-hide {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
-.hide-scrollbar::-webkit-scrollbar {
+.hide-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari, Opera */
+}
+
+/* ===== タスクセクション（横スクロールカルーセル） ===== */
+.task-section {
+  width: 100%;
+}
+
+/* カルーセル全体：矢印 + スクロールエリア + 矢印 */
+.task-carousel {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+/* 矢印ナビゲーションエリア */
+.task-carousel-nav {
+  flex-shrink: 0;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 矢印ボタン */
+.task-carousel-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.task-carousel-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #6b7280;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.task-carousel-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* スクロールトラック（スクロールエリアのラッパー） */
+.task-carousel-track {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* スクロールコンテナ */
+.task-carousel-container {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.task-carousel-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* フェードエフェクト */
+.task-carousel-fade {
+  position: absolute;
+  top: 0;
+  bottom: 8px;
+  width: 24px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.task-carousel-fade-left {
+  left: 0;
+  background: linear-gradient(to right, white 0%, transparent 100%);
+}
+
+.task-carousel-fade-right {
+  right: 0;
+  background: linear-gradient(to left, white 0%, transparent 100%);
+}
+
+/* スペーサー */
+.task-scroll-spacer {
+  flex-shrink: 0;
+  width: 4px;
+}
+
+/* カードラッパー */
+.task-card-wrapper {
+  flex-shrink: 0;
+}
+
+/* ===== テキスト行制限 ===== */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ===== 背景パターン（?マーク） ===== */

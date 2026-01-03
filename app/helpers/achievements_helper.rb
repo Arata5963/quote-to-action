@@ -1,10 +1,10 @@
 module AchievementsHelper
-  # 月のカレンダーデータを生成（空白セル含む）
-  # @param achievement_counts [Hash] 日付 => 達成数のハッシュ
+  # 月のカレンダーデータを生成（空白セル含む・サムネイル対応）
+  # @param achievement_data [Hash] 日付 => { count:, first_post: } のハッシュ
   # @param year [Integer] 年
   # @param month [Integer] 月
   # @return [Array<Hash>] カレンダー表示用のデータ配列
-  def generate_monthly_calendar(achievement_counts, year, month)
+  def generate_monthly_calendar(achievement_data, year, month)
     calendar_days = []
 
     # 月の1日を取得
@@ -20,11 +20,15 @@ module AchievementsHelper
     # 月の日付セル
     (1..last_day.day).each do |day|
       date = Date.new(year, month, day)
+      data = achievement_data[date]
       calendar_days << {
         type: :day,
         date: date,
         day: day,
-        has_achievement: achievement_counts.key?(date)
+        has_achievement: data.present?,
+        achievement_count: data&.dig(:count) || 0,
+        thumbnail_url: data&.dig(:first_post)&.youtube_thumbnail_url(size: :default),
+        post: data&.dig(:first_post)
       }
     end
 

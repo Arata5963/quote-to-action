@@ -14,8 +14,8 @@ export default class extends Controller {
   }
 
   select(event) {
-    // data-rating または data-rating-level-param から値を取得
-    const rating = parseInt(event.currentTarget.dataset.rating || event.params?.level)
+    // data-rating, data-level または data-rating-level-param から値を取得
+    const rating = parseInt(event.currentTarget.dataset.rating || event.currentTarget.dataset.level || event.params?.level)
     if (this.hasInputTarget) {
       this.inputTarget.value = rating
     }
@@ -23,7 +23,7 @@ export default class extends Controller {
   }
 
   hover(event) {
-    const rating = parseInt(event.currentTarget.dataset.rating || event.params?.level)
+    const rating = parseInt(event.currentTarget.dataset.rating || event.currentTarget.dataset.level || event.params?.level)
     this.highlightStars(rating)
   }
 

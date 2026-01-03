@@ -1,0 +1,61 @@
+<%# app/views/post_entries/_task_card.html.erb %>
+<%# タスクカード - 固定サイズ 160x200px %>
+
+<%= turbo_frame_tag dom_id(task), class: "task-card-wrapper" do %>
+  <article class="w-40 h-[200px]">
+    <div class="h-full bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all flex flex-col">
+
+      <%# サムネイル - 固定高さ 90px %>
+      <%= link_to post_path(task.post), class: "block flex-shrink-0", data: { turbo_frame: "_top" } do %>
+        <div class="h-[90px] bg-gray-100 relative overflow-hidden">
+          <% if task.post.youtube_thumbnail_url.present? %>
+            <%= image_tag task.post.youtube_thumbnail_url,
+                  alt: "",
+                  class: "w-full h-full object-cover",
+                  loading: "lazy" %>
+          <% else %>
+            <div class="w-full h-full flex items-center justify-center text-gray-300">
+              <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M10 8l6 4-6 4V8zm11-5H3v18h18V3z"/>
+              </svg>
+            </div>
+          <% end %>
+
+        </div>
+      <% end %>
+
+      <%# コンテンツ - 残りの高さを使用 %>
+      <div class="flex-1 p-2 flex flex-col min-h-0">
+        <%# 動画タイトル - 1行 %>
+        <p class="text-[10px] text-gray-400 truncate leading-tight">
+          <%= truncate(task.post.youtube_title.presence || "動画", length: 20) %>
+        </p>
+
+        <%# アクション内容 - 2行固定 %>
+        <%= link_to post_path(task.post), class: "block flex-1 mt-1", data: { turbo_frame: "_top" } do %>
+          <p class="text-xs text-gray-800 leading-snug line-clamp-2 <%= 'line-through' if task.achieved? %>">
+            <%= task.content %>
+          </p>
+        <% end %>
+
+        <%# 期限 + チェック - 下部固定 %>
+        <div class="flex items-center justify-between mt-auto pt-1">
+          <span class="text-[11px] font-medium <%= deadline_color_class(task) %>">
+            <%= task.deadline.strftime("%-m/%-d") %>
+          </span>
+
+          <%= button_to achieve_post_post_entry_path(task.post, task),
+                method: :patch,
+                class: "w-[18px] h-[18px] rounded-sm border-2 border-gray-700 flex items-center justify-center transition-all cursor-pointer flex-shrink-0 hover:bg-gray-100",
+                title: task.achieved? ? "未達成に戻す" : "達成" do %>
+            <% if task.achieved? %>
+              <svg class="w-3.5 h-3.5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </article>
+<% end %>
