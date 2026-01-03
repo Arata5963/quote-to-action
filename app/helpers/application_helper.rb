@@ -40,4 +40,30 @@ module ApplicationHelper
     }
   end
   # ★★★ OGP・メタタグのデフォルト設定（ここまで追加） ★★★
+
+  # MarkdownをHTMLに変換（サニタイズ付き）
+  def markdown_to_html(text)
+    return "" if text.blank?
+
+    renderer = Redcarpet::Render::HTML.new(
+      hard_wrap: true,
+      link_attributes: { target: "_blank", rel: "noopener noreferrer" }
+    )
+
+    markdown = Redcarpet::Markdown.new(
+      renderer,
+      autolink: true,
+      tables: true,
+      fenced_code_blocks: true,
+      strikethrough: true,
+      highlight: true,
+      quote: true,
+      footnotes: true,
+      lax_spacing: true,         # 空行がなくてもブロック要素を認識
+      space_after_headers: false, # ヘッダーの#の後のスペースを強制しない
+      no_intra_emphasis: true     # 単語内のアンダースコアを強調として扱わない
+    )
+
+    markdown.render(text).html_safe
+  end
 end

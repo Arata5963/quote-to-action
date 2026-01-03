@@ -7,3 +7,4 @@ pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin "stimulus-autocomplete" # @3.1.0
 pin "flatpickr" # @4.6.13
+pin "marked" # @17.0.1

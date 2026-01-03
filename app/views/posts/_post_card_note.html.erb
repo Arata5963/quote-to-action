@@ -1,0 +1,140 @@
+<%# app/views/posts/_post_card_note.html.erb %>
+<%# note.com 完全再現カード + エントリー情報 %>
+<%# オプション: show_memo, show_quote, show_action, show_blog %>
+
+<article class="group">
+  <%# サムネイル（16:9, 小さい角丸） %>
+  <%= link_to post_path(post), class: "block" do %>
+    <div class="aspect-video rounded overflow-hidden bg-gray-100 relative">
+      <%= image_tag post.youtube_thumbnail_url(size: :mqdefault),
+            alt: post.youtube_title || post.action_plan,
+            class: "w-full h-full object-cover",
+            loading: "lazy" %>
+
+      <%# エントリー数バッジ（2回以上の場合のみ表示） %>
+      <% if post.entries_count > 1 %>
+        <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 bg-black/70 text-white text-[10px] font-medium rounded">
+          <%= post.entries_count %>回
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# コンテンツ（コンパクト） %>
+  <div class="pt-2">
+    <%# セクション別のプレビュー %>
+    <% if local_assigns[:show_memo] %>
+      <%# メモ: 最新のメモを表示 %>
+      <% memo_entry = post.post_entries.where(entry_type: :key_point).order(created_at: :desc).first %>
+      <% if memo_entry %>
+        <div class="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+          <span class="flex-shrink-0">📝</span>
+          <span class="truncate"><%= memo_entry.content %></span>
+        </div>
+      <% end %>
+    <% elsif local_assigns[:show_quote] %>
+      <%# 引用: 最新の引用を表示 %>
+      <% quote_entry = post.post_entries.where(entry_type: :quote).order(created_at: :desc).first %>
+      <% if quote_entry %>
+        <div class="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+          <span class="flex-shrink-0">💬</span>
+          <span class="truncate"><%= quote_entry.content %></span>
+        </div>
+      <% end %>
+    <% elsif local_assigns[:show_action] %>
+      <%# アクション: 最新のアクションを表示 %>
+      <% action_entry = post.post_entries.where(entry_type: :action).order(created_at: :desc).first %>
+      <% if action_entry %>
+        <div class="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+          <span class="flex-shrink-0">🎯</span>
+          <span class="truncate"><%= action_entry.content %></span>
+        </div>
+      <% end %>
+    <% elsif local_assigns[:show_blog] %>
+      <%# ブログ: タイトル表示 %>
+      <% blog_entry = post.post_entries.published_blogs.order(published_at: :desc).first %>
+      <% if blog_entry %>
+        <div class="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+          <span class="flex-shrink-0">📰</span>
+          <span class="truncate"><%= blog_entry.title %></span>
+        </div>
+      <% end %>
+    <% elsif post.latest_entry %>
+      <%# デフォルト: 最新エントリーのプレビュー %>
+      <div class="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+        <span class="flex-shrink-0">
+          <% case post.latest_entry.entry_type
+             when 'key_point' %>📝<%
+             when 'action' %>🎯<%
+             when 'quote' %>💬<%
+             when 'blog' %>📰<%
+             when 'recommendation' %>📣<%
+             end %>
+        </span>
+        <span class="truncate">
+          <%= post.latest_entry.content.presence || post.latest_entry.title.presence || '見ただけ' %>
+        </span>
+      </div>
+    <% elsif post.action_plan.present? %>
+      <%# 互換性: エントリーがない場合はaction_planを表示 %>
+      <div class="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+        <span class="flex-shrink-0">🎯</span>
+        <span class="truncate"><%= post.action_plan %></span>
+      </div>
+    <% end %>
+
+    <%# タイトル（13px, 太字, 2行） %>
+    <%= link_to post_path(post), class: "block hover:underline" do %>
+      <h3 class="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2">
+        <%= post.youtube_title.presence || post.action_plan %>
+      </h3>
+    <% end %>
+
+    <%# ユーザー情報（11px） %>
+    <div class="flex items-center gap-1 mt-1.5">
+      <%= link_to user_profile_path(post.user), class: "flex items-center gap-1 min-w-0 hover:underline" do %>
+        <% if post.user.avatar.present? %>
+          <%= image_tag post.user.avatar.url,
+                alt: display_name(post.user),
+                class: "w-4 h-4 rounded-full object-cover flex-shrink-0" %>
+        <% else %>
+          <div class="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-2.5 h-2.5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+        <% end %>
+        <span class="text-[11px] text-gray-500 truncate"><%= display_name(post.user) %></span>
+      <% end %>
+      <span class="text-[11px] text-gray-400 flex-shrink-0"><%= time_ago_in_words(post.created_at) %>前</span>
+    </div>
+
+    <%# フッター（いいね・コメント・メニュー） %>
+    <div class="flex items-center justify-between mt-1.5">
+      <div class="flex items-center gap-2.5">
+        <%# いいね %>
+        <span class="flex items-center gap-0.5 text-gray-400">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+          </svg>
+          <span class="text-[11px]"><%= post.cheers.count %></span>
+        </span>
+
+        <%# コメント %>
+        <span class="flex items-center gap-0.5 text-gray-400">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z"/>
+          </svg>
+          <span class="text-[11px]"><%= post.comments.count %></span>
+        </span>
+      </div>
+
+      <%# 3点メニュー %>
+      <button type="button" class="p-0.5 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</article>

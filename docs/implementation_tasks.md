@@ -1,564 +1,823 @@
 # 実装タスク一覧
 
-**プロジェクト:** mitadake? - 期日中心設計への移行
-**要件定義:** `.claude/04_adr/ADR-20251229-deadline-centric-design.md`
-**開始日:** 2024年12月29日
-**現在のフェーズ:** Phase 6
+**プロジェクト:** mitadake? - アウトプット機能の実装
+**要件定義:** `.claude/04_adr/ADR-20250102-output-entries-design.md`
+**開始日:** 2025年1月2日
+**現在のフェーズ:** Phase 1
 
 ---
 
-## 📌 現在のステータス
+## 現在のステータス
 
-- **実施中:** 完了（本番デプロイ待ち）
-- **次のフェーズ:** -
-- **全体進捗:** 6/6 フェーズ完了 🎉
-
----
-
-## Phase 0: 設計・準備
-
-**目的:** 要件定義、ADR作成、実装計画の策定
-**期間:** 1日
-**ステータス:** ✅ 完了
-
-### タスク
-
-- [x] ADR作成（期日中心設計への移行）
-- [x] 実装ワークフロー作成
-- [x] 進行状況管理ドキュメント作成
-- [x] タスク管理用チケットファイル作成
-- [x] CLAUDE.md（ルールファイル）更新
+- **実施中:** Phase 1
+- **全体進捗:** 0/4 フェーズ完了
 
 ---
 
-## Phase 1: データベース変更
+## 概要
 
-**目的:** データベーススキーマを新しい設計に移行する
-**期間:** 1-2日
-**優先度:** P0
-**ステータス:** ✅ 完了
-**完了日:** 2024-12-29
-**PR:** #101
+### コンセプト
+「YouTube動画を見ただけで終わらせない」- ダラダラ見を可視化し、行動への変換を促す
 
-### 1.1 マイグレーション作成・実行
+### データ構造
+```
+1動画 = 1投稿（Post）
+複数のアウトプット = 複数エントリー（PostEntry）
+```
 
-- [x] `add_deadline_to_posts.rb` マイグレーション作成
-  - [x] `deadline` カラム追加（date型、nullable）
-  - [x] 既存データにデフォルト値設定（created_at + 7日）
-  - [x] マイグレーション実行
-  - [x] `rails db:migrate:status` で確認
+### アウトプット3種類
+| タイプ | 内容 | 必須項目 |
+|--------|------|----------|
+| 📝 メモ | テキスト入力 | content |
+| 🎯 行動 | アクションプラン + 期日 | content, deadline |
+| 🗑️ 特になし | タイムスタンプのみ | なし |
 
-- [x] `remove_category_from_posts.rb` マイグレーション作成
-  - [x] `category` カラム削除
-  - [x] マイグレーション実行
-  - [x] `rails db:migrate:status` で確認
+---
 
-- [x] `rename_likes_to_cheers.rb` マイグレーション作成
-  - [x] `likes` テーブルを `cheers` に改名
-  - [x] マイグレーション実行
-  - [x] `rails db:migrate:status` で確認
+## Phase 1: データベース・モデル変更
 
-- [x] `drop_reminders.rb` マイグレーション作成
-  - [x] `reminders` テーブル削除
-  - [x] マイグレーション実行
-  - [x] `rails db:migrate:status` で確認
+**目的:** 1動画1投稿 + 複数エントリー構造への移行
+**ステータス:** 未着手
 
-### 1.2 テストデータ再作成
+### 1.1 マイグレーション作成
 
-- [x] `db/seeds.rb` を更新
-  - [x] 既存データをクリア（destroy_all）
-  - [x] テストユーザー作成（2名）
-  - [x] 期日が近い投稿を作成（1日後、2日後）
-  - [x] 期日超過の投稿を作成（1日前）
-  - [x] その他の投稿を作成（7日後）
-  - [x] 応援（Cheer）を作成
+#### `create_post_entries.rb`
 
-- [x] `rails db:reset` 実行
-- [x] `rails db:seed` 実行
-- [x] データが正常に作成されたことを確認
+```ruby
+# rails generate migration CreatePostEntries
+class CreatePostEntries < ActiveRecord::Migration[7.2]
+  def change
+    create_table :post_entries do |t|
+      t.references :post, null: false, foreign_key: true
+      t.integer :entry_type, null: false, default: 0
+      t.text :content
+      t.date :deadline
+      t.datetime :achieved_at
+      t.timestamps
+    end
 
-### 1.3 検証
+    add_index :post_entries, [:post_id, :created_at]
+  end
+end
+```
 
-- [x] RuboCop 実行 → All green
-- [x] Brakeman 実行 → All green（既存警告のみ）
-- [x] 既存のRSpec実行 → All pass（447 examples, 0 failures）
+- [ ] マイグレーションファイル作成
+- [ ] `rails db:migrate` 実行
+- [ ] `rails db:migrate:status` で確認
+
+#### `add_youtube_video_id_to_posts.rb`
+
+```ruby
+# rails generate migration AddYoutubeVideoIdToPosts
+class AddYoutubeVideoIdToPosts < ActiveRecord::Migration[7.2]
+  def change
+    # youtube_video_id は既存の youtube_url から抽出するため nullable で追加
+    add_column :posts, :youtube_video_id, :string
+    add_index :posts, [:user_id, :youtube_video_id], unique: true
+  end
+end
+```
+
+- [ ] マイグレーションファイル作成
+- [ ] `rails db:migrate` 実行
+
+### 1.2 既存データ移行
+
+```ruby
+# db/migrate/XXXXXX_migrate_posts_to_entries.rb
+class MigratePostsToEntries < ActiveRecord::Migration[7.2]
+  def up
+    Post.find_each do |post|
+      # youtube_video_id を抽出して設定
+      post.update_column(:youtube_video_id, post.youtube_video_id)
+
+      # 既存の action_plan を PostEntry に変換
+      next if post.action_plan.blank?
+
+      PostEntry.create!(
+        post_id: post.id,
+        entry_type: :action,
+        content: post.action_plan,
+        deadline: post.deadline,
+        achieved_at: post.achieved_at
+      )
+    end
+  end
+
+  def down
+    PostEntry.destroy_all
+    Post.update_all(youtube_video_id: nil)
+  end
+end
+```
+
+- [ ] データ移行マイグレーション作成
+- [ ] `rails db:migrate` 実行
+- [ ] データ移行確認
+
+### 1.3 PostEntry モデル作成
+
+```ruby
+# app/models/post_entry.rb
+class PostEntry < ApplicationRecord
+  belongs_to :post
+
+  enum entry_type: {
+    memo: 0,      # 📝 メモ
+    action: 1,    # 🎯 行動
+    nothing: 2    # 🗑️ 特になし
+  }
+
+  # バリデーション
+  validates :entry_type, presence: true
+  validates :content, presence: true, if: -> { memo? || action? }
+  validates :deadline, presence: true, if: :action?
+
+  # スコープ
+  scope :recent, -> { order(created_at: :desc) }
+  scope :actions_not_achieved, -> { where(entry_type: :action, achieved_at: nil) }
+
+  # 達成メソッド
+  def achieved?
+    achieved_at.present?
+  end
+
+  def achieve!
+    update!(achieved_at: Time.current) if action? && !achieved?
+  end
+end
+```
+
+- [ ] モデルファイル作成
+- [ ] バリデーション実装
+- [ ] スコープ実装
+- [ ] 達成メソッド実装
+
+### 1.4 Post モデル変更
+
+```ruby
+# app/models/post.rb に追加
+class Post < ApplicationRecord
+  has_many :post_entries, dependent: :destroy
+
+  # ユニーク制約（同じユーザー × 同じ動画で1投稿）
+  validates :youtube_video_id, uniqueness: { scope: :user_id }
+
+  # 動画IDでPostを検索または作成
+  def self.find_or_initialize_by_video(user:, youtube_url:)
+    video_id = extract_video_id(youtube_url)
+    post = find_or_initialize_by(user: user, youtube_video_id: video_id)
+    post.youtube_url = youtube_url if post.new_record?
+    post
+  end
+
+  # エントリー関連のヘルパー
+  def latest_entry
+    post_entries.recent.first
+  end
+
+  def entries_count
+    post_entries.count
+  end
+
+  def has_action_entries?
+    post_entries.where(entry_type: :action).exists?
+  end
+
+  private
+
+  def self.extract_video_id(url)
+    # 既存の youtube_video_id メソッドを流用
+    # ...
+  end
+end
+```
+
+- [ ] `has_many :post_entries` 追加
+- [ ] `youtube_video_id` のユニーク制約追加
+- [ ] `find_or_initialize_by_video` メソッド追加
+- [ ] エントリー関連ヘルパー追加
+
+### 1.5 テスト作成
+
+```ruby
+# spec/models/post_entry_spec.rb
+RSpec.describe PostEntry, type: :model do
+  describe 'associations' do
+    it { should belong_to(:post) }
+  end
+
+  describe 'validations' do
+    context 'when entry_type is memo' do
+      subject { build(:post_entry, entry_type: :memo) }
+      it { should validate_presence_of(:content) }
+    end
+
+    context 'when entry_type is action' do
+      subject { build(:post_entry, entry_type: :action) }
+      it { should validate_presence_of(:content) }
+      it { should validate_presence_of(:deadline) }
+    end
+
+    context 'when entry_type is nothing' do
+      subject { build(:post_entry, entry_type: :nothing, content: nil) }
+      it { should be_valid }
+    end
+  end
+
+  describe '#achieve!' do
+    # ...
+  end
+end
+```
+
+- [ ] `spec/models/post_entry_spec.rb` 作成
+- [ ] `spec/factories/post_entries.rb` 作成
+- [ ] Post モデルテスト更新
 
 ### 完了条件
 
-- [x] すべてのマイグレーションが正常に実行されている
-- [x] `posts.deadline` カラムが存在する（nullable）
-- [x] `posts.category` カラムが削除されている
-- [x] `cheers` テーブルが存在する（`likes` から改名）
-- [x] `reminders` テーブルが削除されている
-- [x] シードデータが正常に作成されている
-
-### 備考
-- `deadline`カラムは任意入力に変更（当初のnull: false制約から変更）
-- Like→Cheer、LikesController→CheersControllerへの変更もこのフェーズで実施
-- 投稿フォームからカテゴリ/リマインダーを削除、期日フィールドを追加
+- [ ] すべてのマイグレーションが正常に実行
+- [ ] 既存データが PostEntry に移行されている
+- [ ] RSpec テストが通る（80%以上カバレッジ）
+- [ ] RuboCop → All green
+- [ ] Brakeman → All green
 
 ---
 
-## Phase 2: モデル・コントローラー変更
+## Phase 2: 投稿フォーム変更
 
-**目的:** 期日機能と応援機能をモデル・コントローラーに実装する
-**期間:** 2-3日
-**優先度:** P0
+**目的:** アウトプット3種類の選択UIと投稿フローの実装
 **依存:** Phase 1 完了
-**ステータス:** ✅ 完了
-**完了日:** 2024-12-29
-**PR:** #102
+**ステータス:** 未着手
 
-### 2.1 Post モデル: 期日バリデーション追加
+### 2.1 投稿フォームUI
 
-- [x] `app/models/post.rb` を更新
-  - [ ] `validate :deadline_must_be_future` 追加（作成時のみ）← 後回し
-  - [x] `enum category` 削除 ✅ Phase 1で実施
-  - [x] `has_many :reminders` 削除 ✅ Phase 1で実施
-  - [x] スコープ追加: `deadline_near`（3日以内）
-  - [x] スコープ追加: `deadline_passed`（期日超過）
-  - [x] スコープ追加: `deadline_other`（4日以上）
-  - [x] スコープ追加: `with_deadline`（期日あり）
-  - [x] スコープ追加: `not_achieved`（未達成）
-  - [x] スコープ追加: `achieved`（達成済み）
+#### アウトプット種類選択
 
-- [x] `spec/models/post_spec.rb` を作成/更新
-  - [ ] deadline_must_be_future のテスト ← 後回し
-  - [x] スコープのテスト（deadline_near, deadline_passed, deadline_other, with_deadline, achieved, not_achieved）
+```erb
+<%# app/views/posts/_entry_type_selector.html.erb %>
+<div data-controller="entry-form" class="space-y-4">
+  <%# アウトプット種類選択（ラジオボタン風カード） %>
+  <div class="grid grid-cols-3 gap-3">
+    <label class="cursor-pointer">
+      <input type="radio" name="entry_type" value="memo"
+             data-entry-form-target="typeRadio"
+             data-action="entry-form#changeType"
+             class="sr-only peer">
+      <div class="p-4 rounded-lg border-2 peer-checked:border-blue-500 peer-checked:bg-blue-50 text-center">
+        <span class="text-2xl">📝</span>
+        <p class="text-sm font-medium mt-1">メモ</p>
+      </div>
+    </label>
 
-- [x] `spec/factories/posts.rb` を更新
-  - [x] `deadline` 属性追加（デフォルト: 7日後） ✅ Phase 1で実施
-  - [x] trait 追加: `deadline_near`
-  - [x] trait 追加: `deadline_passed`
-  - [x] trait 追加: `without_deadline`
-  - [x] trait 追加: `achieved` ✅ 既存
+    <label class="cursor-pointer">
+      <input type="radio" name="entry_type" value="action"
+             data-entry-form-target="typeRadio"
+             data-action="entry-form#changeType"
+             class="sr-only peer">
+      <div class="p-4 rounded-lg border-2 peer-checked:border-orange-500 peer-checked:bg-orange-50 text-center">
+        <span class="text-2xl">🎯</span>
+        <p class="text-sm font-medium mt-1">行動</p>
+      </div>
+    </label>
 
-### 2.2 投稿フォーム: 期日入力
+    <label class="cursor-pointer">
+      <input type="radio" name="entry_type" value="nothing"
+             data-entry-form-target="typeRadio"
+             data-action="entry-form#changeType"
+             class="sr-only peer">
+      <div class="p-4 rounded-lg border-2 peer-checked:border-gray-500 peer-checked:bg-gray-50 text-center">
+        <span class="text-2xl">🗑️</span>
+        <p class="text-sm font-medium mt-1">特になし</p>
+      </div>
+    </label>
+  </div>
 
-- [x] `app/views/posts/_form.html.erb` を更新 ✅ Phase 1で実施
-  - [x] カテゴリ選択UIを削除
-  - [x] 期日入力フィールド追加（Flatpickr使用）
-  - [x] 任意入力に変更
+  <%# 動的フィールド（entry_typeに応じて表示切替） %>
+  <div data-entry-form-target="fields">
+    <%# Stimulus で動的に表示 %>
+  </div>
+</div>
+```
 
-- [x] `app/controllers/posts_controller.rb` を更新 ✅ Phase 1で実施
-  - [x] `post_params` に `deadline` を追加
-  - [x] `category` を削除
+- [ ] アウトプット種類選択UI作成
+- [ ] 種類ごとの入力フィールド作成
+- [ ] Stimulus コントローラー作成
 
-- [x] `config/locales/ja.yml` 更新 ✅ Phase 1で実施
-  - [x] `activerecord.attributes.post.deadline` 追加
+### 2.2 Stimulus コントローラー
 
-### 2.3 カテゴリ関連のコード削除 ✅ Phase 1で実施
+```javascript
+// app/javascript/controllers/entry_form_controller.js
+import { Controller } from "@hotwired/stimulus"
 
-- [x] `app/models/post.rb` から `enum category` 削除
-- [x] `app/controllers/posts_controller.rb` からカテゴリ絞り込み削除
-- [x] `app/views/posts/index.html.erb` からカテゴリ絞り込みUI削除
-- [x] `app/views/posts/_post_card.html.erb` からカテゴリバッジ削除
-- [x] `config/locales/ja.yml` からカテゴリ関連の翻訳削除
-- [x] `spec/models/post_spec.rb` からカテゴリ関連のテスト削除
+export default class extends Controller {
+  static targets = ["typeRadio", "fields", "memoFields", "actionFields"]
 
-### 2.4 Like → Cheer モデル変更 ✅ Phase 1で実施
+  connect() {
+    this.updateFields()
+  }
 
-- [x] `app/models/like.rb` → `app/models/cheer.rb` に改名
-  - [x] クラス名を `Cheer` に変更
-  - [x] バリデーション確認（user_id の uniqueness scoped to post_id）
+  changeType() {
+    this.updateFields()
+  }
 
-- [x] `app/models/user.rb` を更新
-  - [x] `has_many :likes` → `has_many :cheers` に変更
+  updateFields() {
+    const selectedType = this.getSelectedType()
 
-- [x] `app/models/post.rb` を更新
-  - [x] `has_many :likes` → `has_many :cheers` に変更
-  - [x] `liked_by?` → `cheered_by?` に変更
+    // すべて非表示
+    this.hideAllFields()
 
-- [x] `spec/models/cheer_spec.rb` 作成
-  - [x] アソシエーションのテスト
-  - [x] バリデーションのテスト
+    // 選択されたタイプのフィールドを表示
+    switch(selectedType) {
+      case 'memo':
+        this.showMemoFields()
+        break
+      case 'action':
+        this.showActionFields()
+        break
+      case 'nothing':
+        // 入力フィールドなし
+        break
+    }
+  }
 
-### 2.5 LikesController → CheersController ✅ Phase 1で実施
+  getSelectedType() {
+    const checked = this.typeRadioTargets.find(r => r.checked)
+    return checked ? checked.value : null
+  }
 
-- [x] `app/controllers/likes_controller.rb` → `app/controllers/cheers_controller.rb` に改名
-  - [x] クラス名を `CheersController` に変更
-  - [x] `@like` → `@cheer` に変更
-  - [x] `current_user.likes` → `current_user.cheers` に変更
+  // ...
+}
+```
 
-- [x] `config/routes.rb` を更新
-  - [x] `resources :likes` → `resources :cheers` に変更
+- [ ] `entry_form_controller.js` 作成
+- [ ] タイプ切り替え機能実装
+- [ ] フィールド表示/非表示制御
 
-- [x] `spec/requests/cheers_spec.rb` 作成
-  - [x] create アクションのテスト
-  - [x] destroy アクションのテスト
+### 2.3 PostsController 変更
 
-### 2.6 いいねボタン → 応援ボタン ✅ Phase 1で実施
+```ruby
+# app/controllers/posts_controller.rb
+class PostsController < ApplicationController
+  def create
+    # 1. 動画IDでPostを検索または作成
+    @post = Post.find_or_initialize_by_video(
+      user: current_user,
+      youtube_url: post_params[:youtube_url]
+    )
 
-- [x] `app/views/cheers/_cheer_button.html.erb` を作成/更新
-  - [x] 「いいね」→「応援する」に変更
-  - [x] アイコン更新
-  - [x] `post_likes_path` → `post_cheers_path` に変更
+    # 2. Postを保存（新規の場合）
+    if @post.new_record?
+      @post.save!
+    end
 
-- [x] `app/views/posts/show.html.erb` を更新
-  - [x] 応援ボタンを表示
-  - [x] 応援数を表示
+    # 3. PostEntryを作成
+    @entry = @post.post_entries.build(entry_params)
 
-- [x] `config/locales/ja.yml` 更新
-  - [x] `cheers.create` 追加
-  - [x] `cheers.destroy` 追加
+    if @entry.save
+      redirect_to @post, notice: entry_success_message(@entry)
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
 
-### 2.7 全体/自分トグルスイッチ
+  private
 
-- [ ] `app/javascript/controllers/toggle_controller.js` 作成
-  - [ ] Stimulus Controller 作成
-  - [ ] `toggle()` メソッド実装
-  - [ ] `data-toggle-value` で状態管理
+  def entry_params
+    params.require(:post_entry).permit(:entry_type, :content, :deadline)
+  end
 
-- [ ] `app/views/posts/_toggle_switch.html.erb` 作成
-  - [ ] iOS風トグルスイッチUI
-  - [ ] 「全体」「自分」ラベル
+  def entry_success_message(entry)
+    case entry.entry_type
+    when 'memo' then 'メモを記録しました'
+    when 'action' then 'アクションプランを設定しました'
+    when 'nothing' then '視聴を記録しました'
+    end
+  end
+end
+```
 
-- [ ] `app/controllers/posts_controller.rb` を更新
-  - [ ] `scope` パラメータで全体/自分を切り替え
+- [ ] `create` アクション変更
+- [ ] `find_or_initialize_by_video` 使用
+- [ ] PostEntry 作成処理追加
 
-### 2.8 投稿一覧: 達成済みを除外
+### 2.4 クリップボード自動検出
 
-- [ ] `app/models/post.rb` に `scope :not_achieved` 追加
-- [ ] `app/controllers/posts_controller.rb` を更新
-  - [ ] `Post.not_achieved` スコープを使用
-  - [ ] `order(deadline: :asc)` でソート
-  - [x] `includes(:user, :cheers)` でN+1回避 ✅ Phase 1で実施
+```javascript
+// app/javascript/controllers/clipboard_controller.js
+import { Controller } from "@hotwired/stimulus"
 
-### 検証
+export default class extends Controller {
+  static targets = ["input"]
 
-- [ ] RSpec 実行 → 新規コード80%以上カバー
-- [ ] RuboCop 実行 → All green
-- [ ] Brakeman 実行 → All green
-- [ ] 手動テスト
-  - [ ] 投稿作成（期日入力）
-  - [ ] 応援ボタン動作確認
-  - [ ] トグル切り替え動作確認
+  async connect() {
+    await this.checkClipboard()
+  }
+
+  async checkClipboard() {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (this.isYoutubeUrl(text)) {
+        this.inputTarget.value = text
+        // 自動でYouTube情報を取得
+        this.dispatch("urlDetected", { detail: { url: text } })
+      }
+    } catch (err) {
+      // クリップボードアクセス拒否時は何もしない
+      console.log("Clipboard access denied")
+    }
+  }
+
+  isYoutubeUrl(text) {
+    const pattern = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)/
+    return pattern.test(text)
+  }
+}
+```
+
+- [ ] `clipboard_controller.js` 作成
+- [ ] YouTube URL検出機能
+- [ ] フォールバック対応（手動入力）
 
 ### 完了条件
 
-- [ ] `Post` モデルに `deadline` バリデーションが追加されている
-- [ ] 投稿フォームに期日入力が追加されている
-- [ ] カテゴリ関連のコードがすべて削除されている
-- [ ] `Like` モデルが `Cheer` モデルに改名されている
-- [ ] `LikesController` が `CheersController` に改名されている
-- [ ] いいねボタンが応援ボタンに変更されている
-- [ ] 全体/自分トグルスイッチが動作する
-- [ ] 投稿一覧で達成済み投稿が除外されている
-- [ ] RSpec: 新規コード行の80%以上カバー
-- [ ] RuboCop, Brakeman → All green
+- [ ] アウトプット3種類の選択UIが動作
+- [ ] 種類に応じた入力フィールドが表示
+- [ ] 同じ動画への投稿が既存Postに紐付く
+- [ ] クリップボード自動検出が動作
+- [ ] RSpec テスト通過
 
 ---
 
-## Phase 3: グループ表示実装
+## Phase 3: 詳細ページ・追記機能
 
-**目的:** 投稿一覧を期日グループで表示する
-**期間:** 2-3日
-**優先度:** P1
+**目的:** エントリー一覧表示とインライン追記UI
 **依存:** Phase 2 完了
-**ステータス:** ✅ 完了
-**完了日:** 2024-12-29
-**PR:** #103
+**ステータス:** 未着手
 
-### 3.1 期日グループ分けのスコープ
+### 3.1 詳細ページUI
 
-- [x] `app/models/post.rb` にスコープを追加（Phase 2 で作成済み）
-  - [x] `scope :deadline_near` → 3日以内、期日の近い順
-  - [x] `scope :deadline_passed` → 期日超過、期日の古い順
-  - [x] `scope :deadline_other` → 4日以上、期日の近い順
+```erb
+<%# app/views/posts/show.html.erb %>
+<div class="max-w-2xl mx-auto">
+  <%# YouTube埋め込み %>
+  <div class="aspect-video rounded-lg overflow-hidden">
+    <iframe src="<%= @post.youtube_embed_url %>" ...></iframe>
+  </div>
 
-- [x] `spec/models/post_spec.rb` にスコープのテスト追加
-  - [x] `deadline_near` のテスト（境界値含む）
-  - [x] `deadline_passed` のテスト（ソート順確認）
-  - [x] `deadline_other` のテスト
+  <%# エントリー一覧（タイムライン形式） %>
+  <div class="mt-6 space-y-4">
+    <h2 class="text-lg font-bold">アウトプット履歴</h2>
 
-### 3.2 折りたたみUIコンポーネント
+    <% @post.post_entries.recent.each do |entry| %>
+      <%= render 'post_entries/entry_card', entry: entry %>
+    <% end %>
+  </div>
 
-- [x] `app/javascript/controllers/collapsible_controller.js` 作成
-  - [x] Stimulus Controller 作成
-  - [x] `toggle()` メソッド実装
-  - [x] `openValueChanged()` メソッド実装
-  - [x] 初期状態: すべて展開（`openValue = true`）
+  <%# 追記ボタン %>
+  <div class="mt-6" data-controller="inline-form">
+    <button data-action="inline-form#toggle"
+            class="w-full py-3 border-2 border-dashed rounded-lg text-gray-500 hover:border-gray-400">
+      + 追記する
+    </button>
 
-- [x] `app/views/posts/_group_header.html.erb` 作成
-  - [x] グループヘッダー作成（タイトル + カウント）
-  - [x] 折りたたみアイコン（▼/▶）
-  - [x] クリックでトグル
+    <%# インライン展開フォーム %>
+    <div data-inline-form-target="form" class="hidden mt-4">
+      <%= render 'post_entries/form', post: @post %>
+    </div>
+  </div>
+</div>
+```
 
-### 3.3 投稿一覧をグループ表示
+- [ ] エントリー一覧表示
+- [ ] タイムライン形式UI
+- [ ] 追記ボタン配置
 
-- [x] `app/controllers/posts_controller.rb` を更新
-  - [x] `@posts_near` を取得（`Post.deadline_near`）
-  - [x] `@posts_passed` を取得（`Post.deadline_passed`）
-  - [x] `@posts_other` を取得（`Post.deadline_other`）
-  - [x] `@posts_achieved` を取得（達成済み）
-  - [x] 各グループに `includes(:user, :cheers)` 適用
+### 3.2 エントリーカード
 
-- [x] `app/views/posts/index.html.erb` を更新
-  - [x] 4つのグループセクションを作成（期日近い、超過、余裕あり、達成済み）
-  - [x] 各グループに `_group_header` と投稿一覧を表示
-  - [x] `collapsible_controller` を適用
+```erb
+<%# app/views/post_entries/_entry_card.html.erb %>
+<div class="p-4 rounded-lg bg-white border">
+  <div class="flex items-start gap-3">
+    <%# タイプアイコン %>
+    <span class="text-2xl">
+      <% case entry.entry_type %>
+      <% when 'memo' %>📝
+      <% when 'action' %>🎯
+      <% when 'nothing' %>🗑️
+      <% end %>
+    </span>
 
-- [x] `app/views/posts/_empty_state.html.erb` 作成
-  - [x] 空状態表示を共通化
+    <div class="flex-1">
+      <%# コンテンツ %>
+      <% if entry.content.present? %>
+        <p class="text-gray-900"><%= entry.content %></p>
+      <% else %>
+        <p class="text-gray-400 italic">見ただけ</p>
+      <% end %>
 
-### 3.4 検索との連携
+      <%# メタ情報 %>
+      <div class="mt-2 flex items-center gap-4 text-sm text-gray-500">
+        <span><%= time_ago_in_words(entry.created_at) %>前</span>
 
-- [x] `app/controllers/posts_controller.rb` を更新
-  - [x] フィルター使用時は従来の単一リスト表示
-  - [x] デフォルト表示はグループ表示
-  - [x] `using_filters?` メソッドで判定
+        <% if entry.action? && entry.deadline %>
+          <span class="<%= entry.achieved? ? 'text-green-600' : 'text-orange-600' %>">
+            <% if entry.achieved? %>
+              ✓ 達成済み
+            <% else %>
+              期日: <%= l(entry.deadline, format: :short) %>
+            <% end %>
+          </span>
+        <% end %>
+      </div>
+    </div>
 
-### 検証
+    <%# 達成ボタン（actionタイプのみ） %>
+    <% if entry.action? && !entry.achieved? %>
+      <%= button_to achieve_post_entry_path(@post, entry),
+                    method: :patch,
+                    class: "px-3 py-1 bg-green-500 text-white rounded-full text-sm" do %>
+        達成！
+      <% end %>
+    <% end %>
+  </div>
+</div>
+```
 
-- [x] RSpec 実行 → 461 examples, 0 failures
-- [x] 手動テスト
-  - [x] グループが正しく表示される
-  - [x] 折りたたみ/展開が動作する
-  - [x] フィルター使用時は通常表示に切り替わる
+- [ ] エントリーカードUI作成
+- [ ] タイプ別表示切り替え
+- [ ] 達成ボタン配置
 
-### 完了条件
+### 3.3 インライン追記フォーム
 
-- [x] 期日グループ分けのスコープが正しく動作する
-- [x] 折りたたみUIが動作する（全て展開がデフォルト）
-- [x] グループヘッダーにカウントが表示される
-- [x] フィルター使用時は通常表示に切り替わる
-- [x] RSpec: 461 examples, 0 failures
-- [x] RuboCop → All green
+```javascript
+// app/javascript/controllers/inline_form_controller.js
+import { Controller } from "@hotwired/stimulus"
 
----
+export default class extends Controller {
+  static targets = ["form"]
 
-## Phase 4: 通知機能実装
+  toggle() {
+    this.formTarget.classList.toggle("hidden")
+  }
 
-**目的:** Activity Notification gem を使用してアプリ内通知機能を実装する
-**期間:** 3-4日
-**優先度:** P1
-**依存:** Phase 2 完了
-**ステータス:** ✅ 完了
-**完了日:** 2024-12-29
-**PR:** #104
+  close() {
+    this.formTarget.classList.add("hidden")
+  }
+}
+```
 
-### 4.1 Activity Notification gem 導入
+- [ ] `inline_form_controller.js` 作成
+- [ ] 展開/折りたたみ機能
+- [ ] 投稿後の自動閉じ
 
-- [x] `Gemfile` に `activity_notification` 追加
-- [x] `bundle install` 実行
-- [x] `rails generate activity_notification:install` 実行
-- [x] `rails generate activity_notification:migration` 実行
-- [x] `rails db:migrate` 実行
+### 3.4 PostEntriesController
 
-### 4.2 User モデル: 通知受信設定
+```ruby
+# app/controllers/post_entries_controller.rb
+class PostEntriesController < ApplicationController
+  before_action :set_post
 
-- [x] `app/models/user.rb` を更新
-  - [x] `acts_as_target` 追加
-  - [x] `email_allowed: false` 追加
+  def create
+    @entry = @post.post_entries.build(entry_params)
+    @entry.save!
 
-### 4.3 Cheer, Comment モデル: 通知設定
+    respond_to do |format|
+      format.html { redirect_to @post, notice: success_message }
+      format.turbo_stream
+    end
+  end
 
-- [x] `app/models/cheer.rb` を更新
-  - [x] `acts_as_notifiable` 追加
-  - [x] `after_create :send_notification` コールバック追加
-  - [x] 自分の投稿には通知しない
+  def achieve
+    @entry = @post.post_entries.find(params[:id])
+    @entry.achieve!
 
-- [x] `app/models/comment.rb` を更新
-  - [x] `acts_as_notifiable` 追加
-  - [x] `after_create :send_notification` コールバック追加
+    respond_to do |format|
+      format.html { redirect_to @post, notice: '達成おめでとうございます！' }
+      format.turbo_stream
+    end
+  end
 
-### 4.4 NotificationsController 作成
+  private
 
-- [x] `app/controllers/notifications_controller.rb` 作成
-  - [x] `index` アクション実装
-  - [x] `mark_as_read` アクション実装
-  - [x] `mark_all_as_read` アクション実装
+  def set_post
+    @post = current_user.posts.find(params[:post_id])
+  end
 
-- [x] `config/routes.rb` に通知のルーティング追加
-  - [x] `resources :notifications, only: [:index]`
-  - [x] `post :mark_as_read, on: :member`
-  - [x] `post :mark_all_as_read, on: :collection`
+  def entry_params
+    params.require(:post_entry).permit(:entry_type, :content, :deadline)
+  end
+end
+```
 
-- [x] `spec/requests/notifications_spec.rb` 作成（10 examples）
+- [ ] `create` アクション実装
+- [ ] `achieve` アクション実装
+- [ ] Turbo Stream 対応
 
-### 4.5 通知タブUI
+### 3.5 ルーティング
 
-- [x] `app/views/shared/_bottom_nav.html.erb` を更新
-  - [x] 通知タブ追加（🔔アイコン）
-  - [x] 未読バッジ表示
+```ruby
+# config/routes.rb
+resources :posts do
+  resources :post_entries, only: [:create] do
+    member do
+      patch :achieve
+    end
+  end
+end
+```
 
-- [x] `app/views/notifications/index.html.erb` 作成
-  - [x] 一括既読ボタン
-  - [x] 通知一覧
-  - [x] ページネーション
-
-- [x] `app/views/notifications/_notification.html.erb` 作成
-  - [x] 通知アイテム表示（応援/コメント別アイコン）
-  - [x] 未読/既読の表示切り替え
-  - [x] クリックで既読 + 投稿詳細へリダイレクト
-
-### 4.6 i18n 更新
-
-- [x] `config/locales/ja.yml` 更新
-  - [x] 通知関連の日本語訳追加
-
-### 検証
-
-- [x] RSpec 実行 → 471 examples, 0 failures
-- [x] 手動テスト
-  - [x] 応援時に通知が作成される
-  - [x] コメント時に通知が作成される
-  - [x] 通知タブに未読バッジが表示される
-  - [x] 一括既読ボタンが動作する
-  - [x] 通知を開いたら既読になる
-
-### 完了条件
-
-- [x] Activity Notification gem が導入されている
-- [x] 応援時に通知が作成される
-- [x] コメント時に通知が作成される
-- [x] 通知タブが追加されている
-- [x] 未読バッジが表示される
-- [x] 一括既読ボタンが動作する
-- [x] 通知を開いたら自動既読になる
-- [x] RSpec: 471 examples, 0 failures
-- [x] RuboCop → All green
-
-### 備考
-- 期日切れバッチ処理（4.6, 4.7）は将来の拡張として保留
-
----
-
-## Phase 5: UI/UXデザイン調整
-
-**目的:** 期日中心のUIを視覚的に強調し、ユーザー体験を向上させる
-**期間:** 1-2日
-**優先度:** P2
-**依存:** Phase 3, Phase 4 完了
-**ステータス:** ✅ 完了
-**完了日:** 2024-12-29
-**PR:** #105
-
-### 5.1 期日の視覚的な表現
-
-- [x] 期日が近い投稿（3日以内）の強調
-  - [x] 「⏰ あと○日」バッジ追加（オレンジ）
-  - [x] 「⏰ 今日まで」バッジ追加（オレンジ）
-
-- [x] 期日超過の投稿の強調
-  - [x] 「📅 期日超過」バッジ追加（グレー）
-
-- [x] Postモデルにインスタンスメソッド追加
-  - [x] `deadline_near?` - 3日以内か判定
-  - [x] `deadline_passed?` - 期日超過か判定
-  - [x] `days_until_deadline` - 期日までの日数
-
-### 5.2 応援ボタンのアイコン選定
-
-- [x] アイコン選定 → ⭐（スター）に決定
-  - [x] ハートアイコンから星アイコンに変更
-  - [x] 色を赤からオレンジ系に変更
-
-- [x] `app/views/cheers/_cheer_button.html.erb` を更新
-  - [x] 詳細ページ用ボタン更新
-  - [x] ミニマルボタン更新
-
-### 5.3 デザイン全体の調整
-
-- [x] カラー統一確認
-  - [x] 応援ボタン: オレンジ系（orange-400/500）
-  - [x] 期日近い: オレンジ（orange-100/600）
-  - [x] 期日超過: グレー（primary/10, primary/60）
-  - [x] 達成済み: アクセント（accent）
-
-### 検証
-
-- [x] RSpec 実行 → 484 examples, 0 failures
-- [x] RuboCop 実行 → All green
+- [ ] ルーティング追加
 
 ### 完了条件
 
-- [x] 期日が近い投稿が視覚的に強調されている
-- [x] 期日超過の投稿が視覚的に区別できる
-- [x] 応援ボタンのアイコンが決定している（⭐スター・オレンジ）
-- [x] RSpec, RuboCop → All green
+- [ ] 詳細ページでエントリー一覧が表示される
+- [ ] インライン追記フォームが動作する
+- [ ] 達成ボタンが動作する
+- [ ] Turbo Stream でリアルタイム更新
 
 ---
 
-## Phase 6: テスト・デプロイ
+## Phase 4: 一覧ページ・UI調整
 
-**目的:** 品質を確保し、本番環境にデプロイする
-**期間:** 2-3日
-**優先度:** P0
-**依存:** Phase 1-5 完了
-**ステータス:** ✅ 完了
-**完了日:** 2024-12-29
-**PR:** #106
+**目的:** note.com風デザインとエントリー情報表示
+**依存:** Phase 3 完了
+**ステータス:** 未着手
 
-### 6.1 テストカバレッジ確認
+### 4.1 一覧ページのカード更新
 
-- [x] `bundle exec rspec --coverage` 実行
-- [x] SimpleCov レポート確認
-- [x] カバレッジ: 70.66%（484 examples, 0 failures）
+```erb
+<%# app/views/posts/_post_card_note.html.erb %>
+<article class="group">
+  <%# サムネイル %>
+  <%= link_to post_path(post), class: "block" do %>
+    <div class="aspect-video rounded overflow-hidden bg-gray-100 relative">
+      <%= image_tag post.youtube_thumbnail_url(size: :mqdefault), ... %>
 
-### 6.2 E2Eテスト（Capybara）
+      <%# エントリー数バッジ %>
+      <% if post.entries_count > 1 %>
+        <span class="absolute top-2 right-2 px-2 py-0.5 bg-black/60 text-white text-xs rounded-full">
+          <%= post.entries_count %>回
+        </span>
+      <% end %>
+    </div>
+  <% end %>
 
-- [x] 既存のRequest Specでカバー済み
-  - [x] 投稿作成、応援機能、通知機能のテスト完了
+  <div class="pt-2">
+    <%# 最新エントリーのプレビュー %>
+    <% if post.latest_entry %>
+      <div class="flex items-center gap-1 text-xs text-gray-500">
+        <span>
+          <% case post.latest_entry.entry_type %>
+          <% when 'memo' %>📝
+          <% when 'action' %>🎯
+          <% when 'nothing' %>🗑️
+          <% end %>
+        </span>
+        <span class="truncate">
+          <%= post.latest_entry.content.presence || '見ただけ' %>
+        </span>
+      </div>
+    <% end %>
 
-### 6.3 パフォーマンス確認
+    <%# ... 既存のユーザー情報など %>
+  </div>
+</article>
+```
 
-- [x] N+1対策済み
-  - [x] `includes(:user, :cheers)` 適用済み（Phase 3で対応）
+- [ ] エントリー数バッジ追加
+- [ ] 最新エントリープレビュー追加
+- [ ] タイプ別アイコン表示
 
-### 6.4 静的解析
+### 4.2 空状態のUI
 
-- [x] RuboCop 実行 → All green（126 files inspected, no offenses）
-- [x] Brakeman 実行 → All green
-  - [x] Format Validation警告修正（正規表現に`\z`アンカー追加）
-  - [x] 弱いXSS警告は`brakeman.ignore`で無視設定
-- [x] bundle audit 実行 → No vulnerabilities found
+```erb
+<%# 投稿がない場合 %>
+<div class="py-16 text-center">
+  <span class="text-6xl">📺</span>
+  <p class="mt-4 text-gray-500">まだアウトプットがありません</p>
+  <p class="text-sm text-gray-400 mt-1">YouTube動画を見たら記録してみましょう</p>
+  <%= link_to new_post_path, class: "mt-4 inline-block px-6 py-2 bg-orange-500 text-white rounded-full" do %>
+    最初のアウトプットを記録
+  <% end %>
+</div>
+```
 
-### 6.5 i18n チェック
-
-- [x] 全テストでi18n問題なし
-
-### 6.6 A11y チェック
-
-- [x] フォームラベル: 実装済み
-- [x] alt 属性: 画像に設定済み
-
-### 6.7 本番デプロイ
-
-- [ ] `main` ブランチにマージ
-- [ ] Render.com でデプロイ確認
-- [ ] 動作確認
+- [ ] 空状態UI作成
+- [ ] CTAボタン配置
 
 ### 完了条件
 
-- [x] RSpec: 484 examples, 0 failures（カバレッジ70.66%）
-- [x] RuboCop, Brakeman, bundle audit → All green
-- [x] i18n チェック完了
-- [x] A11y チェック完了
-- [ ] 本番デプロイ待ち
+- [ ] note.com風デザインが適用されている
+- [ ] エントリー数が表示される
+- [ ] 最新エントリーのプレビューが表示される
+- [ ] レスポンシブ対応
 
 ---
 
-## 📝 メモ・検討事項
+## テスト要件
 
-### Phase 5 で決定すべきこと
+### RSpec
 
-- [ ] 期日が近い投稿の視覚的な表現（背景色 / バッジ / バナー）
-- [ ] 応援ボタンのアイコン（👏 / 🎉 / 💪 / ⭐）
+- [ ] `spec/models/post_entry_spec.rb`
+  - [ ] バリデーションテスト（タイプ別）
+  - [ ] `achieve!` メソッドテスト
+  - [ ] スコープテスト
 
-### 将来の拡張
+- [ ] `spec/models/post_spec.rb`
+  - [ ] `find_or_initialize_by_video` テスト
+  - [ ] ユニーク制約テスト
+  - [ ] エントリー関連メソッドテスト
 
-- [ ] 通知の削除機能（Phase 4 で保留中）
-- [ ] カスタムカレンダーピッカー（Phase 2 で保留中、現在はHTML5 date_field）
+- [ ] `spec/requests/posts_spec.rb`
+  - [ ] 新規投稿（3タイプ）
+  - [ ] 同じ動画への追記
+
+- [ ] `spec/requests/post_entries_spec.rb`
+  - [ ] 追記機能
+  - [ ] 達成機能
+
+- [ ] `spec/system/post_flow_spec.rb`
+  - [ ] E2E投稿フロー
+
+### 静的解析
+
+- [ ] RuboCop → All green
+- [ ] Brakeman → All green
 
 ---
 
-## 更新履歴
+## i18n
 
-- 2024-12-29: Phase 6 完了（PR #106）- テスト・静的解析
-- 2024-12-29: Phase 5 完了（PR #105）- UI/UXデザイン調整
-- 2024-12-29: Phase 4 完了（PR #104）- 通知機能実装
-- 2024-12-29: Phase 3 完了（PR #103）- グループ表示実装
-- 2024-12-29: Phase 2 完了（PR #102）- 期日スコープ追加
-- 2024-12-29: Phase 1 完了（PR #101）- データベース変更
-- 2024-12-29: 初版作成（Phase 0 完了）
+```yaml
+# config/locales/ja.yml
+ja:
+  activerecord:
+    models:
+      post_entry: アウトプット
+    attributes:
+      post_entry:
+        entry_type: タイプ
+        content: 内容
+        deadline: 期日
+        achieved_at: 達成日時
+    enums:
+      post_entry:
+        entry_type:
+          memo: メモ
+          action: 行動
+          nothing: 特になし
+
+  post_entries:
+    entry_types:
+      memo:
+        label: メモ
+        icon: 📝
+        description: 気づきや学びを記録
+      action:
+        label: 行動
+        icon: 🎯
+        description: やることを決めて実行
+      nothing:
+        label: 特になし
+        icon: 🗑️
+        description: 見ただけを記録
+
+    messages:
+      created:
+        memo: メモを記録しました
+        action: アクションプランを設定しました
+        nothing: 視聴を記録しました
+      achieved: 達成おめでとうございます！
+```
+
+- [ ] モデル翻訳追加
+- [ ] enum翻訳追加
+- [ ] メッセージ翻訳追加
+
+---
+
+## 追加機能（実装済み）
+
+- [x] タイトル検索（YouTube API）
+  - `YoutubeService.search_videos` メソッド追加
+  - `PostsController#youtube_search` アクション追加
+  - 投稿フォームにタイトル検索UI追加（`youtube_search_controller.js`）
+- [x] 満足度機能
+  - `PostEntry` に `satisfaction_rating` カラム追加（1-5の5段階評価）
+  - 投稿フォームに星評価UI追加（`rating_controller.js`）
+  - エントリーカードに満足度表示
+- [x] 統計・分析ダッシュボード（`/stats`）
+  - 視聴動画数、アウトプット数、達成率、連続記録
+  - アウトプットタイプ別内訳
+  - 満足度分布
+  - 過去30日間の活動グラフ
+  - よく見るチャンネルTOP5
+
+
+---
+
+## 履歴
+
+- 2025-01-02: 初版作成

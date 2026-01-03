@@ -4,20 +4,20 @@
 
     <%# 戻るリンク %>
     <div class="mb-6">
-      <%= link_to posts_path, class: "inline-flex items-center gap-2 text-primary/60 hover:text-accent transition-colors" do %>
+      <%= link_to posts_path, class: "inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors" do %>
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z"/>
         </svg>
-        <span>投稿一覧に戻る</span>
+        <span>戻る</span>
       <% end %>
     </div>
 
-    <div class="bg-white rounded-2xl border border-accent/20 shadow-sm p-6 lg:p-8">
+    <div class="bg-white rounded-xl border border-gray-200 p-6">
 
-      <%= form_with(model: post, local: true, html: { class: "space-y-6" }) do |form| %>
+      <%= form_with(model: post, local: true, html: { class: "space-y-6", data: { controller: "multi-entry-form" } }) do |form| %>
         <%# エラーメッセージ表示 %>
         <% if post.errors.any? %>
-          <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4">
             <div class="flex items-start gap-3">
               <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
@@ -36,47 +36,173 @@
           </div>
         <% end %>
 
-        <%# YouTube URL入力 %>
-        <div>
-          <%= form.label :youtube_url, class: "block text-sm font-semibold text-primary mb-2" do %>
-            YouTube URL <span class="text-red-500">*</span>
-          <% end %>
-          <%= form.url_field :youtube_url,
-                placeholder: "YouTube動画のURLを入力してください",
-                required: true,
-                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
-        </div>
+        <%# YouTube URL入力（検索機能付き） %>
+        <div data-controller="youtube-search clipboard"
+             data-youtube-search-url-value="<%= youtube_search_posts_path %>"
+             data-clipboard-url-value="<%= post.youtube_url %>">
 
-        <%# アクションプラン入力 %>
-        <div>
-          <%= form.label :action_plan, class: "block text-sm font-semibold text-primary mb-2" do %>
-            アクションプラン <span class="text-red-500">*</span>
+          <%= form.label :youtube_url, class: "block text-sm font-medium text-gray-900 mb-2" do %>
+            YouTube動画 <span class="text-red-500">*</span>
           <% end %>
-          <%= form.text_area :action_plan, rows: 4,
-                placeholder: "どんなアクションを起こしますか？（例：毎朝5分読書する、週1回散歩する、感謝の気持ちを伝えるなど）",
-                class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary placeholder-primary/40 focus:border-accent focus:ring-1 focus:ring-accent transition-colors" %>
-        </div>
 
-        <%# 期日設定 %>
-        <div>
-          <%= form.label :deadline, class: "block text-sm font-semibold text-primary mb-2" do %>
-            期日
-          <% end %>
-          <div data-controller="flatpickr">
-            <%= form.text_field :deadline,
-                  value: post.deadline&.strftime("%Y-%m-%d"),
-                  data: { flatpickr_target: "input" },
-                  class: "w-full px-4 py-3 rounded-xl border border-accent/30 text-primary focus:border-accent focus:ring-1 focus:ring-accent transition-colors cursor-pointer",
-                  placeholder: "期日を設定（任意）",
-                  readonly: true %>
+          <%# モード切り替えタブ %>
+          <div class="flex gap-2 mb-3">
+            <button type="button"
+                    data-action="click->youtube-search#toggleMode"
+                    data-mode="url"
+                    class="flex-1 py-2 px-3 text-sm font-medium rounded-lg border-2 border-gray-900 bg-gray-900 text-white transition-colors">
+              URLを貼り付け
+            </button>
+            <button type="button"
+                    data-action="click->youtube-search#toggleMode"
+                    data-mode="search"
+                    class="flex-1 py-2 px-3 text-sm font-medium rounded-lg border-2 border-gray-200 text-gray-700 hover:border-gray-300 transition-colors">
+              タイトルで検索
+            </button>
           </div>
-          <p class="mt-2 text-xs text-primary/60">いつまでに達成するか目標を設定できます</p>
+
+          <%# URL入力パネル %>
+          <div data-youtube-search-target="urlPanel">
+            <%= form.url_field :youtube_url,
+                  placeholder: "https://www.youtube.com/watch?v=...",
+                  required: true,
+                  data: {
+                    clipboard_target: "input",
+                    youtube_search_target: "urlField",
+                    action: "focus->clipboard#checkClipboard"
+                  },
+                  class: "w-full px-4 py-3 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors" %>
+            <p class="mt-1 text-xs text-gray-500">クリップボードからYouTube URLが自動検出されます</p>
+          </div>
+
+          <%# 検索パネル %>
+          <div data-youtube-search-target="searchPanel" class="hidden">
+            <div class="relative">
+              <input type="text"
+                     placeholder="動画タイトルを入力して検索..."
+                     data-youtube-search-target="input"
+                     data-action="input->youtube-search#search"
+                     class="w-full px-4 py-3 rounded-lg border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors">
+              <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+            </div>
+
+            <%# 検索結果 %>
+            <div data-youtube-search-target="results"
+                 class="hidden mt-2 max-h-80 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg">
+            </div>
+
+            <p class="mt-2 text-xs text-gray-500">YouTube Data APIを使用して動画を検索します</p>
+          </div>
+        </div>
+
+        <%# ===== アウトプットセクション（複数追加可能） ===== %>
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-900 mb-1">
+              アウトプット
+            </label>
+            <p class="text-xs text-gray-500 mb-4">各カテゴリで複数のアウトプットを追加できます（任意）</p>
+          </div>
+
+          <%# === 要約セクション === %>
+          <div class="bg-blue-50/50 rounded-lg p-4 border border-blue-100">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">📝</span>
+              <h3 class="text-sm font-semibold text-gray-800">要約</h3>
+              <span class="text-xs text-gray-500">動画の内容を要約</span>
+            </div>
+            <div data-multi-entry-form-target="keyPointList" class="space-y-2">
+              <%# エントリーはJSで動的に追加 %>
+            </div>
+            <button type="button"
+                    data-action="multi-entry-form#addEntry"
+                    data-entry-type="keyPoint"
+                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-md transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              要約を追加
+            </button>
+          </div>
+
+          <%# === 引用セクション === %>
+          <div class="bg-purple-50/50 rounded-lg p-4 border border-purple-100">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">💬</span>
+              <h3 class="text-sm font-semibold text-gray-800">引用</h3>
+              <span class="text-xs text-gray-500">響いたフレーズ</span>
+            </div>
+            <div data-multi-entry-form-target="quoteList" class="space-y-2">
+              <%# エントリーはJSで動的に追加 %>
+            </div>
+            <button type="button"
+                    data-action="multi-entry-form#addEntry"
+                    data-entry-type="quote"
+                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-100 rounded-md transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              引用を追加
+            </button>
+          </div>
+
+          <%# === アクションセクション === %>
+          <div class="bg-orange-50/50 rounded-lg p-4 border border-orange-100">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">🎯</span>
+              <h3 class="text-sm font-semibold text-gray-800">アクション</h3>
+              <span class="text-xs text-gray-500">具体的にやること</span>
+            </div>
+            <div data-multi-entry-form-target="actionList" class="space-y-2">
+              <%# エントリーはJSで動的に追加 %>
+            </div>
+            <button type="button"
+                    data-action="multi-entry-form#addEntry"
+                    data-entry-type="action"
+                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-md transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              アクションを追加
+            </button>
+          </div>
+        </div>
+
+        <%# 満足度（任意） %>
+        <div class="pt-4 border-t border-gray-100">
+          <label class="block text-sm font-medium text-gray-900 mb-2">
+            この動画の満足度（任意）
+          </label>
+          <div data-controller="rating" class="flex items-center gap-1">
+            <input type="hidden" name="satisfaction_rating" value="" data-rating-target="input">
+            <% (1..5).each do |i| %>
+              <button type="button"
+                      data-rating-target="star"
+                      data-rating="<%= i %>"
+                      data-action="click->rating#select mouseenter->rating#hover mouseleave->rating#leave"
+                      class="text-3xl text-gray-300 hover:scale-110 transition-transform cursor-pointer focus:outline-none"
+                      title="<%= PostEntry::SATISFACTION_LABELS[i] %>">
+                ★
+              </button>
+            <% end %>
+            <button type="button"
+                    data-action="click->rating#select"
+                    data-rating="0"
+                    class="ml-3 text-sm text-gray-400 hover:text-gray-600">
+              クリア
+            </button>
+          </div>
+          <p class="mt-1 text-xs text-gray-500">動画の質や学びの度合いを評価</p>
         </div>
 
         <%# ボタンエリア %>
-        <div class="pt-6">
-          <%= form.submit post.persisted? ? "更新する" : "投稿する",
-                class: "w-full inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-accent text-white font-bold hover:bg-accent/90 active:scale-95 transform transition-all shadow-md cursor-pointer" %>
+        <div class="pt-4">
+          <%= form.submit post.persisted? ? "更新する" : "記録する",
+                class: "w-full inline-flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 active:scale-[0.98] transform transition-all cursor-pointer" %>
         </div>
       <% end %>
     </div>

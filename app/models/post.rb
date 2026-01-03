@@ -6,6 +6,19 @@ class Post < ApplicationRecord
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :cheers, dependent: :destroy
+  has_many :post_entries, dependent: :destroy
+
+  # 比較機能: A→B の一方向関係
+  # outgoing: この投稿が比較している投稿への関係
+  has_many :outgoing_comparisons, class_name: 'PostComparison', foreign_key: :source_post_id, dependent: :destroy
+  has_many :compared_posts, through: :outgoing_comparisons, source: :target_post
+
+  # incoming: この投稿を比較している他の投稿からの関係
+  has_many :incoming_comparisons, class_name: 'PostComparison', foreign_key: :target_post_id, dependent: :destroy
+  has_many :comparing_posts, through: :incoming_comparisons, source: :source_post
+
+  # 布教クリック
+  has_many :recommendation_clicks, dependent: :destroy
 
   scope :recent, -> { order(created_at: :desc) }
 
@@ -19,9 +32,11 @@ class Post < ApplicationRecord
   scope :not_achieved, -> { where(achieved_at: nil) }
   scope :achieved, -> { where.not(achieved_at: nil) }
 
+  before_save :set_youtube_video_id, if: :should_fetch_youtube_info?
   before_save :fetch_youtube_info, if: :should_fetch_youtube_info?
 
-  validates :action_plan, presence: true, length: { minimum: 1, maximum: 100 }
+  # action_planはPostEntry経由で管理するが、互換性のため残す
+  validates :action_plan, length: { maximum: 100 }, allow_blank: true
 
   # YouTube URL検証（必須）
   validates :youtube_url, presence: true
@@ -42,19 +57,70 @@ class Post < ApplicationRecord
     cheers.exists?(user_id: user.id)
   end
 
-  # YouTube動画ID抽出
-  def youtube_video_id
-    return nil unless youtube_url.present?
+  # エントリー関連ヘルパー
+  def latest_entry
+    post_entries.recent.first
+  end
 
-    if youtube_url.include?("youtube.com/watch")
-      URI.parse(youtube_url).query&.split("&")
+  def entries_count
+    post_entries.count
+  end
+
+  def has_action_entries?
+    post_entries.where(entry_type: :action).exists?
+  end
+
+  # 布教エントリーを取得（1件のみ）
+  def recommendation_entry
+    post_entries.find_by(entry_type: :recommendation)
+  end
+
+  # 布教があるかどうか
+  def has_recommendation?
+    post_entries.exists?(entry_type: :recommendation)
+  end
+
+  # 布教クリック数
+  def recommendation_click_count
+    recommendation_clicks.count
+  end
+
+  # 満足度の平均（評価があるエントリーのみ）
+  def average_satisfaction_rating
+    ratings = post_entries.with_satisfaction.pluck(:satisfaction_rating)
+    return nil if ratings.empty?
+
+    (ratings.sum.to_f / ratings.size).round(1)
+  end
+
+  # YouTube動画ID取得（保存値優先、なければURLから抽出）
+  def youtube_video_id
+    read_attribute(:youtube_video_id) || self.class.extract_video_id(youtube_url)
+  end
+
+  # クラスメソッド：URLから動画IDを抽出
+  def self.extract_video_id(url)
+    return nil unless url.present?
+
+    if url.include?("youtube.com/watch")
+      URI.parse(url).query&.split("&")
          &.find { |p| p.start_with?("v=") }
          &.delete_prefix("v=")
-    elsif youtube_url.include?("youtu.be/")
-      youtube_url.split("youtu.be/").last&.split("?")&.first
+    elsif url.include?("youtu.be/")
+      url.split("youtu.be/").last&.split("?")&.first
     end
   rescue URI::InvalidURIError
     nil
+  end
+
+  # 動画IDでPostを検索または初期化
+  def self.find_or_initialize_by_video(user:, youtube_url:)
+    video_id = extract_video_id(youtube_url)
+    return nil unless video_id
+
+    post = find_or_initialize_by(user: user, youtube_video_id: video_id)
+    post.youtube_url = youtube_url if post.new_record?
+    post
   end
 
   # YouTubeサムネイルURL取得
@@ -111,6 +177,11 @@ class Post < ApplicationRecord
     new_record? || youtube_url_changed?
   end
 
+  # YouTube動画IDをセット
+  def set_youtube_video_id
+    self.youtube_video_id = self.class.extract_video_id(youtube_url)
+  end
+
   # YouTube APIから動画情報を取得してセット
   def fetch_youtube_info
     info = YoutubeService.fetch_video_info(youtube_url)
@@ -118,5 +189,6 @@ class Post < ApplicationRecord
 
     self.youtube_title = info[:title]
     self.youtube_channel_name = info[:channel_name]
+    self.youtube_channel_thumbnail_url = info[:channel_thumbnail_url]
   end
 end

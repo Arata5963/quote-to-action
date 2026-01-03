@@ -23,36 +23,35 @@ RSpec.describe "Posts", type: :system do
         # 1. 新規投稿ページに直接アクセス
         visit new_post_path
 
-        # 2. 新規投稿フォームが表示される（投稿ボタンがある）
-        expect(page).to have_button("投稿する")
-        expect(page).to have_content("YouTube URL")
+        # 2. 新規投稿フォームが表示される
+        expect(page).to have_button("記録する")
+        expect(page).to have_content("YouTube動画")
+        expect(page).to have_content("アウトプット")
 
         # 3. フォームに入力
         fill_in "post_youtube_url", with: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        fill_in "post_action_plan", with: "テストアクション"
 
-        # 4. 投稿ボタンをクリック
-        click_button "投稿する"
+        # 4. 投稿ボタンをクリック（エントリーなしでも投稿可能）
+        click_button "記録する"
 
         # 5. 投稿詳細ページにリダイレクトされる
         expect(page).to have_current_path(/\/posts\/\d+/)
 
-        # 6. 投稿内容が表示される
-        expect(page).to have_content("テストアクション")
-
-        # 7. 成功メッセージが表示される
-        expect(page).to have_content("投稿しました！")
+        # 6. 成功メッセージが表示される
+        expect(page).to have_content("動画を記録しました")
       end
 
-      it "バリデーションエラーが表示される" do
+      it "エントリーなしで投稿を作成できる" do
         # 1. 新規投稿ページにアクセス
         visit new_post_path
 
-        # 2. 空のまま投稿ボタンをクリック
-        click_button "投稿する"
+        # 2. YouTube URLのみ入力して投稿（アウトプットなし）
+        fill_in "post_youtube_url", with: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        click_button "記録する"
 
-        # 3. エラーメッセージが表示される
-        expect(page).to have_content("入力してください")
+        # 3. 投稿が作成され詳細ページに遷移
+        expect(page).to have_current_path(/\/posts\/\d+/)
+        expect(page).to have_content("動画を記録しました")
       end
     end
 
@@ -74,16 +73,13 @@ RSpec.describe "Posts", type: :system do
     let!(:post1) { create(:post, action_plan: "投稿1のアクション", deadline: Date.current + 2.days) }
     let!(:post2) { create(:post, action_plan: "投稿2のアクション", deadline: Date.current + 1.day) }
 
-    it "投稿が期日グループごとに表示される" do
+    it "投稿がカード形式で表示される" do
       # 1. トップページにアクセス
       visit root_path
 
-      # 2. 両方の投稿が表示される
+      # 2. 両方の投稿が表示される（action_planがカードに表示される）
       expect(page).to have_content("投稿1のアクション")
       expect(page).to have_content("投稿2のアクション")
-
-      # 3. 期日グループヘッダーが表示される
-      expect(page).to have_content("期日が近い")
     end
 
     it "期日が近い順に表示される" do
@@ -131,22 +127,17 @@ RSpec.describe "Posts", type: :system do
 
         # 2. 編集フォームが表示される（更新ボタンがある）
         expect(page).to have_button("更新する")
-        expect(page).to have_content("YouTube URL")
+        expect(page).to have_content("YouTube動画")
+        expect(page).to have_content("アウトプット")
 
-        # 3. 内容を変更
-        fill_in "post_action_plan", with: "編集後のアクション"
-
-        # 4. 更新ボタンをクリック
+        # 3. 更新ボタンをクリック（変更なしでも更新可能）
         click_button "更新する"
 
-        # 5. 詳細ページにリダイレクトされる
+        # 4. 詳細ページにリダイレクトされる
         expect(page).to have_current_path(post_path(post_record))
 
-        # 6. 更新された内容が表示される
-        expect(page).to have_content("編集後のアクション")
-
-        # 7. 成功メッセージが表示される
-        expect(page).to have_content("投稿を更新しました")
+        # 5. 成功メッセージが表示される
+        expect(page).to have_content("更新しました")
       end
     end
   end

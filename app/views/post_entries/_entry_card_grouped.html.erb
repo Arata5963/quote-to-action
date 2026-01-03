@@ -1,0 +1,64 @@
+<%# app/views/post_entries/_entry_card_grouped.html.erb %>
+<%# グループ化表示用エントリーカード（タイプアイコンなし・シンプル版） %>
+
+<div id="<%= dom_id(entry) %>" style="display: flex; align-items: flex-start; gap: 12px;">
+  <%# コンテンツ部分 %>
+  <div style="flex: 1; min-width: 0;">
+    <%# コンテンツ本文 %>
+    <% if entry.content.present? %>
+      <p style="font-size: 14px; color: #1a1a1a; line-height: 1.6; white-space: pre-line; margin: 0;"><%= entry.content %></p>
+    <% else %>
+      <p style="font-size: 14px; color: #9ca3af; font-style: italic; margin: 0;">内容なし</p>
+    <% end %>
+
+    <%# メタ情報 %>
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
+      <%# 投稿日時 %>
+      <span style="font-size: 12px; color: #9ca3af;"><%= time_ago_in_words(entry.created_at) %>前</span>
+
+      <%# 期日（アクションタイプ・未達成のみ） %>
+      <% if entry.action? && entry.deadline && !entry.achieved? %>
+        <span style="font-size: 12px; color: <%= entry.deadline < Date.current ? '#ef4444' : '#f97316' %>;">
+          期日: <%= l(entry.deadline, format: :short) %>
+          <% if entry.deadline < Date.current %>
+            (超過)
+          <% elsif entry.deadline <= Date.current + 3.days %>
+            (あと<%= (entry.deadline - Date.current).to_i %>日)
+          <% end %>
+        </span>
+      <% end %>
+
+      <%# 満足度 %>
+      <% if entry.satisfaction_rating.present? %>
+        <span style="font-size: 12px; color: #eab308;" title="<%= entry.satisfaction_label %>">
+          <% entry.satisfaction_rating.times do %>★<% end %>
+        </span>
+      <% end %>
+    </div>
+  </div>
+
+  <%# 達成チェックボックス（アクションタイプのみ） %>
+  <% if entry.action? %>
+    <div style="flex-shrink: 0;">
+      <% if entry.achieved? %>
+        <%# 達成済み %>
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #22c55e; display: flex; align-items: center; justify-content: center;" title="達成済み">
+          <svg style="width: 14px; height: 14px; color: white;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      <% elsif user_signed_in? && entry.post.user == current_user %>
+        <%# 未達成（本人） %>
+        <%= button_to achieve_post_post_entry_path(entry.post, entry),
+              method: :patch,
+              style: "width: 24px; height: 24px; border-radius: 50%; border: 2px solid #d1d5db; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;",
+              title: "達成にする",
+              data: { turbo_frame: "_top" } do %>
+        <% end %>
+      <% else %>
+        <%# 未達成（他人） %>
+        <div style="width: 24px; height: 24px; border-radius: 50%; border: 2px solid #e5e7eb;" title="未達成"></div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

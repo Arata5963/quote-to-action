@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_29_050641) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_03_014433) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -80,6 +80,36 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_29_050641) do
     t.index ["target_type", "target_id"], name: "index_notifications_on_target"
   end
 
+  create_table "post_comparisons", force: :cascade do |t|
+    t.bigint "source_post_id", null: false
+    t.bigint "target_post_id", null: false
+    t.text "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["source_post_id", "target_post_id"], name: "index_post_comparisons_on_source_post_id_and_target_post_id", unique: true
+    t.index ["source_post_id"], name: "index_post_comparisons_on_source_post_id"
+    t.index ["target_post_id"], name: "index_post_comparisons_on_target_post_id"
+  end
+
+  create_table "post_entries", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.integer "entry_type", default: 0, null: false
+    t.text "content"
+    t.date "deadline"
+    t.datetime "achieved_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "satisfaction_rating"
+    t.string "title"
+    t.datetime "published_at"
+    t.integer "recommendation_level"
+    t.text "target_audience"
+    t.text "recommendation_point"
+    t.index ["post_id", "created_at"], name: "index_post_entries_on_post_id_and_created_at"
+    t.index ["post_id"], name: "index_post_entries_on_post_id"
+    t.check_constraint "satisfaction_rating IS NULL OR satisfaction_rating >= 1 AND satisfaction_rating <= 5", name: "satisfaction_rating_range"
+  end
+
   create_table "posts", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.text "action_plan"
@@ -90,8 +120,21 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_29_050641) do
     t.string "youtube_title"
     t.string "youtube_channel_name"
     t.date "deadline"
+    t.string "youtube_video_id"
+    t.string "youtube_channel_thumbnail_url"
     t.index ["deadline"], name: "index_posts_on_deadline"
+    t.index ["user_id", "youtube_video_id"], name: "index_posts_on_user_id_and_youtube_video_id", unique: true
     t.index ["user_id"], name: "index_posts_on_user_id"
+  end
+
+  create_table "recommendation_clicks", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id", "user_id"], name: "index_recommendation_clicks_on_post_id_and_user_id", unique: true
+    t.index ["post_id"], name: "index_recommendation_clicks_on_post_id"
+    t.index ["user_id"], name: "index_recommendation_clicks_on_user_id"
   end
 
   create_table "subscriptions", force: :cascade do |t|
@@ -137,5 +180,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_29_050641) do
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
   add_foreign_key "favorite_videos", "users"
+  add_foreign_key "post_comparisons", "posts", column: "source_post_id"
+  add_foreign_key "post_comparisons", "posts", column: "target_post_id"
+  add_foreign_key "post_entries", "posts"
   add_foreign_key "posts", "users"
+  add_foreign_key "recommendation_clicks", "posts"
+  add_foreign_key "recommendation_clicks", "users"
 end
