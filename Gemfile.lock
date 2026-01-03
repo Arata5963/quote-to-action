@@ -448,6 +448,7 @@ GEM
     rdoc (6.14.2)
       erb
       psych (>= 4.0.0)
+    redcarpet (3.6.1)
     redis-client (0.26.1)
       connection_pool
     regexp_parser (2.11.2)
@@ -660,6 +661,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 7.2.2)
   ransack (~> 4.0)
+  redcarpet
   rspec-rails (~> 7.1)
   rubocop-rails-omakase
   ruby-lsp

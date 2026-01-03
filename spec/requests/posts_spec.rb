@@ -41,29 +41,23 @@ RSpec.describe "Posts", type: :request do
       end
     end
 
-    context "グループ表示" do
-      it "デフォルトで期日グループに分かれて表示される" do
-        near_post = create(:post, action_plan: "期日近いアクション", deadline: Date.current + 2.days)
-        passed_post = create(:post, action_plan: "期日超過アクション", deadline: Date.current - 1.day)
-        other_post = create(:post, action_plan: "まだ余裕アクション", deadline: Date.current + 5.days)
+    context "カード表示" do
+      it "投稿がグリッドレイアウトで表示される" do
+        create(:post, action_plan: "アクション1", deadline: Date.current + 2.days)
+        create(:post, action_plan: "アクション2", deadline: Date.current - 1.day)
 
         get posts_path
 
-        expect(response.body).to include("期日が近い")
-        expect(response.body).to include("期日超過")
-        expect(response.body).to include("まだ余裕あり")
-        expect(response.body).to include("期日近いアクション")
-        expect(response.body).to include("期日超過アクション")
-        expect(response.body).to include("まだ余裕アクション")
+        expect(response.body).to include("アクション1")
+        expect(response.body).to include("アクション2")
       end
 
-      it "達成済みグループが表示される" do
-        achieved_post = create(:post, action_plan: "達成済みアクション", achieved_at: Time.current)
+      it "YouTubeサムネイルが表示される" do
+        create(:post, youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
         get posts_path
 
-        expect(response.body).to include("達成済み")
-        expect(response.body).to include("達成済みアクション")
+        expect(response.body).to include("img.youtube.com")
       end
     end
 
@@ -119,37 +113,19 @@ RSpec.describe "Posts", type: :request do
       end
     end
 
-    context "タブ絞り込み" do
+    context "全投稿表示" do
       let(:user) { create(:user) }
       let(:other_user) { create(:user) }
 
-      context "ログイン時" do
-        before do
-          sign_in user
-        end
+      it "全ての投稿が表示される" do
+        my_post = create(:post, user: user, action_plan: "自分のアクション")
+        others_post = create(:post, user: other_user, action_plan: "他人のアクション")
 
-        it "「自分」タブで自分の投稿のみ表示される" do
-          my_post = create(:post, user: user, action_plan: "自分のアクション")
-          others_post = create(:post, user: other_user, action_plan: "他人のアクション")
+        get posts_path
 
-          get posts_path, params: { tab: "mine" }
-
-          expect(response.body).to include("自分のアクション")
-          expect(response.body).not_to include("他人のアクション")
-        end
-      end
-
-      context "未ログイン時" do
-        it "「自分」タブは無視される（全投稿が表示される）" do
-          post1 = create(:post, user: user, action_plan: "投稿1")
-          post2 = create(:post, user: other_user, action_plan: "投稿2")
-
-          get posts_path, params: { tab: "mine" }
-
-          expect(response).to have_http_status(200)
-          expect(response.body).to include("投稿1")
-          expect(response.body).to include("投稿2")
-        end
+        expect(response).to have_http_status(200)
+        expect(response.body).to include("自分のアクション")
+        expect(response.body).to include("他人のアクション")
       end
     end
 
@@ -265,9 +241,15 @@ RSpec.describe "Posts", type: :request do
         let(:valid_params) do
           {
             post: {
-              youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-              action_plan: "新しいアクションプラン",
-              deadline: Date.current + 7.days
+              youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            },
+            entries: {
+              action: {
+                "0" => {
+                  content: "新しいアクションプラン",
+                  deadline: (Date.current + 7.days).to_s
+                }
+              }
             }
           }
         end
@@ -283,7 +265,7 @@ RSpec.describe "Posts", type: :request do
 
           expect(response).to redirect_to(post_path(Post.last))
           follow_redirect!
-          expect(response.body).to include("アクションプラン")
+          expect(response.body).to include("アクション")
         end
 
         it "current_userの投稿として作成される" do
@@ -291,30 +273,63 @@ RSpec.describe "Posts", type: :request do
 
           expect(Post.last.user).to eq(user)
         end
+
+        it "PostEntryも作成される" do
+          expect {
+            post posts_path, params: valid_params
+          }.to change(PostEntry, :count).by(1)
+        end
+
+        it "複数のエントリーを作成できる" do
+          multi_params = {
+            post: {
+              youtube_url: "https://www.youtube.com/watch?v=test123"
+            },
+            entries: {
+              keyPoint: {
+                "0" => { content: "ポイント1" },
+                "1" => { content: "ポイント2" }
+              },
+              quote: {
+                "0" => { content: "引用1" }
+              },
+              action: {
+                "0" => { content: "アクション1", deadline: (Date.current + 7.days).to_s }
+              }
+            }
+          }
+
+          expect {
+            post posts_path, params: multi_params
+          }.to change(PostEntry, :count).by(4)
+        end
       end
 
-      context "無効なパラメータの場合" do
-        let(:invalid_params) do
+      context "エントリーなしでも投稿できる" do
+        let(:no_entry_params) do
           {
             post: {
-              youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-              action_plan: "", # 必須項目が空
-              deadline: Date.current + 7.days
+              youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
             }
           }
         end
 
-        it "投稿が作成されない" do
+        it "投稿は作成される" do
           expect {
-            post posts_path, params: invalid_params
-          }.not_to change(Post, :count)
+            post posts_path, params: no_entry_params
+          }.to change(Post, :count).by(1)
         end
 
-        it "新規作成フォームが再表示される" do
-          post posts_path, params: invalid_params
+        it "PostEntryは作成されない" do
+          expect {
+            post posts_path, params: no_entry_params
+          }.not_to change(PostEntry, :count)
+        end
 
-          expect(response).to have_http_status(:unprocessable_entity)
-          expect(response.body).to include("アクションプラン")
+        it "詳細ページにリダイレクトされる" do
+          post posts_path, params: no_entry_params
+
+          expect(response).to redirect_to(post_path(Post.last))
         end
       end
     end
@@ -414,7 +429,7 @@ RSpec.describe "Posts", type: :request do
         let(:invalid_params) do
           {
             post: {
-              action_plan: "" # 必須項目を空に
+              youtube_url: "invalid-url" # 無効なURL
             }
           }
         end
@@ -423,7 +438,7 @@ RSpec.describe "Posts", type: :request do
           patch post_path(post_record), params: invalid_params
 
           post_record.reload
-          expect(post_record.action_plan).to eq("元のアクション")
+          expect(post_record.youtube_url).not_to eq("invalid-url")
         end
 
         it "編集フォームが再表示される" do

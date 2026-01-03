@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Post, type: :model do
   describe "validations" do
-    it { should validate_presence_of(:action_plan) }
+    # action_planはPostEntry経由で管理するため任意になった
     it { should validate_presence_of(:youtube_url) }
     it { should validate_length_of(:action_plan).is_at_most(100) }
 
@@ -17,6 +17,7 @@ RSpec.describe Post, type: :model do
     it { should have_many(:achievements) }
     it { should have_many(:comments) }
     it { should have_many(:cheers) }
+    it { should have_many(:post_entries) }
   end
   describe "#cheered_by?" do
     let(:user) { create(:user) }

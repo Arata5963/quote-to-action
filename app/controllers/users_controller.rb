@@ -30,8 +30,8 @@ class UsersController < ApplicationController
       @current_month_achievements = Achievement.current_month_count(@user.id)
 
       # 他のユーザーの投稿一覧（達成済み・未達成）
-      @achieved_posts = @user.posts.where.not(achieved_at: nil).recent
-      @unachieved_posts = @user.posts.where(achieved_at: nil).recent
+      @achieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where.not(achieved_at: nil).recent
+      @unachieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where(achieved_at: nil).recent
 
       # すきな動画
       @favorite_videos = @user.favorite_videos
@@ -58,8 +58,8 @@ class UsersController < ApplicationController
       @current_month_achievements = Achievement.current_month_count(@user.id)
 
       # ユーザーの投稿一覧（達成済み・未達成）
-      @achieved_posts = @user.posts.where.not(achieved_at: nil).recent
-      @unachieved_posts = @user.posts.where(achieved_at: nil).recent
+      @achieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where.not(achieved_at: nil).recent
+      @unachieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where(achieved_at: nil).recent
 
       # すきな動画
       @favorite_videos = @user.favorite_videos

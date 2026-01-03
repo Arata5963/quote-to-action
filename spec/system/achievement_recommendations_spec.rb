@@ -25,14 +25,14 @@ RSpec.describe "AchievementRecommendations", type: :system do
       it "達成ボタンをクリックすると達成状態に変わる" do
         visit post_path(my_post)
 
-        # 達成前: みただけ？ボタンが表示
-        expect(page).to have_button "みただけ？"
+        # 達成前: 達成ボタンが表示
+        expect(page).to have_button "達成"
 
         # 達成ボタンをクリック
-        click_button "みただけ？"
+        click_button "達成"
 
-        # 達成後: やったけど？が表示（リダイレクト時）
-        expect(page).to have_content "やったけど？"
+        # 達成後: 達成済み表示に変わる
+        expect(page).to have_content "達成済み"
         expect(my_post.reload).to be_achieved
       end
     end
@@ -47,7 +47,7 @@ RSpec.describe "AchievementRecommendations", type: :system do
       it "達成処理は正常に完了する" do
         visit post_path(my_post)
 
-        click_button "みただけ？"
+        click_button "達成"
 
         expect(my_post.reload).to be_achieved
       end

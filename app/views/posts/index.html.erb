@@ -1,189 +1,192 @@
 <%# app/views/posts/index.html.erb %>
+<%# セクション表示レイアウト（note.com/Zenn風） %>
 
-<div class="min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-
-    <%# ===== Search / Filters Bar ===== %>
-    <section class="mb-8">
-      <div class="rounded-2xl bg-white border border-accent/20 shadow-sm p-5">
-        <%= search_form_for @q, url: posts_path, method: :get,
-              html: { id: 'search_form', class: "space-y-4" } do |f| %>
-
-          <%# 検索フィールド + 検索ボタン（横並び） %>
-          <div class="flex gap-3">
-            <div class="relative flex-1"
-                 data-controller="autocomplete"
-                 data-autocomplete-url-value="<%= autocomplete_posts_path %>"
-                 data-autocomplete-min-length-value="2"
-                 role="combobox">
-              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 z-10">
-                <svg class="h-5 w-5 text-primary/40" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-              </div>
-              <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
-                    data: { autocomplete_target: "input" },
-                    placeholder: "キーワードで検索...",
-                    class: "w-full rounded-xl border-accent/20 bg-cream pl-12 pr-4 py-3 text-sm text-primary placeholder:text-primary/40 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:bg-white transition-all" %>
-              <ul class="absolute z-20 w-full bg-white border border-accent/20 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto"
-                  data-autocomplete-target="results"
-                  hidden></ul>
-            </div>
-
-            <%# 検索ボタン %>
-            <button type="submit" class="rounded-xl bg-accent text-white px-6 py-3 text-sm font-medium hover:bg-accent/90 transition-colors flex-shrink-0">
-              検索
-            </button>
+<div class="min-h-screen bg-white">
+  <%# ===== 検索バー ===== %>
+  <div class="border-b border-gray-100">
+    <div class="max-w-xl mx-auto px-4 py-2">
+      <%= search_form_for @q, url: posts_path, method: :get,
+            html: { id: 'search_form' } do |f| %>
+        <div class="relative"
+             data-controller="autocomplete"
+             data-autocomplete-url-value="<%= autocomplete_posts_path %>"
+             data-autocomplete-min-length-value="2"
+             role="combobox">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
           </div>
+          <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
+                data: { autocomplete_target: "input" },
+                placeholder: "キーワードやクリエイターで検索",
+                class: "w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-4 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 focus:border-gray-300 focus:bg-white focus:outline-none transition-colors" %>
+          <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
+              data-autocomplete-target="results"
+              hidden></ul>
+        </div>
+      <% end %>
+    </div>
+  </div>
 
-          <%# フィルター（横並び・中央寄せ） %>
-          <div class="flex flex-wrap gap-4 justify-center">
-            <%# 表示タブ %>
-            <div>
-              <label class="text-xs text-primary/60 mb-1 block">投稿</label>
-              <%= select_tag :tab,
-                    options_for_select(
-                      [
-                        ['全体', ''],
-                        user_signed_in? ? ['自分の投稿', 'mine'] : nil
-                      ].compact,
-                      params[:tab]
-                    ),
-                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
-                    onchange: "document.getElementById('search_form').submit()" %>
-            </div>
+  <%# ===== メインコンテンツ ===== %>
+  <div class="max-w-[1200px] mx-auto px-4 py-5">
+    <% if @section_display %>
+      <%# ===== セクション表示（エントリータイプ別） ===== %>
+      <% all_empty = @posts_with_memos.empty? && @posts_with_quotes.empty? && @posts_with_actions.empty? && @posts_with_blogs.empty? && @posts_recent.empty? %>
 
-            <%# 達成状況 %>
-            <div>
-              <label class="text-xs text-primary/60 mb-1 block">達成状況</label>
-              <%= select_tag :achievement,
-                    options_for_select(
-                      [
-                        ['すべて', ''],
-                        ['達成済み', 'achieved'],
-                        ['みただけ？', 'not_achieved']
-                      ],
-                      params[:achievement]
-                    ),
-                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
-                    onchange: "document.getElementById('search_form').submit()" %>
-            </div>
-
-            <%# 期日 %>
-            <div>
-              <label class="text-xs text-primary/60 mb-1 block">期日</label>
-              <%= select_tag :deadline,
-                    options_for_select(
-                      [
-                        ['すべて', ''],
-                        ['期日あり', 'with_deadline'],
-                        ['期限切れ', 'overdue']
-                      ],
-                      params[:deadline]
-                    ),
-                    class: "rounded-lg border-accent/20 bg-white px-3 py-2 text-sm text-primary/80 focus:border-accent focus:ring-2 focus:ring-accent/20",
-                    onchange: "document.getElementById('search_form').submit()" %>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    </section>
-
-    <%# ===== Posts List ===== %>
-    <% if @group_display %>
-      <%# ===== グループ表示モード ===== %>
-      <% total_count = @posts_near.size + @posts_passed.size + @posts_other.size + @posts_achieved.size %>
-
-      <% if total_count == 0 %>
-        <%= render 'posts/empty_state' %>
+      <% if all_empty %>
+        <%# 空状態 %>
+        <div class="py-16 text-center">
+          <span class="text-5xl block mb-4">📺</span>
+          <p class="text-gray-700 font-medium mb-2">まだアウトプットがありません</p>
+          <p class="text-sm text-gray-500 mb-6">YouTube動画を見たら記録してみましょう</p>
+          <% if user_signed_in? %>
+            <%= link_to new_post_path, class: "inline-flex items-center gap-2 px-6 py-2.5 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600 transition-colors" do %>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+              </svg>
+              最初のアウトプットを記録
+            <% end %>
+          <% else %>
+            <%= link_to new_user_session_path, class: "inline-flex items-center gap-2 px-6 py-2.5 bg-orange-500 text-white rounded-full font-medium hover:bg-orange-600 transition-colors" do %>
+              ログインして始める
+            <% end %>
+          <% end %>
+        </div>
       <% else %>
-        <%# 期日が近い（3日以内） %>
-        <% if @posts_near.any? %>
-          <%= render layout: 'posts/group_header',
-                locals: {
-                  title: '期日が近い',
-                  badge_count: @posts_near.size,
-                  badge_color: 'amber-600',
-                  icon_svg: '<svg class="h-5 w-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'.html_safe,
-                  open: true
-                } do %>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <% @posts_near.each do |post| %>
-                <%= render 'posts/post_card', post: post %>
+        <div class="space-y-10">
+          <%# ===== 📝 メモ ===== %>
+          <% if @posts_with_memos.present? %>
+            <section>
+              <%= link_to posts_path(type: "memo"), class: "flex items-center gap-2 mb-4 group" do %>
+                <span class="text-lg">📝</span>
+                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">メモ</h2>
+                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
               <% end %>
-            </div>
+              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
+                <% @posts_with_memos.each do |post| %>
+                  <%= render 'posts/post_card_note', post: post, show_memo: true %>
+                <% end %>
+              </div>
+            </section>
           <% end %>
-        <% end %>
 
-        <%# 期日超過 %>
-        <% if @posts_passed.any? %>
-          <%= render layout: 'posts/group_header',
-                locals: {
-                  title: '期日超過',
-                  badge_count: @posts_passed.size,
-                  badge_color: 'red-500',
-                  icon_svg: '<svg class="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'.html_safe,
-                  open: true
-                } do %>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <% @posts_passed.each do |post| %>
-                <%= render 'posts/post_card', post: post %>
+          <%# ===== 💬 引用 ===== %>
+          <% if @posts_with_quotes.present? %>
+            <section>
+              <%= link_to posts_path(type: "quote"), class: "flex items-center gap-2 mb-4 group" do %>
+                <span class="text-lg">💬</span>
+                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">引用</h2>
+                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
               <% end %>
-            </div>
+              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
+                <% @posts_with_quotes.each do |post| %>
+                  <%= render 'posts/post_card_note', post: post, show_quote: true %>
+                <% end %>
+              </div>
+            </section>
           <% end %>
-        <% end %>
 
-        <%# その他（4日以上先） %>
-        <% if @posts_other.any? %>
-          <%= render layout: 'posts/group_header',
-                locals: {
-                  title: 'まだ余裕あり',
-                  badge_count: @posts_other.size,
-                  badge_color: 'accent',
-                  icon_svg: '<svg class="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>'.html_safe,
-                  open: true
-                } do %>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <% @posts_other.each do |post| %>
-                <%= render 'posts/post_card', post: post %>
+          <%# ===== 🎯 アクション ===== %>
+          <% if @posts_with_actions.present? %>
+            <section>
+              <%= link_to posts_path(type: "action"), class: "flex items-center gap-2 mb-4 group" do %>
+                <span class="text-lg">🎯</span>
+                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">アクション</h2>
+                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
               <% end %>
-            </div>
+              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
+                <% @posts_with_actions.each do |post| %>
+                  <%= render 'posts/post_card_note', post: post, show_action: true %>
+                <% end %>
+              </div>
+            </section>
           <% end %>
-        <% end %>
 
-        <%# 達成済み（最新10件） %>
-        <% if @posts_achieved.any? %>
-          <%= render layout: 'posts/group_header',
-                locals: {
-                  title: '達成済み',
-                  badge_count: @posts_achieved.size,
-                  badge_color: 'green-500',
-                  icon_svg: '<svg class="h-5 w-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'.html_safe,
-                  open: false
-                } do %>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <% @posts_achieved.each do |post| %>
-                <%= render 'posts/post_card', post: post %>
+          <%# ===== 📰 ブログ ===== %>
+          <% if @posts_with_blogs.present? %>
+            <section>
+              <%= link_to posts_path(type: "blog"), class: "flex items-center gap-2 mb-4 group" do %>
+                <span class="text-lg">📰</span>
+                <h2 class="text-base font-bold text-gray-900 group-hover:text-orange-500 transition-colors">ブログ</h2>
+                <span class="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
               <% end %>
-            </div>
+              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
+                <% @posts_with_blogs.each do |post| %>
+                  <%= render 'posts/post_card_note', post: post, show_blog: true %>
+                <% end %>
+              </div>
+            </section>
           <% end %>
-        <% end %>
+
+          <%# ===== 🕐 最近の投稿 ===== %>
+          <% if @posts_recent.present? %>
+            <section>
+              <div class="flex items-center gap-2 mb-4">
+                <span class="text-lg">🕐</span>
+                <h2 class="text-base font-bold text-gray-900">最近の投稿</h2>
+              </div>
+              <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
+                <% @posts_recent.each do |post| %>
+                  <%= render 'posts/post_card_note', post: post %>
+                <% end %>
+              </div>
+            </section>
+          <% end %>
+        </div>
       <% end %>
 
     <% else %>
-      <%# ===== 通常表示モード（フィルター使用時） ===== %>
+      <%# ===== フィルター使用時：従来の単一リスト表示 ===== %>
+
+      <%# タイプ別フィルター時のヘッダー %>
+      <% if @current_type.present? %>
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-2">
+            <% case @current_type
+               when "memo" %>
+              <span class="text-xl">📝</span>
+              <h1 class="text-lg font-bold text-gray-900">メモ一覧</h1>
+            <% when "quote" %>
+              <span class="text-xl">💬</span>
+              <h1 class="text-lg font-bold text-gray-900">引用一覧</h1>
+            <% when "action" %>
+              <span class="text-xl">🎯</span>
+              <h1 class="text-lg font-bold text-gray-900">アクション一覧</h1>
+            <% when "blog" %>
+              <span class="text-xl">📰</span>
+              <h1 class="text-lg font-bold text-gray-900">ブログ一覧</h1>
+            <% end %>
+          </div>
+          <%= link_to posts_path, class: "text-sm text-gray-500 hover:text-gray-700" do %>
+            ← 一覧に戻る
+          <% end %>
+        </div>
+      <% end %>
+
       <% if @posts.empty? %>
-        <%= render 'posts/empty_state' %>
+        <div class="py-16 text-center">
+          <span class="text-5xl block mb-4">🔍</span>
+          <p class="text-gray-700 font-medium mb-2">検索結果がありません</p>
+          <p class="text-sm text-gray-500">別のキーワードで検索してみてください</p>
+        </div>
       <% else %>
-        <%# 投稿リスト - 2カラムグリッド %>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));">
           <% @posts.each do |post| %>
-            <%= render 'posts/post_card', post: post %>
+            <% show_option = case @current_type
+                             when "memo" then { show_memo: true }
+                             when "quote" then { show_quote: true }
+                             when "action" then { show_action: true }
+                             when "blog" then { show_blog: true }
+                             else {}
+                             end %>
+            <%= render 'posts/post_card_note', post: post, **show_option %>
           <% end %>
         </div>
 
-        <%# Pagination %>
-        <div class="mt-10">
+        <%# ページネーション %>
+        <div class="mt-6 flex justify-center">
           <%= paginate @posts %>
         </div>
       <% end %>

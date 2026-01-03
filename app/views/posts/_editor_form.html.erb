@@ -1,0 +1,302 @@
+<%# app/views/posts/_editor_form.html.erb %>
+<%# フルスクリーンエディタ形式の投稿フォーム %>
+
+<div class="editor-fullscreen" data-controller="editor-form youtube-search clipboard"
+     data-youtube-search-url-value="<%= youtube_search_posts_path %>"
+     data-clipboard-url-value="<%= post.youtube_url %>">
+
+  <%= form_with(model: post, local: true, html: { class: "editor-form" }) do |form| %>
+    <%# ===== ヘッダー ===== %>
+    <header class="editor-header">
+      <div class="editor-header-left">
+        <%= link_to posts_path, class: "editor-close-btn", data: { turbo_confirm: "編集内容が失われます。閉じますか？" } do %>
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          <span>閉じる</span>
+        <% end %>
+      </div>
+      <div class="editor-header-right">
+        <%= form.submit post.persisted? ? "更新する" : "記録する", class: "editor-submit-btn" %>
+      </div>
+    </header>
+
+    <%# ===== メインコンテンツ ===== %>
+    <main class="editor-main">
+      <div class="editor-content">
+
+        <%# エラーメッセージ表示 %>
+        <% if post.errors.any? %>
+          <div class="editor-error">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <div>
+              <% post.errors.full_messages.each do |message| %>
+                <p><%= message %></p>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <%# ===== YouTube URL入力 ===== %>
+        <section class="editor-section">
+          <div class="editor-youtube-input">
+            <label class="editor-label">
+              <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+              </svg>
+              YouTube動画
+            </label>
+
+            <%# モード切り替え %>
+            <div class="editor-youtube-tabs">
+              <button type="button"
+                      data-action="click->youtube-search#toggleMode"
+                      data-mode="url"
+                      data-youtube-search-target="urlTab"
+                      class="editor-youtube-tab active">
+                URLを貼り付け
+              </button>
+              <button type="button"
+                      data-action="click->youtube-search#toggleMode"
+                      data-mode="search"
+                      data-youtube-search-target="searchTab"
+                      class="editor-youtube-tab">
+                タイトルで検索
+              </button>
+            </div>
+
+            <%# URL入力 %>
+            <div data-youtube-search-target="urlPanel">
+              <%= form.url_field :youtube_url,
+                    placeholder: "https://www.youtube.com/watch?v=...",
+                    required: true,
+                    data: {
+                      clipboard_target: "input",
+                      youtube_search_target: "urlField",
+                      action: "focus->clipboard#checkClipboard input->youtube-search#fetchVideoInfo"
+                    },
+                    class: "editor-input" %>
+              <p class="editor-hint">クリップボードからYouTube URLが自動検出されます</p>
+            </div>
+
+            <%# 検索パネル %>
+            <div data-youtube-search-target="searchPanel" class="hidden">
+              <div class="relative">
+                <input type="text"
+                       placeholder="動画タイトルを入力して検索..."
+                       data-youtube-search-target="input"
+                       data-action="input->youtube-search#search"
+                       class="editor-input">
+                <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                </div>
+              </div>
+              <div data-youtube-search-target="results" class="hidden editor-search-results"></div>
+            </div>
+
+            <%# サムネイルプレビュー %>
+            <div data-youtube-search-target="preview" class="editor-video-preview hidden">
+              <img data-youtube-search-target="thumbnail" src="" alt="" class="editor-video-thumbnail">
+              <div class="editor-video-info">
+                <p data-youtube-search-target="title" class="editor-video-title"></p>
+                <p data-youtube-search-target="channel" class="editor-video-channel"></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <%# ===== アウトプット入力 ===== %>
+        <section class="editor-section editor-output-section">
+          <%# タブナビゲーション（メモ/引用/アクション/ブログ） %>
+          <div class="editor-tabs">
+            <button type="button"
+                    data-editor-form-target="tab"
+                    data-tab="keyPoint"
+                    data-action="click->editor-form#switchTab"
+                    class="editor-tab editor-tab-active">
+              <span class="editor-tab-icon">📝</span>
+              <span class="editor-tab-label">メモ</span>
+            </button>
+            <button type="button"
+                    data-editor-form-target="tab"
+                    data-tab="quote"
+                    data-action="click->editor-form#switchTab"
+                    class="editor-tab editor-tab-inactive">
+              <span class="editor-tab-icon">💬</span>
+              <span class="editor-tab-label">引用</span>
+            </button>
+            <button type="button"
+                    data-editor-form-target="tab"
+                    data-tab="action"
+                    data-action="click->editor-form#switchTab"
+                    class="editor-tab editor-tab-inactive">
+              <span class="editor-tab-icon">🎯</span>
+              <span class="editor-tab-label">アクション</span>
+            </button>
+            <button type="button"
+                    data-editor-form-target="tab"
+                    data-tab="blog"
+                    data-action="click->editor-form#switchTab"
+                    class="editor-tab editor-tab-inactive">
+              <span class="editor-tab-icon">📰</span>
+              <span class="editor-tab-label">ブログ</span>
+            </button>
+          </div>
+
+          <%# エディタエリア（タブで切り替え） %>
+          <div class="editor-area">
+            <%# メモエディタ %>
+            <div data-editor-form-target="editor" data-editor-type="keyPoint" class="editor-panel">
+              <textarea data-editor-form-target="keyPointContent"
+                        data-action="keydown->editor-form#handleKeydown"
+                        placeholder="この動画で学んだことを入力...
+
+- 箇条書きも使えます
+- マークダウン記法に対応予定"
+                        rows="14"
+                        class="editor-textarea editor-textarea-large"></textarea>
+              <div class="editor-panel-footer">
+                <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
+                <button type="button"
+                        data-action="click->editor-form#saveEntry"
+                        class="editor-save-btn">
+                  保存
+                </button>
+              </div>
+            </div>
+
+            <%# 引用エディタ %>
+            <div data-editor-form-target="editor" data-editor-type="quote" class="editor-panel" style="display: none;">
+              <textarea data-editor-form-target="quoteContent"
+                        data-action="keydown->editor-form#handleKeydown"
+                        placeholder="動画の中で印象に残った言葉を入力..."
+                        rows="5"
+                        class="editor-textarea editor-textarea-quote"></textarea>
+              <div class="editor-panel-footer">
+                <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
+                <button type="button"
+                        data-action="click->editor-form#saveEntry"
+                        class="editor-save-btn">
+                  保存
+                </button>
+              </div>
+            </div>
+
+            <%# アクションエディタ %>
+            <div data-editor-form-target="editor" data-editor-type="action" class="editor-panel" style="display: none;">
+              <textarea data-editor-form-target="actionContent"
+                        data-action="keydown->editor-form#handleKeydown"
+                        placeholder="この動画を見て、具体的に何をしますか？"
+                        rows="4"
+                        class="editor-textarea"></textarea>
+              <div class="editor-action-deadline">
+                <label class="text-sm text-gray-600">期日（任意）</label>
+                <input type="date"
+                       data-editor-form-target="actionDeadline"
+                       class="editor-date-input">
+              </div>
+              <div class="editor-panel-footer">
+                <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
+                <button type="button"
+                        data-action="click->editor-form#saveEntry"
+                        class="editor-save-btn">
+                  保存
+                </button>
+              </div>
+            </div>
+
+            <%# ブログエディタ %>
+            <div data-editor-form-target="editor" data-editor-type="blog" class="editor-panel" style="display: none;" data-controller="blog-editor">
+              <%# タイトル %>
+              <div style="margin-bottom: 12px;">
+                <input type="text"
+                       name="blog_entry[title]"
+                       data-editor-form-target="blogTitle"
+                       placeholder="ブログのタイトル..."
+                       style="width: 100%; padding: 12px; font-size: 16px; font-weight: 500; border: 1px solid #e5e7eb; border-radius: 8px;">
+              </div>
+
+              <%# 編集/プレビュー切り替え %>
+              <div style="display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px;">
+                <button type="button"
+                        data-blog-editor-target="editTab"
+                        data-action="blog-editor#showEdit"
+                        class="active-tab"
+                        style="padding: 8px 16px; font-size: 13px; background: none; border: none; cursor: pointer; position: relative;">
+                  ✏️ 編集
+                </button>
+                <button type="button"
+                        data-blog-editor-target="previewTab"
+                        data-action="blog-editor#showPreview"
+                        class="inactive-tab"
+                        style="padding: 8px 16px; font-size: 13px; background: none; border: none; cursor: pointer; position: relative;">
+                  👁️ プレビュー
+                </button>
+              </div>
+
+              <%# 本文エディタ %>
+              <div data-blog-editor-target="editor">
+                <textarea name="blog_entry[content]"
+                          data-editor-form-target="blogContent"
+                          data-blog-editor-target="input"
+                          placeholder="Markdown記法が使えます...
+
+## 見出し
+- 箇条書き
+**太字** や *斜体* も使えます"
+                          rows="12"
+                          class="editor-textarea"
+                          style="font-family: monospace;"></textarea>
+              </div>
+
+              <%# プレビュー %>
+              <div data-blog-editor-target="preview"
+                   class="hidden markdown-preview"
+                   style="min-height: 250px; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa;">
+              </div>
+
+              <%# フッター %>
+              <div class="editor-panel-footer" style="justify-content: space-between;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6b7280;">
+                  <input type="checkbox"
+                         name="blog_entry[publish]"
+                         value="true"
+                         data-editor-form-target="blogPublish"
+                         style="width: 14px; height: 14px;">
+                  公開する
+                </label>
+                <button type="button"
+                        data-action="click->editor-form#saveEntry"
+                        class="editor-save-btn">
+                  保存
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <%# 保存済みアウトプット一覧 %>
+          <div class="editor-saved-section">
+            <div class="editor-saved-header hidden">
+              <span>保存済み</span>
+              <span data-editor-form-target="savedCount" class="editor-saved-count">0</span>
+            </div>
+            <div data-editor-form-target="savedList" class="editor-saved-list">
+              <div class="text-center py-8 text-gray-400">
+                <p>まだアウトプットがありません</p>
+                <p class="text-sm mt-1">上のエディタで入力して「保存」してください</p>
+              </div>
+            </div>
+          </div>
+
+          <%# 非表示フィールド（フォーム送信用） %>
+          <div data-editor-form-target="hiddenEntries"></div>
+        </section>
+
+      </div>
+    </main>
+  <% end %>
+</div>

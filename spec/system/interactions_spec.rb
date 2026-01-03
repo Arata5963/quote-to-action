@@ -21,8 +21,8 @@ RSpec.describe "Interactions", type: :system do
       it "達成記録を作成できる" do
         visit post_path(post_record)
 
-        # 達成ボタンをクリック（「みただけ？」ボタン）
-        click_button "みただけ？"
+        # 達成ボタンをクリック
+        click_button "達成"
 
         # 達成記録が作成される（「達成済み」表示に変わる）
         expect(page).to have_content "達成済み"
@@ -41,8 +41,8 @@ RSpec.describe "Interactions", type: :system do
 
         # 達成済み表示になる（タスク型）
         expect(page).to have_content "達成済み"
-        # 「みただけ？」ボタンは表示されない
-        expect(page).not_to have_button "みただけ？"
+        # 達成ボタンは表示されない（達成済み表示のため）
+        expect(page).not_to have_button "達成"
       end
     end
 
@@ -56,8 +56,8 @@ RSpec.describe "Interactions", type: :system do
       it "達成記録できない" do
         visit post_path(post_record)
 
-        # 他人の投稿には達成ボタンが表示されない
-        expect(page).not_to have_button "みただけ？"
+        # 他人の投稿には達成ボタンが表示されない（達成ボタンセクション自体がない）
+        expect(page).not_to have_css "#achievement_button_#{post_record.id}"
       end
     end
   end
@@ -98,7 +98,7 @@ RSpec.describe "Interactions", type: :system do
       expect(page).to have_content "テストコメント"
 
       # 削除ボタンをクリック（アイコンボタンなのでformを送信）
-      within("div.bg-white.rounded-xl", text: "テストコメント") do
+      within("#comment_#{comment.id}") do
         find("form[action*='comments']").click_button
       end
 
@@ -130,8 +130,8 @@ RSpec.describe "Interactions", type: :system do
     end
 
     it "応援できる" do
-      # 投稿一覧ページに移動
-      visit posts_path
+      # 投稿詳細ページに移動（新デザインでは詳細ページで応援）
+      visit post_path(post_record)
 
       # 応援数を確認（初期状態：0）
       expect(Cheer.count).to eq(0)
@@ -152,8 +152,8 @@ RSpec.describe "Interactions", type: :system do
       # 事前に応援を作成
       create(:cheer, user: user, post: post_record)
 
-      # 投稿一覧ページに移動
-      visit posts_path
+      # 投稿詳細ページに移動
+      visit post_path(post_record)
 
       # 応援数を確認（初期状態：1）
       expect(Cheer.count).to eq(1)

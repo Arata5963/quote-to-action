@@ -26,6 +26,9 @@ Rails.application.routes.draw do
   get :bookshelf, to: "bookshelves#show"
   get "users/:id/bookshelf", to: "bookshelves#show", as: :user_bookshelf
 
+  # 統計・分析
+  get :stats, to: "stats#show"
+
   # 通知
   resources :notifications, only: [ :index ] do
     post :mark_as_read, on: :member
@@ -33,11 +36,25 @@ Rails.application.routes.draw do
   end
 
   resources :posts do
-    get :autocomplete, on: :collection
+    collection do
+      get :autocomplete
+      get :youtube_search
+    end
+    member do
+      post :track_recommendation_click
+    end
     resources :achievements, only: [ :create, :destroy ]
     resources :comments, only: [ :create, :destroy ]
     resources :cheers, only: [ :create, :destroy ]
     resource :recommendation, only: [ :show ]
+    resources :post_entries, only: [ :create, :show, :edit, :update, :destroy ] do
+      patch :achieve, on: :member
+      patch :publish, on: :member
+      patch :unpublish, on: :member
+      post :bulk_create, on: :collection
+      get :new_blog, on: :collection
+    end
+    resources :post_comparisons, only: [ :create, :destroy ]
   end
 
   get :terms, to: "pages#terms"
