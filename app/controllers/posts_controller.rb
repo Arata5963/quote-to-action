@@ -1,6 +1,6 @@
 # app/controllers/posts_controller.rb
 class PostsController < ApplicationController
-  before_action :authenticate_user!, except: [ :index, :show, :autocomplete, :youtube_search, :track_recommendation_click ]
+  before_action :authenticate_user!, except: [ :index, :show, :autocomplete, :youtube_search, :track_recommendation_click, :search_for_comparison ]
   before_action :set_post, only: [ :show, :edit, :update, :destroy, :track_recommendation_click ]
   before_action :check_owner, only: [ :edit, :update, :destroy ]
 
@@ -8,70 +8,18 @@ class PostsController < ApplicationController
     @q = Post.ransack(params[:q])
     base_scope = @q.result(distinct: true).includes(:user, :achievements, :cheers, :comments, :post_entries)
 
-    # ===== 達成状況絞り込み =====
-    case params[:achievement]
-    when "achieved"
-      base_scope = base_scope.where.not(achieved_at: nil)
-    when "not_achieved"
-      base_scope = base_scope.where(achieved_at: nil)
+    # ===== ユーザー絞り込み =====
+    if params[:user_id].present?
+      @filter_user = User.find_by(id: params[:user_id])
+      base_scope = base_scope.where(user_id: params[:user_id]) if @filter_user
     end
 
-    # ===== 期日絞り込み =====
-    case params[:deadline]
-    when "with_deadline"
-      base_scope = base_scope.where.not(deadline: nil)
-    when "overdue"
-      base_scope = base_scope.where("deadline < ?", Date.current).where(achieved_at: nil)
-    end
+    # シンプルに時系列表示
+    @posts = base_scope.recent.page(params[:page]).per(20)
 
-    # ===== タイプ別フィルター =====
-    if params[:type].present?
-      @current_type = params[:type]
-      @posts = filter_by_entry_type(base_scope, @current_type).page(params[:page]).per(20)
-      @section_display = false
-    # ===== その他フィルター使用時は従来の単一リスト表示 =====
-    elsif using_filters?
-      @posts = base_scope.recent.page(params[:page]).per(20)
-      @section_display = false
-    else
-      # ===== セクション表示（エントリータイプ別） =====
-      @section_display = true
-
-      # 📝 メモ（最新6件）
-      @posts_with_memos = Post.joins(:post_entries)
-                              .where(post_entries: { entry_type: :key_point })
-                              .includes(:user, :post_entries)
-                              .order("post_entries.created_at DESC")
-                              .distinct
-                              .limit(6)
-
-      # 💬 引用（最新6件）
-      @posts_with_quotes = Post.joins(:post_entries)
-                               .where(post_entries: { entry_type: :quote })
-                               .includes(:user, :post_entries)
-                               .order("post_entries.created_at DESC")
-                               .distinct
-                               .limit(6)
-
-      # 🎯 アクション（最新6件）
-      @posts_with_actions = Post.joins(:post_entries)
-                                .where(post_entries: { entry_type: :action })
-                                .includes(:user, :post_entries)
-                                .order("post_entries.created_at DESC")
-                                .distinct
-                                .limit(6)
-
-      # 📰 ブログ（公開済み、最新6件）
-      @posts_with_blogs = Post.joins(:post_entries)
-                              .where(post_entries: { entry_type: :blog })
-                              .where.not(post_entries: { published_at: nil })
-                              .includes(:user, :post_entries)
-                              .order("post_entries.published_at DESC")
-                              .distinct
-                              .limit(6)
-
-      # 🕐 最近の投稿（全て、最新12件）
-      @posts_recent = base_scope.recent.limit(12)
+    respond_to do |format|
+      format.html
+      format.turbo_stream { render partial: "posts/posts_page", locals: { posts: @posts } }
     end
   end
 
@@ -164,6 +112,29 @@ class PostsController < ApplicationController
         created_count += 1
         blog_published = blog_params[:publish].present?
       end
+
+      # 布教エントリー
+      recommendation_params = params[:recommendation]
+      if recommendation_params.present? && recommendation_params[:level].present?
+        @post.post_entries.create!(
+          entry_type: :recommendation,
+          recommendation_level: recommendation_params[:level].to_i,
+          recommendation_point: recommendation_params[:point],
+          target_audience: recommendation_params[:audience]
+        )
+        created_count += 1
+      end
+
+      # 比較
+      comparisons_params = params[:comparisons] || {}
+      comparisons_params.each_value do |comparison_data|
+        next if comparison_data[:target_post_id].blank?
+        @post.outgoing_comparisons.create!(
+          target_post_id: comparison_data[:target_post_id].to_i,
+          reason: comparison_data[:reason]
+        )
+        created_count += 1
+      end
     end
 
     if created_count > 0
@@ -248,6 +219,31 @@ class PostsController < ApplicationController
     head :ok
   end
 
+  # 比較用の投稿検索
+  def search_for_comparison
+    query = params[:q].to_s.strip
+
+    if query.length >= 2
+      posts = Post.where(
+        "youtube_title ILIKE :q OR youtube_channel_name ILIKE :q",
+        q: "%#{query}%"
+      ).limit(10)
+
+      results = posts.map do |post|
+        {
+          id: post.id,
+          title: post.youtube_title || "タイトル不明",
+          channel: post.youtube_channel_name || "チャンネル不明",
+          thumbnail: post.youtube_thumbnail_url
+        }
+      end
+
+      render json: results
+    else
+      render json: []
+    end
+  end
+
   private
 
   def set_post
@@ -276,42 +272,6 @@ class PostsController < ApplicationController
     when "quote" then "引用を記録しました"
     when "action" then "アクションプランを設定しました"
     else t("posts.create.success")
-    end
-  end
-
-  # フィルター（検索、達成状況、期日）が使用されているか
-  def using_filters?
-    params[:q].present? && params.dig(:q, :action_plan_or_youtube_title_or_youtube_channel_name_cont).present? ||
-      params[:achievement].present? ||
-      params[:deadline].present?
-  end
-
-  # エントリータイプでフィルター
-  def filter_by_entry_type(scope, type)
-    case type
-    when "memo"
-      scope.joins(:post_entries)
-           .where(post_entries: { entry_type: :key_point })
-           .distinct
-           .order("post_entries.created_at DESC")
-    when "quote"
-      scope.joins(:post_entries)
-           .where(post_entries: { entry_type: :quote })
-           .distinct
-           .order("post_entries.created_at DESC")
-    when "action"
-      scope.joins(:post_entries)
-           .where(post_entries: { entry_type: :action })
-           .distinct
-           .order("post_entries.created_at DESC")
-    when "blog"
-      scope.joins(:post_entries)
-           .where(post_entries: { entry_type: :blog })
-           .where.not(post_entries: { published_at: nil })
-           .distinct
-           .order("post_entries.published_at DESC")
-    else
-      scope.recent
     end
   end
 end
