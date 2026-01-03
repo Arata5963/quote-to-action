@@ -2,15 +2,16 @@ require 'rails_helper'
 
 RSpec.describe AchievementsHelper, type: :helper do
   describe '#generate_monthly_calendar' do
-    let(:achievement_counts) do
+    let(:mock_post) { instance_double(Post, youtube_thumbnail_url: 'https://example.com/thumb.jpg') }
+    let(:achievement_data) do
       {
-        Date.new(2024, 12, 11) => 3,
-        Date.new(2024, 12, 5) => 1
+        Date.new(2024, 12, 11) => { count: 3, first_post: mock_post },
+        Date.new(2024, 12, 5) => { count: 1, first_post: mock_post }
       }
     end
 
     context '2024年12月（1日が日曜）' do
-      let(:result) { helper.generate_monthly_calendar(achievement_counts, 2024, 12) }
+      let(:result) { helper.generate_monthly_calendar(achievement_data, 2024, 12) }
 
       it '31日分 + 月末の空白4つ = 35セル' do
         expect(result.size).to eq(35)
@@ -34,6 +35,18 @@ RSpec.describe AchievementsHelper, type: :helper do
       it '達成がない日はhas_achievementがfalse' do
         day_1 = result.find { |c| c[:type] == :day && c[:day] == 1 }
         expect(day_1[:has_achievement]).to be false
+      end
+
+      it '達成がある日はサムネイルURLを含む' do
+        day_11 = result.find { |c| c[:type] == :day && c[:day] == 11 }
+        expect(day_11[:thumbnail_url]).to eq('https://example.com/thumb.jpg')
+        expect(day_11[:achievement_count]).to eq(3)
+      end
+
+      it '達成がない日はサムネイルURLがnil' do
+        day_1 = result.find { |c| c[:type] == :day && c[:day] == 1 }
+        expect(day_1[:thumbnail_url]).to be_nil
+        expect(day_1[:achievement_count]).to eq(0)
       end
     end
 

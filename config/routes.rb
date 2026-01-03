@@ -39,6 +39,7 @@ Rails.application.routes.draw do
     collection do
       get :autocomplete
       get :youtube_search
+      get :search_for_comparison
     end
     member do
       post :track_recommendation_click

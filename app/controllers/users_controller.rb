@@ -18,8 +18,8 @@ class UsersController < ApplicationController
       @calendar_year = today.year
       @calendar_month = today.month
 
-      # 今月の達成データ
-      @achievement_counts = Achievement.monthly_calendar_data(
+      # 今月の達成データ（サムネイル付き）
+      @achievement_data = Achievement.monthly_calendar_data_with_thumbnails(
         @user.id,
         @calendar_year,
         @calendar_month
@@ -46,8 +46,8 @@ class UsersController < ApplicationController
       @calendar_year = today.year
       @calendar_month = today.month
 
-      # 今月の達成データ
-      @achievement_counts = Achievement.monthly_calendar_data(
+      # 今月の達成データ（サムネイル付き）
+      @achievement_data = Achievement.monthly_calendar_data_with_thumbnails(
         @user.id,
         @calendar_year,
         @calendar_month
@@ -63,6 +63,51 @@ class UsersController < ApplicationController
 
       # すきな動画
       @favorite_videos = @user.favorite_videos
+
+      # ===== タスクタブ用データ（PostEntry単位） =====
+      action_entries = PostEntry.joins(:post)
+                                .where(posts: { user_id: @user.id })
+                                .where(entry_type: :action)
+                                .where.not(deadline: nil)
+                                .includes(:post)
+
+      # 今日のタスク
+      @todays_tasks = action_entries.where(achieved_at: nil)
+                                    .where(deadline: today)
+                                    .order(deadline: :asc)
+
+      # 期限切れタスク
+      @overdue_tasks = action_entries.where(achieved_at: nil)
+                                     .where("post_entries.deadline < ?", today)
+                                     .order(deadline: :asc)
+
+      # 今後のタスク
+      @upcoming_tasks = action_entries.where(achieved_at: nil)
+                                      .where("post_entries.deadline > ?", today)
+                                      .order(deadline: :asc)
+
+      # 達成済みタスク
+      @completed_tasks = action_entries.where.not(achieved_at: nil)
+                                       .order(achieved_at: :desc)
+                                       .limit(20)
+
+      # エントリータイプ別統計
+      @entry_stats = {
+        memo: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :key_point }).distinct.count,
+        quote: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :quote }).distinct.count,
+        action: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :action }).distinct.count,
+        blog: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :blog }).distinct.count
+      }
+      @total_entries = @entry_stats.values.sum
+
+      # 過去30日間の活動データ（草用）
+      @activity_data = @user.posts.joins(:post_entries)
+                           .where("post_entries.created_at >= ?", 30.days.ago)
+                           .group("DATE(post_entries.created_at)")
+                           .count
+
+      # 連続記録
+      @streak = calculate_streak(@user)
     end
   end
 
@@ -127,5 +172,37 @@ class UsersController < ApplicationController
         existing.destroy!
       end
     end
+  end
+
+  def calculate_streak(user)
+    # 過去の活動日を取得（エントリー作成日ベース）
+    activity_dates = user.posts.joins(:post_entries)
+                         .select("DATE(post_entries.created_at) as activity_date")
+                         .distinct
+                         .order(Arel.sql("DATE(post_entries.created_at) DESC"))
+                         .pluck(Arel.sql("DATE(post_entries.created_at)"))
+
+    return 0 if activity_dates.empty?
+
+    streak = 0
+    today = Date.current
+    check_date = today
+
+    # 今日または昨日から連続をカウント
+    unless activity_dates.include?(today)
+      check_date = today - 1.day
+      return 0 unless activity_dates.include?(check_date)
+    end
+
+    activity_dates.each do |date|
+      if date == check_date
+        streak += 1
+        check_date -= 1.day
+      elsif date < check_date
+        break
+      end
+    end
+
+    streak
   end
 end

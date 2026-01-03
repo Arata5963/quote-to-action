@@ -3,7 +3,8 @@
 
 <div class="editor-fullscreen" data-controller="editor-form youtube-search clipboard"
      data-youtube-search-url-value="<%= youtube_search_posts_path %>"
-     data-clipboard-url-value="<%= post.youtube_url %>">
+     data-clipboard-url-value="<%= post.youtube_url %>"
+     data-editor-form-search-url-value="<%= search_for_comparison_posts_path %>">
 
   <%= form_with(model: post, local: true, html: { class: "editor-form" }) do |form| %>
     <%# ===== ヘッダー ===== %>
@@ -111,7 +112,7 @@
 
         <%# ===== アウトプット入力 ===== %>
         <section class="editor-section editor-output-section">
-          <%# タブナビゲーション（メモ/引用/アクション/ブログ） %>
+          <%# タブナビゲーション（メモ/引用/アクション/布教/比較/ブログ） %>
           <div class="editor-tabs">
             <button type="button"
                     data-editor-form-target="tab"
@@ -136,6 +137,22 @@
                     class="editor-tab editor-tab-inactive">
               <span class="editor-tab-icon">🎯</span>
               <span class="editor-tab-label">アクション</span>
+            </button>
+            <button type="button"
+                    data-editor-form-target="tab"
+                    data-tab="recommendation"
+                    data-action="click->editor-form#switchTab"
+                    class="editor-tab editor-tab-inactive">
+              <span class="editor-tab-icon">📣</span>
+              <span class="editor-tab-label">布教</span>
+            </button>
+            <button type="button"
+                    data-editor-form-target="tab"
+                    data-tab="comparison"
+                    data-action="click->editor-form#switchTab"
+                    class="editor-tab editor-tab-inactive">
+              <span class="editor-tab-icon">⚖️</span>
+              <span class="editor-tab-label">比較</span>
             </button>
             <button type="button"
                     data-editor-form-target="tab"
@@ -201,6 +218,107 @@
               </div>
               <div class="editor-panel-footer">
                 <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
+                <button type="button"
+                        data-action="click->editor-form#saveEntry"
+                        class="editor-save-btn">
+                  保存
+                </button>
+              </div>
+            </div>
+
+            <%# 布教エディタ %>
+            <div data-editor-form-target="editor" data-editor-type="recommendation" class="editor-panel" style="display: none;">
+              <div class="space-y-4">
+                <%# おすすめ度 %>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">おすすめ度</label>
+                  <div class="flex gap-2" data-controller="rating">
+                    <% 5.times do |i| %>
+                      <button type="button"
+                              data-rating-target="button"
+                              data-action="click->rating#select mouseenter->rating#hover mouseleave->rating#leave"
+                              data-level="<%= i + 1 %>"
+                              style="opacity: 0.3;"
+                              class="text-2xl transition-opacity cursor-pointer">
+                        🔥
+                      </button>
+                    <% end %>
+                    <input type="hidden" data-rating-target="input" data-editor-form-target="recommendationLevel">
+                  </div>
+                </div>
+
+                <%# おすすめポイント %>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">おすすめポイント</label>
+                  <textarea data-editor-form-target="recommendationPoint"
+                            data-action="keydown->editor-form#handleKeydown"
+                            placeholder="この動画のおすすめポイントを記入...
+例: ○○について初心者にもわかりやすく解説されている"
+                            rows="4"
+                            class="editor-textarea"></textarea>
+                </div>
+
+                <%# ターゲット視聴者 %>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">こんな人におすすめ（任意）</label>
+                  <textarea data-editor-form-target="recommendationAudience"
+                            placeholder="例: プログラミング初心者、副業を始めたい人"
+                            rows="2"
+                            class="editor-textarea"></textarea>
+                </div>
+              </div>
+
+              <div class="editor-panel-footer">
+                <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
+                <button type="button"
+                        data-action="click->editor-form#saveEntry"
+                        class="editor-save-btn">
+                  保存
+                </button>
+              </div>
+            </div>
+
+            <%# 比較エディタ %>
+            <div data-editor-form-target="editor" data-editor-type="comparison" class="editor-panel" style="display: none;">
+              <div class="space-y-4">
+                <%# 比較対象選択 %>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">比較する動画を選択</label>
+                  <div class="relative">
+                    <input type="text"
+                           data-editor-form-target="comparisonSearch"
+                           data-action="input->editor-form#searchComparison"
+                           placeholder="動画タイトルで検索..."
+                           class="editor-input">
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                      <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div data-editor-form-target="comparisonResults" class="hidden mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg"></div>
+                </div>
+
+                <%# 選択済み比較対象 %>
+                <div data-editor-form-target="comparisonSelected" class="hidden">
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">選択中の動画</label>
+                  <div data-editor-form-target="comparisonSelectedItem" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <!-- 動的に追加 -->
+                  </div>
+                </div>
+
+                <%# 比較理由 %>
+                <div>
+                  <label class="text-sm font-medium text-gray-700 mb-2 block">比較理由（任意）</label>
+                  <textarea data-editor-form-target="comparisonReason"
+                            placeholder="例: 同じトピックについて別の視点から解説している"
+                            rows="3"
+                            class="editor-textarea"></textarea>
+                </div>
+              </div>
+
+              <div class="editor-panel-footer">
+                <span class="text-xs text-gray-400">比較対象を選択して保存</span>
                 <button type="button"
                         data-action="click->editor-form#saveEntry"
                         class="editor-save-btn">

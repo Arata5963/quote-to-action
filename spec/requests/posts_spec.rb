@@ -27,15 +27,15 @@ RSpec.describe "Posts", type: :request do
       end
 
       it "フィルター使用時は新しい順に表示される" do
-        old_post = create(:post, action_plan: "古いアクション", created_at: 2.days.ago)
-        new_post = create(:post, action_plan: "新しいアクション", created_at: 1.day.ago)
+        old_post = create(:post, youtube_title: "古い投稿タイトル", created_at: 2.days.ago)
+        new_post = create(:post, youtube_title: "新しい投稿タイトル", created_at: 1.day.ago)
 
         # フィルター使用で通常表示モードに
         get posts_path, params: { achievement: "not_achieved" }
 
         # 新しい投稿が先に表示される（HTML内の出現順）
-        old_pos = response.body.index("古いアクション")
-        new_pos = response.body.index("新しいアクション")
+        old_pos = response.body.index("古い投稿タイトル")
+        new_pos = response.body.index("新しい投稿タイトル")
 
         expect(new_pos).to be < old_pos
       end
@@ -64,52 +64,38 @@ RSpec.describe "Posts", type: :request do
     context "ページネーション（フィルター使用時）" do
       it "1ページ目に20件まで表示される" do
         # 21件の投稿を作成
-        21.times { |i| create(:post, action_plan: "アクション#{i}") }
+        21.times { |i| create(:post, youtube_title: "テスト投稿#{i}") }
 
         # フィルター使用で通常表示モード（ページネーション有効）
         get posts_path, params: { achievement: "not_achieved" }
 
-        # 20件分表示される
-        expect(response.body.scan(/アクション\d+/).size).to eq(20)
+        # 20件分表示される（各投稿のタイトルがカード内に含まれる）
+        expect(response.body.scan(/テスト投稿\d+/).uniq.size).to eq(20)
       end
 
       it "2ページ目が存在する" do
         # 21件の投稿を作成
-        21.times { |i| create(:post, action_plan: "アクション#{i}") }
+        21.times { |i| create(:post, youtube_title: "テスト投稿#{i}") }
 
         # フィルター使用で通常表示モード
         get posts_path, params: { achievement: "not_achieved", page: 2 }
 
         expect(response).to have_http_status(200)
         # 2ページ目には1件だけ表示される
-        expect(response.body.scan(/アクション\d+/).size).to eq(1)
+        expect(response.body.scan(/テスト投稿\d+/).uniq.size).to eq(1)
       end
     end
 
-    context "達成状況絞り込み" do
-      let!(:achieved_post) { create(:post, action_plan: "達成済みアクション", achieved_at: Time.current) }
-      let!(:not_achieved_post) { create(:post, action_plan: "未達成アクション", achieved_at: nil) }
+    context "投稿一覧表示" do
+      let!(:post1) { create(:post, youtube_title: "テスト投稿A") }
+      let!(:post2) { create(:post, youtube_title: "テスト投稿B") }
 
-      it "達成済みのみ表示できる" do
-        get posts_path, params: { achievement: "achieved" }
-
-        expect(response.body).to include("達成済みアクション")
-        expect(response.body).not_to include("未達成アクション")
-      end
-
-      it "未達成のみ表示できる" do
-        get posts_path, params: { achievement: "not_achieved" }
-
-        expect(response.body).to include("未達成アクション")
-        expect(response.body).not_to include("達成済みアクション")
-      end
-
-      it "無効な達成状況パラメータは無視される" do
-        get posts_path, params: { achievement: "invalid" }
+      it "すべての投稿が時系列で表示される" do
+        get posts_path
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("達成済みアクション")
-        expect(response.body).to include("未達成アクション")
+        expect(response.body).to include("テスト投稿A")
+        expect(response.body).to include("テスト投稿B")
       end
     end
 

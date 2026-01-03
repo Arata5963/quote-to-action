@@ -18,12 +18,12 @@ export default class extends Controller {
     // タブのスタイル更新
     this.tabTargets.forEach((tab, i) => {
       if (i === index) {
-        // アクティブ状態
-        tab.style.color = "#8B7355"  // accent color
-        tab.style.borderBottom = "2px solid #8B7355"
+        // アクティブ状態（Notion風: 黒文字 + アンダーライン）
+        tab.style.color = "#111827"  // gray-900
+        tab.style.borderBottom = "2px solid #111827"
       } else {
-        // 非アクティブ状態
-        tab.style.color = "rgba(74, 64, 53, 0.6)"  // primary/60
+        // 非アクティブ状態（グレー、アンダーラインなし）
+        tab.style.color = "#9CA3AF"  // gray-400
         tab.style.borderBottom = "2px solid transparent"
       }
     })

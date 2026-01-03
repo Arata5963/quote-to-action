@@ -1,5 +1,7 @@
 # app/controllers/post_entries_controller.rb
 class PostEntriesController < ApplicationController
+  include ActionView::RecordIdentifier
+
   before_action :authenticate_user!, except: [:show]
   before_action :set_post
   before_action :set_entry, only: [:show, :edit, :update, :destroy, :achieve, :publish, :unpublish]
@@ -151,9 +153,21 @@ class PostEntriesController < ApplicationController
 
   def achieve
     if @entry.achieve!
-      redirect_to @post, notice: "達成おめでとうございます！"
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace(
+            dom_id(@entry),
+            partial: "post_entries/task_card",
+            locals: { task: @entry }
+          )
+        end
+        format.html { redirect_to @post, notice: @entry.achieved? ? "達成おめでとうございます！" : "未達成に戻しました" }
+      end
     else
-      redirect_to @post, alert: "達成処理に失敗しました"
+      respond_to do |format|
+        format.turbo_stream { head :unprocessable_entity }
+        format.html { redirect_to @post, alert: "達成処理に失敗しました" }
+      end
     end
   end
 

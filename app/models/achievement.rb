@@ -36,4 +36,34 @@ class Achievement < ApplicationRecord
       .where(achieved_at: today.beginning_of_month..today.end_of_month)
       .count
   }
+
+  # 特定ユーザーの特定月の達成データ（サムネイル付き）
+  # @param user_id [Integer] ユーザーID
+  # @param year [Integer] 年
+  # @param month [Integer] 月
+  # @return [Hash] { Date => { count: Integer, first_post: Post } }
+  def self.monthly_calendar_data_with_thumbnails(user_id, year, month)
+    start_date = Date.new(year, month, 1)
+    end_date = start_date.end_of_month
+
+    achievements = where(user_id: user_id)
+      .where(achieved_at: start_date..end_date)
+      .includes(:post)
+      .order(:achieved_at)
+
+    result = {}
+    achievements.each do |achievement|
+      date = achievement.achieved_at
+      if result[date]
+        result[date][:count] += 1
+      else
+        result[date] = {
+          count: 1,
+          first_post: achievement.post
+        }
+      end
+    end
+
+    result
+  end
 end
