@@ -1,6 +1,5 @@
 // app/javascript/controllers/index_search_controller.js
 import { Controller } from "@hotwired/stimulus"
-import { Turbo } from "@hotwired/turbo-rails"
 
 // 投稿一覧用の統合検索コントローラー
 // URL貼り付けまたはタイトル検索 → 動画選択で投稿を自動作成して遷移
@@ -206,11 +205,20 @@ export default class extends Controller {
       })
 
       const data = await response.json()
+      console.log("find_or_create response:", data)
 
       if (data.success && data.url) {
-        // Turbo Driveを使用してナビゲーション
-        Turbo.visit(data.url)
+        console.log("Navigating to:", data.url)
+        // Turbo Driveを使用してナビゲーション（グローバルオブジェクト経由）
+        if (window.Turbo) {
+          console.log("Using Turbo.visit")
+          window.Turbo.visit(data.url)
+        } else {
+          console.log("Using window.location.href")
+          window.location.href = data.url
+        }
       } else {
+        console.error("Navigation failed:", data)
         this.resultsTarget.innerHTML = `
           <div class="p-4 text-center text-red-500 text-sm">
             ${data.error || "エラーが発生しました"}
@@ -221,7 +229,7 @@ export default class extends Controller {
       console.error("Find or create error:", error)
       this.resultsTarget.innerHTML = `
         <div class="p-4 text-center text-red-500 text-sm">
-          エラーが発生しました
+          エラーが発生しました: ${error.message}
         </div>
       `
     }
