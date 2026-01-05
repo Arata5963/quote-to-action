@@ -4,9 +4,13 @@ class Cheer < ApplicationRecord
   belongs_to :post
 
   # ===== 通知設定 =====
-  # 応援時に投稿者に通知を送る（自分の投稿には通知しない）
+  # 応援時に投稿者に通知を送る（自分の投稿には通知しない、投稿にuserがいない場合も通知しない）
   acts_as_notifiable :users,
-    targets: ->(cheer, _key) { [ cheer.post.user ] unless cheer.user == cheer.post.user },
+    targets: ->(cheer, _key) {
+      return [] if cheer.post.user.nil?
+      return [] if cheer.user == cheer.post.user
+      [ cheer.post.user ]
+    },
     group: :post,
     notifier: :user,
     email_allowed: false,

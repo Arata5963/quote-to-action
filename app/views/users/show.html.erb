@@ -63,13 +63,18 @@
                   data-tab-index="2">
             統計
           </button>
+          <button type="button"
+                  class="notion-tab pb-3 text-sm font-medium transition-colors cursor-pointer"
+                  data-tabs-target="tab"
+                  data-action="click->tabs#switch"
+                  data-tab-index="3">
+            ブックマーク
+          </button>
         </div>
 
         <%# ===== 投稿タブ ===== %>
         <div data-tabs-target="panel" data-panel-index="0">
-          <% all_posts = @unachieved_posts + @achieved_posts %>
-
-          <% if all_posts.empty? %>
+          <% if @user_posts.empty? %>
             <%# 空状態 %>
             <div class="py-12 text-center">
               <div class="text-primary/40 mb-4">
@@ -86,15 +91,13 @@
               <% end %>
             </div>
           <% else %>
-            <%# 投稿グリッド（時系列） %>
             <div class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));">
-              <% all_posts.each do |post| %>
+              <% @user_posts.each do |post| %>
                 <%= render 'posts/post_card_note', post: post %>
               <% end %>
             </div>
 
-            <%# もっと見るリンク %>
-            <% if all_posts.size >= 20 %>
+            <% if @user_posts.size >= 20 %>
               <div class="mt-6 text-center">
                 <%= link_to posts_path(user_id: @user.id), class: "text-sm text-gray-500 hover:text-gray-900 transition-colors" do %>
                   すべての投稿を見る →
@@ -221,14 +224,14 @@
             <div class="flex items-center gap-6">
               <div class="w-20 h-20 flex-shrink-0" data-controller="donut-chart"
                    data-donut-chart-values-value="<%= [@entry_stats[:memo], @entry_stats[:quote], @entry_stats[:action], @entry_stats[:blog]].to_json %>"
-                   data-donut-chart-labels-value='["メモ", "引用", "アクション", "ブログ"]'
+                   data-donut-chart-labels-value='["要約", "引用", "アクション", "ブログ"]'
                    data-donut-chart-colors-value='["#60a5fa", "#a78bfa", "#f97316", "#10b981"]'>
                 <canvas></canvas>
               </div>
               <div class="flex-1 grid grid-cols-2 gap-3 text-sm">
                 <div class="flex items-center gap-2">
                   <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                  <span class="text-gray-600">メモ</span>
+                  <span class="text-gray-600">要約</span>
                   <span class="font-medium text-gray-900 ml-auto"><%= @entry_stats[:memo] %></span>
                 </div>
                 <div class="flex items-center gap-2">
@@ -278,6 +281,72 @@
             <% end %>
           </div>
         </div>
+
+        <%# ===== ブックマークタブ ===== %>
+        <div class="hidden" data-tabs-target="panel" data-panel-index="3">
+          <% if @bookmarked_comments.blank? %>
+            <div class="py-12 text-center">
+              <div class="text-amber-400/60 mb-4">
+                <svg class="w-12 h-12 mx-auto" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M5 5c0-1.1.9-2 2-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                </svg>
+              </div>
+              <p class="text-gray-500 mb-2">まだブックマークがありません</p>
+              <p class="text-sm text-gray-400">動画の秀逸コメントを保存するとここに表示されます</p>
+            </div>
+          <% else %>
+            <div class="space-y-6">
+              <% @bookmarked_comments.group_by { |c| c.post }.each do |post, comments| %>
+                <div class="bg-gray-50 rounded-xl p-4">
+                  <%# 動画情報 %>
+                  <%= link_to post_path(post), class: "flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity" do %>
+                    <img src="<%= post.youtube_thumbnail_url(size: :default) %>"
+                         alt="<%= post.youtube_title %>"
+                         class="w-20 h-auto rounded-lg flex-shrink-0">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 line-clamp-2"><%= post.youtube_title %></p>
+                      <p class="text-xs text-gray-500 mt-1"><%= post.youtube_channel_name %></p>
+                    </div>
+                  <% end %>
+
+                  <%# ブックマークしたコメント %>
+                  <div class="space-y-3 pl-4 border-l-2 border-gray-200">
+                    <% comments.each do |comment| %>
+                      <div class="flex gap-3">
+                        <% if comment.author_image_url.present? %>
+                          <img src="<%= comment.author_image_url %>"
+                               alt="<%= comment.author_name %>"
+                               class="w-8 h-8 rounded-full flex-shrink-0">
+                        <% else %>
+                          <div class="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0"></div>
+                        <% end %>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm font-medium text-gray-800"><%= comment.author_name %></span>
+                            <% if comment.like_count > 0 %>
+                              <span class="text-xs text-gray-400">👍 <%= number_with_delimiter(comment.like_count) %></span>
+                            <% end %>
+                          </div>
+                          <p class="text-sm text-gray-600 line-clamp-3"><%= comment.content %></p>
+                          <div class="flex items-center gap-3 mt-2">
+                            <% if comment.youtube_url.present? %>
+                              <a href="<%= comment.youtube_url %>"
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 class="text-xs text-red-500 hover:text-red-600">
+                                YouTubeで見る →
+                              </a>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
       </div>
 
     <% else %>
@@ -313,10 +382,9 @@
         <%# タブコンテンツ %>
         <%# 投稿 %>
         <div class="p-4" data-tabs-target="panel" data-panel-index="0">
-          <% all_posts = @unachieved_posts + @achieved_posts %>
-          <% if all_posts.any? %>
+          <% if @user_posts.any? %>
             <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));">
-              <% all_posts.each do |post| %>
+              <% @user_posts.each do |post| %>
                 <%= render 'posts/post_card_note', post: post %>
               <% end %>
             </div>

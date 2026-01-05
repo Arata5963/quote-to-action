@@ -6,6 +6,7 @@ export default class extends Controller {
     "tab",
     "editor",
     "savedList",
+    "savedSection",
     "keyPointEditor",
     "quoteEditor",
     "actionEditor",
@@ -33,7 +34,8 @@ export default class extends Controller {
 
   static values = {
     activeTab: { type: String, default: "keyPoint" },
-    searchUrl: { type: String, default: "/posts/search_for_comparison" }
+    searchUrl: { type: String, default: "/posts/search_for_comparison" },
+    generateUrl: { type: String, default: "/posts/generate_entry" }
   }
 
   connect() {
@@ -77,6 +79,11 @@ export default class extends Controller {
       const isActive = editor.dataset.editorType === tabName
       editor.style.display = isActive ? "flex" : "none"
     })
+
+    // クイズタブの場合は保存済みセクションを非表示
+    if (this.hasSavedSectionTarget) {
+      this.savedSectionTarget.style.display = tabName === "quiz" ? "none" : "block"
+    }
 
     // 対応するエディタにフォーカス
     this.focusCurrentEditor()
@@ -511,6 +518,110 @@ export default class extends Controller {
     if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
       event.preventDefault()
       this.saveEntry(event)
+    }
+  }
+
+  // AIでコンテンツを生成
+  async generateWithAI(event) {
+    event.preventDefault()
+    const button = event.currentTarget
+    const entryType = button.dataset.entryType
+
+    // YouTube URLから動画IDを取得
+    const youtubeUrlInput = this.element.querySelector('input[name="post[youtube_url]"]')
+    if (!youtubeUrlInput || !youtubeUrlInput.value) {
+      alert("先にYouTube動画のURLを入力してください")
+      return
+    }
+
+    const videoId = this.extractVideoId(youtubeUrlInput.value)
+    if (!videoId) {
+      alert("有効なYouTube URLを入力してください")
+      return
+    }
+
+    // 動画タイトルを取得（あれば）
+    const titleElement = this.element.querySelector('[data-youtube-search-target="title"]')
+    const title = titleElement ? titleElement.textContent : null
+
+    // ボタンの状態を更新
+    const originalText = button.textContent
+    button.disabled = true
+    button.textContent = "生成中..."
+    button.style.opacity = "0.6"
+
+    try {
+      const response = await fetch(this.generateUrlValue, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+          video_id: videoId,
+          entry_type: entryType,
+          title: title
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // テキストエリアにコンテンツを挿入
+        this.insertGeneratedContent(entryType, data.content)
+      } else {
+        alert(data.error || "生成に失敗しました")
+      }
+    } catch (error) {
+      console.error("AI generation error:", error)
+      alert("生成中にエラーが発生しました")
+    } finally {
+      // ボタンを元に戻す
+      button.disabled = false
+      button.textContent = originalText
+      button.style.opacity = "1"
+    }
+  }
+
+  // YouTube動画IDを抽出
+  extractVideoId(url) {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/
+    ]
+    for (const pattern of patterns) {
+      const match = url.match(pattern)
+      if (match) return match[1]
+    }
+    return null
+  }
+
+  // 生成されたコンテンツをテキストエリアに挿入
+  insertGeneratedContent(entryType, content) {
+    let textarea = null
+
+    switch (entryType) {
+      case "keyPoint":
+        textarea = this.hasKeyPointContentTarget ? this.keyPointContentTarget : null
+        break
+      case "quote":
+        textarea = this.hasQuoteContentTarget ? this.quoteContentTarget : null
+        break
+      case "action":
+        textarea = this.hasActionContentTarget ? this.actionContentTarget : null
+        break
+    }
+
+    if (textarea) {
+      // 既存のテキストがあれば末尾に追記
+      if (textarea.value.trim()) {
+        textarea.value = textarea.value + "\n\n" + content
+      } else {
+        textarea.value = content
+      }
+      textarea.focus()
+      // 自動リサイズがあれば発火
+      textarea.dispatchEvent(new Event('input', { bubbles: true }))
     }
   }
 }

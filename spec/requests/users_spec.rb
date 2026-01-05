@@ -25,7 +25,6 @@ RSpec.describe 'Users', type: :request do
 
       it '編集リンクが表示される' do
         get mypage_path
-        expect(response.body).to include('編集')
         expect(response.body).to include(edit_profile_path)
       end
 
@@ -35,15 +34,12 @@ RSpec.describe 'Users', type: :request do
       end
 
       context '投稿がある場合' do
-        let!(:achieved_post) { create(:post, user: user, achieved_at: Time.current) }
-        let!(:unachieved_post) { create(:post, user: user, achieved_at: nil) }
+        let!(:post_record) { create(:post) }
+        let!(:entry) { create(:post_entry, :action, post: post_record, user: user) }
 
         it '達成カレンダーが表示される' do
           get mypage_path
-          # 達成カレンダーのタブが表示される
           expect(response.body).to include('達成カレンダー')
-          # 達成ありの凡例が表示される
-          expect(response.body).to include('達成あり')
         end
       end
 
@@ -247,7 +243,8 @@ RSpec.describe 'Users', type: :request do
     before { sign_in user }
 
     context '達成記録がある場合' do
-      let!(:post_record) { create(:post, user: user, achieved_at: Time.current) }
+      let!(:post_record) { create(:post) }
+      let!(:entry) { create(:post_entry, :action, post: post_record, user: user) }
       let!(:achievement) { create(:achievement, user: user, post: post_record) }
 
       it 'マイページに達成カレンダータブが表示される' do

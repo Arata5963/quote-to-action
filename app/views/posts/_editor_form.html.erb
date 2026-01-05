@@ -1,8 +1,7 @@
 <%# app/views/posts/_editor_form.html.erb %>
 <%# フルスクリーンエディタ形式の投稿フォーム %>
 
-<div class="editor-fullscreen" data-controller="editor-form youtube-search clipboard"
-     data-youtube-search-url-value="<%= youtube_search_posts_path %>"
+<div class="editor-fullscreen" data-controller="editor-form clipboard"
      data-clipboard-url-value="<%= post.youtube_url %>"
      data-editor-form-search-url-value="<%= search_for_comparison_posts_path %>">
 
@@ -40,9 +39,10 @@
           </div>
         <% end %>
 
-        <%# ===== YouTube URL入力 ===== %>
+        <%# ===== YouTube URL入力（統合検索） ===== %>
         <section class="editor-section">
-          <div class="editor-youtube-input">
+          <div class="editor-youtube-input" data-controller="youtube-search"
+               data-youtube-search-url-value="<%= youtube_search_posts_path %>">
             <label class="editor-label">
               <svg class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
@@ -50,57 +50,39 @@
               YouTube動画
             </label>
 
-            <%# モード切り替え %>
-            <div class="editor-youtube-tabs">
-              <button type="button"
-                      data-action="click->youtube-search#toggleMode"
-                      data-mode="url"
-                      data-youtube-search-target="urlTab"
-                      class="editor-youtube-tab active">
-                URLを貼り付け
-              </button>
-              <button type="button"
-                      data-action="click->youtube-search#toggleMode"
-                      data-mode="search"
-                      data-youtube-search-target="searchTab"
-                      class="editor-youtube-tab">
-                タイトルで検索
-              </button>
-            </div>
-
-            <%# URL入力 %>
-            <div data-youtube-search-target="urlPanel">
-              <%= form.url_field :youtube_url,
-                    placeholder: "https://www.youtube.com/watch?v=...",
-                    required: true,
-                    data: {
-                      clipboard_target: "input",
-                      youtube_search_target: "urlField",
-                      action: "focus->clipboard#checkClipboard input->youtube-search#fetchVideoInfo"
-                    },
-                    class: "editor-input" %>
-              <p class="editor-hint">クリップボードからYouTube URLが自動検出されます</p>
-            </div>
-
-            <%# 検索パネル %>
-            <div data-youtube-search-target="searchPanel" class="hidden">
-              <div class="relative">
-                <input type="text"
-                       placeholder="動画タイトルを入力して検索..."
-                       data-youtube-search-target="input"
-                       data-action="input->youtube-search#search"
-                       class="editor-input">
-                <div class="absolute right-3 top-1/2 -translate-y-1/2">
-                  <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                  </svg>
-                </div>
+            <%# 統合入力フィールド %>
+            <div class="relative">
+              <input type="text"
+                     data-youtube-search-target="input"
+                     data-action="input->youtube-search#handleInput focus->clipboard#checkClipboard"
+                     data-clipboard-target="input"
+                     value="<%= post.youtube_url %>"
+                     placeholder="URLを貼り付け、またはタイトルで検索..."
+                     class="editor-input pr-10">
+              <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
               </div>
-              <div data-youtube-search-target="results" class="hidden editor-search-results"></div>
             </div>
+            <p class="editor-hint">YouTube URLを貼り付けるか、タイトルで検索できます</p>
+
+            <%# 検索結果 %>
+            <div data-youtube-search-target="results" class="hidden editor-search-results"></div>
+
+            <%# 隠しフィールド（フォーム送信用） %>
+            <%= form.hidden_field :youtube_url, data: { youtube_search_target: "urlField" } %>
 
             <%# サムネイルプレビュー %>
             <div data-youtube-search-target="preview" class="editor-video-preview hidden">
+              <button type="button"
+                      data-action="click->youtube-search#clearSelection"
+                      class="absolute top-2 right-2 w-6 h-6 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+                      title="選択解除">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
               <img data-youtube-search-target="thumbnail" src="" alt="" class="editor-video-thumbnail">
               <div class="editor-video-info">
                 <p data-youtube-search-target="title" class="editor-video-title"></p>
@@ -112,7 +94,7 @@
 
         <%# ===== アウトプット入力 ===== %>
         <section class="editor-section editor-output-section">
-          <%# タブナビゲーション（メモ/引用/アクション/布教/比較/ブログ） %>
+          <%# タブナビゲーション（要約/引用/アクション/布教/比較/ブログ） %>
           <div class="editor-tabs">
             <button type="button"
                     data-editor-form-target="tab"
@@ -120,7 +102,7 @@
                     data-action="click->editor-form#switchTab"
                     class="editor-tab editor-tab-active">
               <span class="editor-tab-icon">📝</span>
-              <span class="editor-tab-label">メモ</span>
+              <span class="editor-tab-label">要約</span>
             </button>
             <button type="button"
                     data-editor-form-target="tab"
@@ -162,11 +144,19 @@
               <span class="editor-tab-icon">📰</span>
               <span class="editor-tab-label">ブログ</span>
             </button>
+            <button type="button"
+                    data-editor-form-target="tab"
+                    data-tab="quiz"
+                    data-action="click->editor-form#switchTab"
+                    class="editor-tab editor-tab-inactive">
+              <span class="editor-tab-icon">🧠</span>
+              <span class="editor-tab-label">クイズ</span>
+            </button>
           </div>
 
           <%# エディタエリア（タブで切り替え） %>
           <div class="editor-area">
-            <%# メモエディタ %>
+            <%# 要約エディタ %>
             <div data-editor-form-target="editor" data-editor-type="keyPoint" class="editor-panel">
               <textarea data-editor-form-target="keyPointContent"
                         data-action="keydown->editor-form#handleKeydown"
@@ -177,6 +167,12 @@
                         rows="14"
                         class="editor-textarea editor-textarea-large"></textarea>
               <div class="editor-panel-footer">
+                <button type="button"
+                        data-action="click->editor-form#generateWithAI"
+                        data-entry-type="keyPoint"
+                        class="editor-ai-btn">
+                  ✨ AIで生成
+                </button>
                 <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
                 <button type="button"
                         data-action="click->editor-form#saveEntry"
@@ -194,6 +190,12 @@
                         rows="5"
                         class="editor-textarea editor-textarea-quote"></textarea>
               <div class="editor-panel-footer">
+                <button type="button"
+                        data-action="click->editor-form#generateWithAI"
+                        data-entry-type="quote"
+                        class="editor-ai-btn">
+                  ✨ AIで生成
+                </button>
                 <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
                 <button type="button"
                         data-action="click->editor-form#saveEntry"
@@ -217,6 +219,12 @@
                        class="editor-date-input">
               </div>
               <div class="editor-panel-footer">
+                <button type="button"
+                        data-action="click->editor-form#generateWithAI"
+                        data-entry-type="action"
+                        class="editor-ai-btn">
+                  ✨ AIで生成
+                </button>
                 <span class="text-xs text-gray-400">Cmd/Ctrl + Enter で保存</span>
                 <button type="button"
                         data-action="click->editor-form#saveEntry"
@@ -394,10 +402,92 @@
                 </button>
               </div>
             </div>
+
+            <%# クイズパネル %>
+            <div data-editor-form-target="editor" data-editor-type="quiz" class="editor-panel" style="display: none;" data-controller="quiz">
+              <%# ローディング状態 %>
+              <div data-quiz-target="loading" class="quiz-loading" style="display: none;">
+                <div class="quiz-loading-spinner"></div>
+                <p>クイズを読み込み中...</p>
+              </div>
+
+              <%# クイズ未生成状態（初期表示） %>
+              <div data-quiz-target="empty" class="quiz-empty" style="display: flex;">
+                <div class="quiz-empty-icon">🧠</div>
+                <h3 class="quiz-empty-title">理解度チェッククイズ</h3>
+                <p class="quiz-empty-description">AIがこの動画の内容に基づいて5問のクイズを生成します。</p>
+                <button type="button"
+                        data-action="click->quiz#generate"
+                        class="quiz-generate-btn">
+                  ✨ クイズを生成
+                </button>
+              </div>
+
+              <%# クイズ問題表示 %>
+              <div data-quiz-target="questions" class="quiz-questions" style="display: none;">
+                <div class="quiz-header">
+                  <span class="quiz-progress">
+                    問題 <span data-quiz-target="currentQuestion">1</span> / <span data-quiz-target="totalQuestions">5</span>
+                  </span>
+                </div>
+
+                <div data-quiz-target="questionContainer" class="quiz-question-container">
+                  <%# 問題が動的に追加される %>
+                </div>
+
+                <div class="quiz-navigation">
+                  <button type="button"
+                          data-action="click->quiz#prevQuestion"
+                          data-quiz-target="prevBtn"
+                          class="quiz-nav-btn quiz-nav-prev"
+                          disabled>
+                    ← 前へ
+                  </button>
+                  <button type="button"
+                          data-action="click->quiz#nextQuestion"
+                          data-quiz-target="nextBtn"
+                          class="quiz-nav-btn quiz-nav-next">
+                    次へ →
+                  </button>
+                  <button type="button"
+                          data-action="click->quiz#submit"
+                          data-quiz-target="submitBtn"
+                          class="quiz-submit-btn"
+                          style="display: none;">
+                    回答を送信
+                  </button>
+                </div>
+              </div>
+
+              <%# 回答済み状態 %>
+              <div data-quiz-target="answered" class="quiz-answered" style="display: none;">
+                <div class="quiz-answered-icon">✅</div>
+                <h3 class="quiz-answered-title">回答済みです</h3>
+                <p class="quiz-answered-score">
+                  前回のスコア: <span data-quiz-target="lastScore">-</span>/<span data-quiz-target="lastTotal">5</span>
+                </p>
+                <button type="button"
+                        data-action="click->quiz#retake"
+                        class="quiz-retake-btn">
+                  もう一度挑戦する
+                </button>
+              </div>
+
+              <%# エラー状態 %>
+              <div data-quiz-target="error" class="quiz-error" style="display: none;">
+                <div class="quiz-error-icon">⚠️</div>
+                <p data-quiz-target="errorMessage" class="quiz-error-message"></p>
+                <button type="button"
+                        data-action="click->quiz#retry"
+                        class="quiz-retry-btn">
+                  再試行
+                </button>
+              </div>
+            </div>
           </div>
 
-          <%# 保存済みアウトプット一覧 %>
-          <div class="editor-saved-section">
+          <%# 保存済みアウトプット一覧（クイズタブでは非表示） %>
+          <div class="editor-saved-section" data-editor-form-target="savedSection">
             <div class="editor-saved-header hidden">
               <span>保存済み</span>
               <span data-editor-form-target="savedCount" class="editor-saved-count">0</span>

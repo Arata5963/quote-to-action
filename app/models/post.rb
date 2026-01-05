@@ -2,11 +2,13 @@
 class Post < ApplicationRecord
   include Recommendable
 
-  belongs_to :user
+  belongs_to :user, optional: true
   has_many :achievements, dependent: :destroy
   has_many :comments, dependent: :destroy
   has_many :cheers, dependent: :destroy
   has_many :post_entries, dependent: :destroy
+  has_many :youtube_comments, dependent: :destroy
+  has_one :quiz, dependent: :destroy
 
   # 比較機能: A→B の一方向関係
   # outgoing: この投稿が比較している投稿への関係
@@ -21,16 +23,6 @@ class Post < ApplicationRecord
   has_many :recommendation_clicks, dependent: :destroy
 
   scope :recent, -> { order(created_at: :desc) }
-
-  # 期日関連スコープ
-  scope :deadline_near, -> { where(deadline: Date.current..(Date.current + 3.days)).order(deadline: :asc) }
-  scope :deadline_passed, -> { where("deadline < ?", Date.current).order(deadline: :asc) }
-  scope :deadline_other, -> { where("deadline > ?", Date.current + 3.days).order(deadline: :asc) }
-  scope :with_deadline, -> { where.not(deadline: nil) }
-
-  # 達成状況スコープ
-  scope :not_achieved, -> { where(achieved_at: nil) }
-  scope :achieved, -> { where.not(achieved_at: nil) }
 
   before_save :set_youtube_video_id, if: :should_fetch_youtube_info?
   before_save :fetch_youtube_info, if: :should_fetch_youtube_info?
@@ -113,12 +105,22 @@ class Post < ApplicationRecord
     nil
   end
 
-  # 動画IDでPostを検索または初期化
-  def self.find_or_initialize_by_video(user:, youtube_url:)
+  # 動画IDでPostを検索または作成（ユーザー不問）
+  def self.find_or_create_by_video(youtube_url:)
     video_id = extract_video_id(youtube_url)
     return nil unless video_id
 
-    post = find_or_initialize_by(user: user, youtube_video_id: video_id)
+    find_or_create_by(youtube_video_id: video_id) do |post|
+      post.youtube_url = youtube_url
+    end
+  end
+
+  # 動画IDでPostを検索または初期化（互換性のため残す）
+  def self.find_or_initialize_by_video(youtube_url:)
+    video_id = extract_video_id(youtube_url)
+    return nil unless video_id
+
+    post = find_or_initialize_by(youtube_video_id: video_id)
     post.youtube_url = youtube_url if post.new_record?
     post
   end
@@ -137,35 +139,19 @@ class Post < ApplicationRecord
     "https://www.youtube.com/embed/#{youtube_video_id}"
   end
 
-  # 達成済みかどうか
-  def achieved?
-    achieved_at.present?
+  # エントリーを持つユーザー一覧
+  def entry_users
+    User.where(id: post_entries.select(:user_id).distinct)
   end
 
-  # 期日が近い（3日以内）かどうか
-  def deadline_near?
-    return false unless deadline.present?
-
-    deadline >= Date.current && deadline <= Date.current + 3.days
+  # 特定ユーザーのエントリーを取得
+  def entries_by_user(user)
+    post_entries.where(user: user)
   end
 
-  # 期日を過ぎているかどうか
-  def deadline_passed?
-    return false unless deadline.present?
-
-    deadline < Date.current
-  end
-
-  # 期日までの日数（負の場合は超過日数）
-  def days_until_deadline
-    return nil unless deadline.present?
-
-    (deadline - Date.current).to_i
-  end
-
-  # 達成する
-  def achieve!
-    update!(achieved_at: Time.current) unless achieved?
+  # 特定ユーザーがエントリーを持っているか
+  def has_entries_by?(user)
+    post_entries.exists?(user: user)
   end
 
   private

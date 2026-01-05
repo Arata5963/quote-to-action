@@ -4,6 +4,7 @@ require 'rails_helper'
 RSpec.describe PostEntry, type: :model do
   describe 'associations' do
     it { should belong_to(:post) }
+    it { should belong_to(:user) }
   end
 
   describe 'validations' do
@@ -46,6 +47,38 @@ RSpec.describe PostEntry, type: :model do
 
         entry = build(:post_entry, satisfaction_rating: 6)
         expect(entry).not_to be_valid
+      end
+    end
+
+    context 'uniqueness of entry_type per user and post' do
+      let(:user) { create(:user) }
+      let(:post) { create(:post) }
+
+      it 'allows same entry_type for different users on same post' do
+        create(:post_entry, :action, post: post, user: user)
+        other_user = create(:user)
+        entry = build(:post_entry, :action, post: post, user: other_user)
+        expect(entry).to be_valid
+      end
+
+      it 'allows same entry_type for same user on different posts' do
+        create(:post_entry, :action, post: post, user: user)
+        other_post = create(:post)
+        entry = build(:post_entry, :action, post: other_post, user: user)
+        expect(entry).to be_valid
+      end
+
+      it 'rejects duplicate entry_type for same user on same post' do
+        create(:post_entry, :action, post: post, user: user)
+        entry = build(:post_entry, :action, post: post, user: user)
+        expect(entry).not_to be_valid
+        expect(entry.errors[:entry_type]).to include("この種類のエントリーは既に投稿済みです")
+      end
+
+      it 'allows different entry_types for same user on same post' do
+        create(:post_entry, :action, post: post, user: user)
+        entry = build(:post_entry, :key_point, post: post, user: user)
+        expect(entry).to be_valid
       end
     end
   end
@@ -134,6 +167,48 @@ RSpec.describe PostEntry, type: :model do
     it 'returns nil when rating is nil' do
       entry = build(:post_entry, satisfaction_rating: nil)
       expect(entry.satisfaction_stars).to be_nil
+    end
+  end
+
+  describe 'anonymous feature' do
+    describe '#anonymous?' do
+      it 'returns true when anonymous is true' do
+        entry = build(:post_entry, :anonymous)
+        expect(entry.anonymous?).to be true
+      end
+
+      it 'returns false when anonymous is false' do
+        entry = build(:post_entry, anonymous: false)
+        expect(entry.anonymous?).to be false
+      end
+    end
+
+    describe '#display_user_name' do
+      let(:user) { create(:user, name: 'テストユーザー') }
+
+      it 'returns 匿名 when anonymous is true' do
+        entry = build(:post_entry, :anonymous, user: user)
+        expect(entry.display_user_name).to eq('匿名')
+      end
+
+      it 'returns user name when anonymous is false' do
+        entry = build(:post_entry, anonymous: false, user: user)
+        expect(entry.display_user_name).to eq('テストユーザー')
+      end
+    end
+
+    describe '#display_avatar' do
+      let(:user) { create(:user) }
+
+      it 'returns nil when anonymous is true' do
+        entry = build(:post_entry, :anonymous, user: user)
+        expect(entry.display_avatar).to be_nil
+      end
+
+      it 'returns user avatar when anonymous is false' do
+        entry = build(:post_entry, anonymous: false, user: user)
+        expect(entry.display_avatar).to eq(user.avatar)
+      end
     end
   end
 end

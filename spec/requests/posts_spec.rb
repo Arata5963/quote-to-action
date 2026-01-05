@@ -15,15 +15,15 @@ RSpec.describe "Posts", type: :request do
 
     context "投稿の表示" do
       it "投稿が表示される" do
-        post1 = create(:post, action_plan: "アクション1")
-        post2 = create(:post, action_plan: "アクション2")
-        post3 = create(:post, action_plan: "アクション3")
+        post1 = create(:post, youtube_title: "タイトル1")
+        post2 = create(:post, youtube_title: "タイトル2")
+        post3 = create(:post, youtube_title: "タイトル3")
 
         get posts_path
 
-        expect(response.body).to include("アクション1")
-        expect(response.body).to include("アクション2")
-        expect(response.body).to include("アクション3")
+        expect(response.body).to include("タイトル1")
+        expect(response.body).to include("タイトル2")
+        expect(response.body).to include("タイトル3")
       end
 
       it "フィルター使用時は新しい順に表示される" do
@@ -43,13 +43,13 @@ RSpec.describe "Posts", type: :request do
 
     context "カード表示" do
       it "投稿がグリッドレイアウトで表示される" do
-        create(:post, action_plan: "アクション1", deadline: Date.current + 2.days)
-        create(:post, action_plan: "アクション2", deadline: Date.current - 1.day)
+        create(:post, youtube_title: "タイトルA")
+        create(:post, youtube_title: "タイトルB")
 
         get posts_path
 
-        expect(response.body).to include("アクション1")
-        expect(response.body).to include("アクション2")
+        expect(response.body).to include("タイトルA")
+        expect(response.body).to include("タイトルB")
       end
 
       it "YouTubeサムネイルが表示される" do
@@ -100,31 +100,28 @@ RSpec.describe "Posts", type: :request do
     end
 
     context "全投稿表示" do
-      let(:user) { create(:user) }
-      let(:other_user) { create(:user) }
-
       it "全ての投稿が表示される" do
-        my_post = create(:post, user: user, action_plan: "自分のアクション")
-        others_post = create(:post, user: other_user, action_plan: "他人のアクション")
+        create(:post, youtube_title: "動画タイトル1")
+        create(:post, youtube_title: "動画タイトル2")
 
         get posts_path
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("自分のアクション")
-        expect(response.body).to include("他人のアクション")
+        expect(response.body).to include("動画タイトル1")
+        expect(response.body).to include("動画タイトル2")
       end
     end
 
     context "Ransack検索" do
-      let!(:post1) { create(:post, action_plan: "Rubyプログラミング") }
-      let!(:post2) { create(:post, action_plan: "Python入門") }
+      let!(:post1) { create(:post, youtube_title: "Rubyプログラミング講座") }
+      let!(:post2) { create(:post, youtube_title: "Python入門講座") }
 
-      it "action_planで検索できる" do
-        get posts_path, params: { q: { action_plan_cont: "Ruby" } }
+      it "youtube_titleで検索できる" do
+        get posts_path, params: { q: { youtube_title_cont: "Ruby" } }
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("Rubyプログラミング")
-        expect(response.body).not_to include("Python入門")
+        expect(response.body).to include("Rubyプログラミング講座")
+        expect(response.body).not_to include("Python入門講座")
       end
     end
   end
@@ -134,14 +131,14 @@ RSpec.describe "Posts", type: :request do
   # ====================
   describe "GET /posts/:id" do
     let(:user) { create(:user) }
-    let(:post_record) { create(:post, user: user, action_plan: "テストアクション") }
+    let(:post_record) { create(:post, youtube_title: "テスト動画タイトル") }
 
     context "未ログインの場合" do
       it "投稿の詳細が表示される（公開ページ）" do
         get post_path(post_record)
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("テストアクション")
+        expect(response.body).to include("テスト動画タイトル")
       end
     end
 
@@ -150,7 +147,7 @@ RSpec.describe "Posts", type: :request do
         get post_path(post_record)
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("テストアクション")
+        expect(response.body).to include("テスト動画タイトル")
       end
 
       it "コメントが表示される" do
@@ -254,10 +251,10 @@ RSpec.describe "Posts", type: :request do
           expect(response.body).to include("アクション")
         end
 
-        it "current_userの投稿として作成される" do
+        it "PostEntryがcurrent_userで作成される" do
           post posts_path, params: valid_params
 
-          expect(Post.last.user).to eq(user)
+          expect(PostEntry.last.user).to eq(user)
         end
 
         it "PostEntryも作成される" do
@@ -266,15 +263,14 @@ RSpec.describe "Posts", type: :request do
           }.to change(PostEntry, :count).by(1)
         end
 
-        it "複数のエントリーを作成できる" do
+        it "複数タイプのエントリーを作成できる" do
           multi_params = {
             post: {
-              youtube_url: "https://www.youtube.com/watch?v=test123"
+              youtube_url: "https://www.youtube.com/watch?v=abcde12345f"
             },
             entries: {
               keyPoint: {
-                "0" => { content: "ポイント1" },
-                "1" => { content: "ポイント2" }
+                "0" => { content: "ポイント1" }
               },
               quote: {
                 "0" => { content: "引用1" }
@@ -285,9 +281,10 @@ RSpec.describe "Posts", type: :request do
             }
           }
 
+          # Post作成と同時にエントリーが作成されることを確認（各タイプ1つずつ = 3件）
           expect {
             post posts_path, params: multi_params
-          }.to change(PostEntry, :count).by(4)
+          }.to change(Post, :count).by(1).and change(PostEntry, :count).by(3)
         end
       end
 
@@ -335,10 +332,11 @@ RSpec.describe "Posts", type: :request do
   describe "GET /posts/:id/edit" do
     let(:user) { create(:user) }
     let(:other_user) { create(:user) }
-    let(:post_record) { create(:post, user: user) }
+    let(:post_record) { create(:post) }
 
-    context "投稿者本人の場合" do
+    context "エントリー所有者の場合" do
       before do
+        create(:post_entry, post: post_record, user: user)
         sign_in user
       end
 
@@ -350,8 +348,9 @@ RSpec.describe "Posts", type: :request do
       end
     end
 
-    context "投稿者本人でない場合" do
+    context "エントリー所有者でない場合" do
       before do
+        create(:post_entry, post: post_record, user: user)
         sign_in other_user
       end
 
@@ -360,7 +359,7 @@ RSpec.describe "Posts", type: :request do
 
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
-        expect(response.body).to include("他のユーザーの投稿は編集・削除できません")
+        expect(response.body).to include("エントリーがありません")
       end
     end
 
@@ -379,10 +378,11 @@ RSpec.describe "Posts", type: :request do
   describe "PATCH /posts/:id" do
     let(:user) { create(:user) }
     let(:other_user) { create(:user) }
-    let(:post_record) { create(:post, user: user, action_plan: "元のアクション") }
+    let(:post_record) { create(:post, action_plan: "元のアクション") }
 
-    context "投稿者本人の場合" do
+    context "エントリー所有者の場合" do
       before do
+        create(:post_entry, post: post_record, user: user)
         sign_in user
       end
 
@@ -436,8 +436,9 @@ RSpec.describe "Posts", type: :request do
       end
     end
 
-    context "投稿者本人でない場合" do
+    context "エントリー所有者でない場合" do
       before do
+        create(:post_entry, post: post_record, user: user)
         sign_in other_user
       end
 
@@ -453,7 +454,7 @@ RSpec.describe "Posts", type: :request do
 
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
-        expect(response.body).to include("他のユーザーの投稿は編集・削除できません")
+        expect(response.body).to include("エントリーがありません")
       end
     end
 
@@ -472,10 +473,11 @@ RSpec.describe "Posts", type: :request do
   describe "DELETE /posts/:id" do
     let(:user) { create(:user) }
     let(:other_user) { create(:user) }
-    let!(:post_record) { create(:post, user: user) }
+    let!(:post_record) { create(:post) }
 
-    context "投稿者本人の場合" do
+    context "エントリー所有者の場合" do
       before do
+        create(:post_entry, post: post_record, user: user)
         sign_in user
       end
 
@@ -490,13 +492,13 @@ RSpec.describe "Posts", type: :request do
 
         expect(response).to redirect_to(posts_path)
         follow_redirect!
-        # 実際のアプリのフラッシュメッセージに合わせる
-        expect(response.body).to include("投稿を削除しました")
+        expect(response.body).to include("エントリーを削除しました")
       end
     end
 
-    context "投稿者本人でない場合" do
+    context "エントリー所有者でない場合" do
       before do
+        create(:post_entry, post: post_record, user: user)
         sign_in other_user
       end
 
@@ -511,7 +513,7 @@ RSpec.describe "Posts", type: :request do
 
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
-        expect(response.body).to include("他のユーザーの投稿は編集・削除できません")
+        expect(response.body).to include("エントリーがありません")
       end
     end
 

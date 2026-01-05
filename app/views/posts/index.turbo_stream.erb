@@ -1,0 +1,24 @@
+<%# app/views/posts/index.turbo_stream.erb %>
+<%# 無限スクロール用のTurbo Streamレスポンス %>
+
+<% show_option = case @current_type
+                 when "memo" then { show_memo: true }
+                 when "quote" then { show_quote: true }
+                 when "action" then { show_action: true }
+                 when "blog" then { show_blog: true }
+                 else {}
+                 end %>
+
+<% if @posts.present? %>
+  <%# 新しい投稿を追加 %>
+  <% @posts.each do |post| %>
+    <%= turbo_stream.append "posts-grid" do %>
+      <%= render 'posts/post_card_note', post: post, **show_option %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%# 次ページがない場合はローダーを非表示にする %>
+<% unless @posts.respond_to?(:next_page) && @posts.next_page %>
+  <%= turbo_stream.remove "infinite-scroll-loader" %>
+<% end %>

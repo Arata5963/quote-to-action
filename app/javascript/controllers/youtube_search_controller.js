@@ -1,8 +1,10 @@
 // app/javascript/controllers/youtube_search_controller.js
 import { Controller } from "@hotwired/stimulus"
 
+// 統合YouTube検索コントローラー
+// URL貼り付けとタイトル検索を1つのフィールドで処理
 export default class extends Controller {
-  static targets = ["input", "results", "urlField", "searchPanel", "urlPanel", "urlTab", "searchTab", "preview", "thumbnail", "title", "channel"]
+  static targets = ["input", "results", "urlField", "preview", "thumbnail", "title", "channel"]
   static values = {
     url: String,
     minLength: { type: Number, default: 2 }
@@ -10,61 +12,73 @@ export default class extends Controller {
 
   connect() {
     this.timeout = null
+    this.selectedVideoUrl = null
+
     // 既存のURLがあればプレビューを表示
-    if (this.hasUrlFieldTarget && this.urlFieldTarget.value) {
-      this.fetchVideoInfo()
-    }
-  }
-
-  toggleMode(event) {
-    const mode = event.currentTarget.dataset.mode
-    if (mode === "search") {
-      this.searchPanelTarget.classList.remove("hidden")
-      this.urlPanelTarget.classList.add("hidden")
-      // タブのスタイル更新
-      if (this.hasSearchTabTarget && this.hasUrlTabTarget) {
-        this.searchTabTarget.classList.add("active")
-        this.urlTabTarget.classList.remove("active")
-      }
-    } else {
-      this.searchPanelTarget.classList.add("hidden")
-      this.urlPanelTarget.classList.remove("hidden")
-      // タブのスタイル更新
-      if (this.hasSearchTabTarget && this.hasUrlTabTarget) {
-        this.urlTabTarget.classList.add("active")
-        this.searchTabTarget.classList.remove("active")
+    const initialUrl = (this.hasUrlFieldTarget && this.urlFieldTarget.value) ||
+                       (this.hasInputTarget && this.inputTarget.value)
+    if (initialUrl && this.extractVideoId(initialUrl)) {
+      this.showPreviewForUrl(initialUrl)
+      if (this.hasUrlFieldTarget) {
+        this.urlFieldTarget.value = initialUrl
       }
     }
   }
 
-  // URL入力時に動画情報を取得
-  async fetchVideoInfo() {
-    if (!this.hasUrlFieldTarget) return
+  // 統合入力ハンドラー - URLか検索クエリかを自動判定
+  handleInput() {
+    clearTimeout(this.timeout)
+    const value = this.inputTarget.value.trim()
 
-    const url = this.urlFieldTarget.value.trim()
-    if (!url) {
+    if (!value) {
+      this.hideResults()
       this.hidePreview()
+      this.clearUrlField()
       return
     }
 
-    // YouTube URLからビデオIDを抽出
+    // YouTube URLかどうかを判定
+    const videoId = this.extractVideoId(value)
+
+    if (videoId) {
+      // URL入力の場合 → プレビュー表示
+      this.hideResults()
+      this.showPreviewForUrl(value)
+      this.setUrlField(value)
+    } else if (value.length >= this.minLengthValue) {
+      // 検索クエリの場合 → 検索実行（遅延）
+      this.hidePreview()
+      this.clearUrlField()
+      this.timeout = setTimeout(() => {
+        this.fetchResults(value)
+      }, 300)
+    } else {
+      this.hideResults()
+    }
+  }
+
+  // URL入力時にプレビュー表示
+  showPreviewForUrl(url) {
     const videoId = this.extractVideoId(url)
     if (!videoId) {
       this.hidePreview()
       return
     }
 
-    // サムネイルプレビューを表示（API呼び出し前に）
+    // サムネイルプレビューを表示
     if (this.hasPreviewTarget && this.hasThumbnailTarget) {
       this.thumbnailTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
       this.previewTarget.classList.remove("hidden")
 
-      // タイトルとチャンネル名はまだ取得中
+      // タイトルとチャンネル名は読み込み中
       if (this.hasTitleTarget) this.titleTarget.textContent = "読み込み中..."
       if (this.hasChannelTarget) this.channelTarget.textContent = ""
+
+      this.selectedVideoUrl = url
     }
   }
 
+  // URLからビデオIDを抽出
   extractVideoId(url) {
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
@@ -78,26 +92,7 @@ export default class extends Controller {
     return null
   }
 
-  hidePreview() {
-    if (this.hasPreviewTarget) {
-      this.previewTarget.classList.add("hidden")
-    }
-  }
-
-  search() {
-    clearTimeout(this.timeout)
-    const query = this.inputTarget.value.trim()
-
-    if (query.length < this.minLengthValue) {
-      this.hideResults()
-      return
-    }
-
-    this.timeout = setTimeout(() => {
-      this.fetchResults(query)
-    }, 300)
-  }
-
+  // 検索結果を取得
   async fetchResults(query) {
     try {
       const response = await fetch(`${this.urlValue}?q=${encodeURIComponent(query)}`, {
@@ -115,6 +110,7 @@ export default class extends Controller {
     }
   }
 
+  // 検索結果を描画
   renderResults(videos) {
     if (videos.length === 0) {
       this.resultsTarget.innerHTML = '<p class="text-center text-gray-500 py-4">動画が見つかりません</p>'
@@ -128,7 +124,8 @@ export default class extends Controller {
               data-action="click->youtube-search#selectVideo"
               data-url="${video.youtube_url}"
               data-title="${this.escapeHtml(video.title)}"
-              data-channel="${this.escapeHtml(video.channel_name)}">
+              data-channel="${this.escapeHtml(video.channel_name)}"
+              data-thumbnail="${video.thumbnail_url}">
         <img src="${video.thumbnail_url}" alt="" class="w-24 h-14 object-cover rounded flex-shrink-0">
         <div class="flex-1 min-w-0">
           <p class="text-sm font-medium text-gray-900 line-clamp-2">${this.escapeHtml(video.title)}</p>
@@ -141,25 +138,18 @@ export default class extends Controller {
     this.showResults()
   }
 
+  // 動画を選択
   selectVideo(event) {
     const button = event.currentTarget
     const url = button.dataset.url
     const title = button.dataset.title
     const channel = button.dataset.channel
-    const thumbnail = button.querySelector("img")?.src
+    const thumbnail = button.dataset.thumbnail
 
-    // URL入力フィールドに設定
-    this.urlFieldTarget.value = url
-
-    // URL入力モードに切り替え
-    this.searchPanelTarget.classList.add("hidden")
-    this.urlPanelTarget.classList.remove("hidden")
-
-    // タブのスタイル更新
-    if (this.hasSearchTabTarget && this.hasUrlTabTarget) {
-      this.urlTabTarget.classList.add("active")
-      this.searchTabTarget.classList.remove("active")
-    }
+    // 入力フィールドを更新
+    this.inputTarget.value = url
+    this.setUrlField(url)
+    this.selectedVideoUrl = url
 
     // プレビューを更新
     if (this.hasPreviewTarget) {
@@ -175,23 +165,58 @@ export default class extends Controller {
       this.previewTarget.classList.remove("hidden")
     }
 
-    // 検索結果をクリア
-    this.inputTarget.value = ""
+    // 検索結果を非表示
     this.hideResults()
-
-    // URLフィールドのinputイベントを発火（YouTube情報取得のため）
-    this.urlFieldTarget.dispatchEvent(new Event("input", { bubbles: true }))
   }
 
+  // 選択をクリア
+  clearSelection() {
+    this.inputTarget.value = ""
+    this.clearUrlField()
+    this.hidePreview()
+    this.hideResults()
+    this.selectedVideoUrl = null
+    this.inputTarget.focus()
+  }
+
+  // URLフィールドを設定
+  setUrlField(url) {
+    if (this.hasUrlFieldTarget) {
+      this.urlFieldTarget.value = url
+    }
+  }
+
+  // URLフィールドをクリア
+  clearUrlField() {
+    if (this.hasUrlFieldTarget) {
+      this.urlFieldTarget.value = ""
+    }
+  }
+
+  // プレビューを非表示
+  hidePreview() {
+    if (this.hasPreviewTarget) {
+      this.previewTarget.classList.add("hidden")
+    }
+    this.selectedVideoUrl = null
+  }
+
+  // 検索結果を非表示
   hideResults() {
-    this.resultsTarget.classList.add("hidden")
-    this.resultsTarget.innerHTML = ""
+    if (this.hasResultsTarget) {
+      this.resultsTarget.classList.add("hidden")
+      this.resultsTarget.innerHTML = ""
+    }
   }
 
+  // 検索結果を表示
   showResults() {
-    this.resultsTarget.classList.remove("hidden")
+    if (this.hasResultsTarget) {
+      this.resultsTarget.classList.remove("hidden")
+    }
   }
 
+  // HTMLエスケープ
   escapeHtml(text) {
     const div = document.createElement("div")
     div.textContent = text
@@ -204,4 +229,9 @@ export default class extends Controller {
       this.hideResults()
     }
   }
+
+  // 旧メソッド（互換性のため）
+  toggleMode() {}
+  search() { this.handleInput() }
+  fetchVideoInfo() { this.handleInput() }
 }

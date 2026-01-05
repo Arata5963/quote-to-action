@@ -20,8 +20,13 @@ RSpec.describe "Factory の動作確認", type: :model do
     it "基本的な Post を作成できる" do
       post = create(:post)
       expect(post).to be_persisted
-      expect(post.user).to be_present
       expect(post.action_plan).to be_present
+    end
+
+    it "ユーザー付きで作成できる" do
+      post = create(:post, :with_user)
+      expect(post).to be_persisted
+      expect(post.user).to be_present
     end
   end
 

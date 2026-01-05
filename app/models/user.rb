@@ -11,6 +11,9 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_many :cheers, dependent: :destroy
   has_many :favorite_videos, -> { order(:position) }, dependent: :destroy
+  has_many :quiz_answers, dependent: :destroy
+  has_many :comment_bookmarks, dependent: :destroy
+  has_many :bookmarked_comments, through: :comment_bookmarks, source: :youtube_comment
 
   mount_uploader :avatar, ImageUploader
 

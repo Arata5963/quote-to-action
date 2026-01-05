@@ -1,24 +1,11 @@
 <%# app/views/achievements/_button_floating.html.erb %>
-<%# フローティングアクションバー用達成ボタン（note.com風） %>
-
-<% if post.achieved? %>
-  <%# 達成済み %>
-  <div class="flex items-center gap-1.5 text-green-500" title="達成済み">
+<%# NOTE: Achievements are now managed at PostEntry level via PostEntriesController#achieve %>
+<% achieved_count = post.post_entries.where.not(achieved_at: nil).count %>
+<% if achieved_count > 0 %>
+  <div class="flex items-center gap-1.5 text-green-500" title="<%= achieved_count %> achieved">
     <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
     </svg>
-    <span class="text-sm font-medium">達成</span>
+    <span class="text-sm font-medium"><%= achieved_count %></span>
   </div>
-<% else %>
-  <%# 未達成 %>
-  <%= form_with url: post_achievements_path(post), method: :post, class: "inline" do %>
-    <button type="submit"
-            class="flex items-center gap-1.5 text-gray-400 hover:text-green-500 transition-colors cursor-pointer"
-            title="達成を記録">
-      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
-      <span class="text-sm font-medium">達成</span>
-    </button>
-  <% end %>
 <% end %>

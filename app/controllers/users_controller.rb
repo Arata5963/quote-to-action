@@ -29,9 +29,11 @@ class UsersController < ApplicationController
       @total_achievements = @user.achievements.count
       @current_month_achievements = Achievement.current_month_count(@user.id)
 
-      # 他のユーザーの投稿一覧（達成済み・未達成）
-      @achieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where.not(achieved_at: nil).recent
-      @unachieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where(achieved_at: nil).recent
+      # 他のユーザーの投稿一覧（そのユーザーがエントリーを持つPost）
+      user_post_ids = PostEntry.where(user: @user).select(:post_id).distinct
+      @user_posts = Post.where(id: user_post_ids)
+                        .includes(:post_entries, :cheers, :comments)
+                        .recent
 
       # すきな動画
       @favorite_videos = @user.favorite_videos
@@ -57,16 +59,17 @@ class UsersController < ApplicationController
       @total_achievements = @user.achievements.count
       @current_month_achievements = Achievement.current_month_count(@user.id)
 
-      # ユーザーの投稿一覧（達成済み・未達成）
-      @achieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where.not(achieved_at: nil).recent
-      @unachieved_posts = @user.posts.includes(:user, :post_entries, :cheers, :comments).where(achieved_at: nil).recent
+      # ユーザーの投稿一覧（自分がエントリーを持つPost）
+      user_post_ids = PostEntry.where(user: @user).select(:post_id).distinct
+      @user_posts = Post.where(id: user_post_ids)
+                        .includes(:post_entries, :cheers, :comments)
+                        .recent
 
       # すきな動画
       @favorite_videos = @user.favorite_videos
 
       # ===== タスクタブ用データ（PostEntry単位） =====
-      action_entries = PostEntry.joins(:post)
-                                .where(posts: { user_id: @user.id })
+      action_entries = PostEntry.where(user: @user)
                                 .where(entry_type: :action)
                                 .where.not(deadline: nil)
                                 .includes(:post)
@@ -92,22 +95,29 @@ class UsersController < ApplicationController
                                        .limit(20)
 
       # エントリータイプ別統計
+      user_entries = PostEntry.where(user: @user)
       @entry_stats = {
-        memo: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :key_point }).distinct.count,
-        quote: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :quote }).distinct.count,
-        action: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :action }).distinct.count,
-        blog: @user.posts.joins(:post_entries).where(post_entries: { entry_type: :blog }).distinct.count
+        memo: user_entries.where(entry_type: :key_point).count,
+        quote: user_entries.where(entry_type: :quote).count,
+        action: user_entries.where(entry_type: :action).count,
+        blog: user_entries.where(entry_type: :blog).count
       }
       @total_entries = @entry_stats.values.sum
 
       # 過去30日間の活動データ（草用）
-      @activity_data = @user.posts.joins(:post_entries)
-                           .where("post_entries.created_at >= ?", 30.days.ago)
-                           .group("DATE(post_entries.created_at)")
-                           .count
+      @activity_data = PostEntry.where(user: @user)
+                                .where("created_at >= ?", 30.days.ago)
+                                .group("DATE(created_at)")
+                                .count
 
       # 連続記録
       @streak = calculate_streak(@user)
+
+      # ブックマークしたコメント（ブックマーク日順）
+      @bookmarked_comments = @user.bookmarked_comments
+                                  .includes(:post)
+                                  .joins(:comment_bookmarks)
+                                  .merge(CommentBookmark.recent)
     end
   end
 
@@ -176,11 +186,11 @@ class UsersController < ApplicationController
 
   def calculate_streak(user)
     # 過去の活動日を取得（エントリー作成日ベース）
-    activity_dates = user.posts.joins(:post_entries)
-                         .select("DATE(post_entries.created_at) as activity_date")
-                         .distinct
-                         .order(Arel.sql("DATE(post_entries.created_at) DESC"))
-                         .pluck(Arel.sql("DATE(post_entries.created_at)"))
+    activity_dates = PostEntry.where(user: user)
+                              .select("DATE(created_at) as activity_date")
+                              .distinct
+                              .order(Arel.sql("DATE(created_at) DESC"))
+                              .pluck(Arel.sql("DATE(created_at)"))
 
     return 0 if activity_dates.empty?
 
