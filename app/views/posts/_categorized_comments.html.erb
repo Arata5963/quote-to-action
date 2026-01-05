@@ -54,8 +54,16 @@
               <% end %>
             </div>
 
-            <%# コメント本文 %>
-            <p class="text-sm text-gray-700 whitespace-pre-line mb-3 line-clamp-4"><%= comment.content %></p>
+            <%# コメント本文（展開可能） %>
+            <div data-controller="expandable-text" data-expandable-text-max-lines-value="4" class="mb-3">
+              <p data-expandable-text-target="content"
+                 class="text-sm text-gray-700 whitespace-pre-line line-clamp-4"><%= comment.content %></p>
+              <button type="button"
+                      data-expandable-text-target="button"
+                      data-action="click->expandable-text#toggle"
+                      class="text-xs text-blue-600 hover:text-blue-800 mt-1 cursor-pointer"
+                      style="display: none;">続きを読む ▼</button>
+            </div>
 
             <%# ブックマークボタン %>
             <div class="flex items-center">

@@ -1,5 +1,6 @@
 // app/javascript/controllers/index_search_controller.js
 import { Controller } from "@hotwired/stimulus"
+import { Turbo } from "@hotwired/turbo-rails"
 
 // 投稿一覧用の統合検索コントローラー
 // URL貼り付けまたはタイトル検索 → 動画選択で投稿を自動作成して遷移
@@ -207,7 +208,8 @@ export default class extends Controller {
       const data = await response.json()
 
       if (data.success && data.url) {
-        window.location.href = data.url
+        // Turbo Driveを使用してナビゲーション
+        Turbo.visit(data.url)
       } else {
         this.resultsTarget.innerHTML = `
           <div class="p-4 text-center text-red-500 text-sm">
