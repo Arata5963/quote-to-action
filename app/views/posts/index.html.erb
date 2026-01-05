@@ -2,30 +2,28 @@
 <%# シンプルな時系列表示 + もっと見るボタン %>
 
 <div class="min-h-screen bg-white">
-  <%# ===== 検索バー ===== %>
+  <%# ===== 統合検索バー ===== %>
   <div class="border-b border-gray-100">
-    <div class="flex justify-center px-4 py-2">
-      <%= search_form_for @q, url: posts_path, method: :get,
-            html: { id: 'search_form', style: 'width: 380px;' } do |f| %>
-        <div class="relative"
-             data-controller="autocomplete"
-             data-autocomplete-url-value="<%= autocomplete_posts_path %>"
-             data-autocomplete-min-length-value="2"
-             role="combobox">
-          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-          </div>
-          <%= f.search_field :action_plan_or_youtube_title_or_youtube_channel_name_cont,
-                data: { autocomplete_target: "input" },
-                placeholder: "キーワードやクリエイターで検索",
-                class: "w-full rounded-full border border-gray-200 bg-gray-50 pl-9 pr-4 py-1.5 text-xs text-gray-900 placeholder:text-gray-400 focus:border-gray-300 focus:bg-white focus:outline-none transition-colors" %>
-          <ul class="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto"
-              data-autocomplete-target="results"
-              hidden></ul>
+    <div class="max-w-xl mx-auto px-4 py-3">
+      <div class="relative"
+           data-controller="index-search"
+           data-index-search-youtube-url-value="<%= youtube_search_posts_path %>"
+           data-index-search-find-or-create-url-value="<%= find_or_create_posts_path %>">
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+          <svg class="h-5 w-5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
         </div>
-      <% end %>
+        <input type="text"
+               data-index-search-target="input"
+               data-action="input->index-search#handleInput keydown->index-search#handleKeydown"
+               placeholder="URLを貼り付け、またはタイトルで検索..."
+               class="w-full rounded-lg border border-gray-200 bg-white pl-11 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-orange-300 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-colors">
+        <%# 検索結果ドロップダウン %>
+        <div data-index-search-target="results"
+             class="hidden absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-96 overflow-y-auto">
+        </div>
+      </div>
     </div>
   </div>
 

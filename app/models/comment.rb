@@ -11,9 +11,13 @@ class Comment < ApplicationRecord
   # ====================
   # 通知設定
   # ====================
-  # コメント時に投稿者に通知を送る（自分の投稿には通知しない）
+  # コメント時に投稿者に通知を送る（自分の投稿には通知しない、投稿にuserがいない場合も通知しない）
   acts_as_notifiable :users,
-    targets: ->(comment, _key) { [ comment.post.user ] unless comment.user == comment.post.user },
+    targets: ->(comment, _key) {
+      return [] if comment.post.user.nil?
+      return [] if comment.user == comment.post.user
+      [ comment.post.user ]
+    },
     group: :post,
     notifier: :user,
     email_allowed: false,

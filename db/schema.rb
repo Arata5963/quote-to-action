@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_03_014433) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_05_063221) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -33,6 +33,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_03_014433) do
     t.index ["post_id"], name: "index_cheers_on_post_id"
     t.index ["user_id", "post_id"], name: "index_cheers_on_user_id_and_post_id", unique: true
     t.index ["user_id"], name: "index_cheers_on_user_id"
+  end
+
+  create_table "comment_bookmarks", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "youtube_comment_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "youtube_comment_id"], name: "index_comment_bookmarks_on_user_id_and_youtube_comment_id", unique: true
+    t.index ["user_id"], name: "index_comment_bookmarks_on_user_id"
+    t.index ["youtube_comment_id"], name: "index_comment_bookmarks_on_youtube_comment_id"
   end
 
   create_table "comments", force: :cascade do |t|
@@ -105,26 +115,60 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_03_014433) do
     t.integer "recommendation_level"
     t.text "target_audience"
     t.text "recommendation_point"
+    t.bigint "user_id"
+    t.boolean "anonymous", default: false, null: false
     t.index ["post_id", "created_at"], name: "index_post_entries_on_post_id_and_created_at"
     t.index ["post_id"], name: "index_post_entries_on_post_id"
+    t.index ["user_id", "post_id", "entry_type"], name: "idx_unique_user_post_entry_type", unique: true
+    t.index ["user_id"], name: "index_post_entries_on_user_id"
     t.check_constraint "satisfaction_rating IS NULL OR satisfaction_rating >= 1 AND satisfaction_rating <= 5", name: "satisfaction_rating_range"
   end
 
   create_table "posts", force: :cascade do |t|
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.text "action_plan"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "youtube_url", null: false
-    t.datetime "achieved_at"
     t.string "youtube_title"
     t.string "youtube_channel_name"
-    t.date "deadline"
     t.string "youtube_video_id"
     t.string "youtube_channel_thumbnail_url"
-    t.index ["deadline"], name: "index_posts_on_deadline"
-    t.index ["user_id", "youtube_video_id"], name: "index_posts_on_user_id_and_youtube_video_id", unique: true
+    t.text "ai_summary"
     t.index ["user_id"], name: "index_posts_on_user_id"
+    t.index ["youtube_video_id"], name: "index_posts_on_youtube_video_id", unique: true
+  end
+
+  create_table "quiz_answers", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "quiz_id", null: false
+    t.integer "score"
+    t.integer "total_questions"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["quiz_id"], name: "index_quiz_answers_on_quiz_id"
+    t.index ["user_id"], name: "index_quiz_answers_on_user_id"
+  end
+
+  create_table "quiz_questions", force: :cascade do |t|
+    t.bigint "quiz_id", null: false
+    t.text "question_text"
+    t.string "option_1"
+    t.string "option_2"
+    t.string "option_3"
+    t.string "option_4"
+    t.integer "correct_option"
+    t.integer "position"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["quiz_id"], name: "index_quiz_questions_on_quiz_id"
+  end
+
+  create_table "quizzes", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id"], name: "index_quizzes_on_post_id"
   end
 
   create_table "recommendation_clicks", force: :cascade do |t|
@@ -173,17 +217,43 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_03_014433) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "youtube_comments", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.string "youtube_comment_id", null: false
+    t.string "author_name"
+    t.string "author_image_url"
+    t.string "author_channel_url"
+    t.text "content"
+    t.integer "like_count", default: 0
+    t.string "category"
+    t.datetime "youtube_published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_youtube_comments_on_category"
+    t.index ["post_id", "category"], name: "index_youtube_comments_on_post_id_and_category"
+    t.index ["post_id"], name: "index_youtube_comments_on_post_id"
+    t.index ["youtube_comment_id"], name: "index_youtube_comments_on_youtube_comment_id", unique: true
+  end
+
   add_foreign_key "achievements", "posts"
   add_foreign_key "achievements", "users"
   add_foreign_key "cheers", "posts"
   add_foreign_key "cheers", "users"
+  add_foreign_key "comment_bookmarks", "users"
+  add_foreign_key "comment_bookmarks", "youtube_comments"
   add_foreign_key "comments", "posts"
   add_foreign_key "comments", "users"
   add_foreign_key "favorite_videos", "users"
   add_foreign_key "post_comparisons", "posts", column: "source_post_id"
   add_foreign_key "post_comparisons", "posts", column: "target_post_id"
   add_foreign_key "post_entries", "posts"
+  add_foreign_key "post_entries", "users"
   add_foreign_key "posts", "users"
+  add_foreign_key "quiz_answers", "quizzes"
+  add_foreign_key "quiz_answers", "users"
+  add_foreign_key "quiz_questions", "quizzes"
+  add_foreign_key "quizzes", "posts"
   add_foreign_key "recommendation_clicks", "posts"
   add_foreign_key "recommendation_clicks", "users"
+  add_foreign_key "youtube_comments", "posts"
 end

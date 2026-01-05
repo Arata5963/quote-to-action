@@ -40,9 +40,17 @@ Rails.application.routes.draw do
       get :autocomplete
       get :youtube_search
       get :search_for_comparison
+      post :generate_entry
+      post :find_or_create
     end
     member do
       post :track_recommendation_click
+      post :summarize
+      get :quotes_showcase
+      post :suggest_quotes
+      post :add_quotes
+      get :youtube_comments
+      post :discover_comments
     end
     resources :achievements, only: [ :create, :destroy ]
     resources :comments, only: [ :create, :destroy ]
@@ -56,6 +64,15 @@ Rails.application.routes.draw do
       get :new_blog, on: :collection
     end
     resources :post_comparisons, only: [ :create, :destroy ]
+    resource :quiz, only: [ :show ] do
+      post :generate
+      post :submit
+    end
+  end
+
+  # YouTubeコメントブックマーク
+  resources :youtube_comments, only: [] do
+    resource :bookmark, controller: :comment_bookmarks, only: [:create, :destroy]
   end
 
   get :terms, to: "pages#terms"

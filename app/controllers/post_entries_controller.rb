@@ -5,7 +5,7 @@ class PostEntriesController < ApplicationController
   before_action :authenticate_user!, except: [:show]
   before_action :set_post
   before_action :set_entry, only: [:show, :edit, :update, :destroy, :achieve, :publish, :unpublish]
-  before_action :check_owner, except: [:show]
+  before_action :check_entry_owner, only: [:edit, :update, :destroy, :achieve, :publish, :unpublish]
   before_action :check_blog_access, only: [:show]
 
   # ブログ詳細表示
@@ -28,6 +28,8 @@ class PostEntriesController < ApplicationController
 
   def create
     @entry = @post.post_entries.build(entry_params)
+    @entry.user = current_user
+    @entry.anonymous = params[:post_entry][:anonymous] == "1"
 
     # ブログの場合は公開/下書きを判定
     if @entry.blog?
@@ -37,7 +39,7 @@ class PostEntriesController < ApplicationController
     if @entry.save
       # actionタイプの場合はPostにも反映（互換性のため）
       if @entry.action?
-        @post.update(action_plan: @entry.content, deadline: @entry.deadline)
+        @post.update(action_plan: @entry.content)
       end
 
       if @entry.blog?
@@ -109,20 +111,31 @@ class PostEntriesController < ApplicationController
 
   def bulk_create
     entries_params = params[:entries] || {}
+    anonymous = params[:anonymous] == "1"
     created_count = 0
 
     ActiveRecord::Base.transaction do
       # 要約
       (entries_params[:keyPoint] || {}).each_value do |entry_data|
         next if entry_data[:content].blank?
-        @post.post_entries.create!(entry_type: :key_point, content: entry_data[:content])
+        @post.post_entries.create!(
+          user: current_user,
+          anonymous: anonymous,
+          entry_type: :key_point,
+          content: entry_data[:content]
+        )
         created_count += 1
       end
 
       # 引用
       (entries_params[:quote] || {}).each_value do |entry_data|
         next if entry_data[:content].blank?
-        @post.post_entries.create!(entry_type: :quote, content: entry_data[:content])
+        @post.post_entries.create!(
+          user: current_user,
+          anonymous: anonymous,
+          entry_type: :quote,
+          content: entry_data[:content]
+        )
         created_count += 1
       end
 
@@ -130,13 +143,15 @@ class PostEntriesController < ApplicationController
       (entries_params[:action] || {}).each_value do |entry_data|
         next if entry_data[:content].blank?
         entry = @post.post_entries.create!(
+          user: current_user,
+          anonymous: anonymous,
           entry_type: :action,
           content: entry_data[:content],
           deadline: entry_data[:deadline].presence
         )
         # 最初のactionをPostにも反映（互換性のため）
         if @post.action_plan.blank?
-          @post.update(action_plan: entry.content, deadline: entry.deadline)
+          @post.update(action_plan: entry.content)
         end
         created_count += 1
       end
@@ -181,15 +196,15 @@ class PostEntriesController < ApplicationController
     @entry = @post.post_entries.find(params[:id])
   end
 
-  def check_owner
-    unless @post.user == current_user
-      redirect_to @post, alert: "他のユーザーの投稿には追記できません"
+  def check_entry_owner
+    unless @entry.user == current_user
+      redirect_to @post, alert: "他のユーザーのエントリーは編集・削除できません"
     end
   end
 
   # ブログ閲覧権限チェック（本人は下書きも見れる、他人は公開済みのみ）
   def check_blog_access
-    return if @post.user == current_user
+    return if @entry.user == current_user
     return if @entry.published?
 
     redirect_to @post, alert: "このブログは公開されていません"

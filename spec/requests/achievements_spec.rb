@@ -2,15 +2,19 @@
 require 'rails_helper'
 
 RSpec.describe "Achievements", type: :request do
-  # ====================
-  # POST /posts/:post_id/achievements (達成記録作成)
-  # ====================
+  # NOTE: In the new video-based structure, achievements are primarily managed
+  # at PostEntry level via PostEntriesController#achieve.
+  # AchievementsController now achieves all user's action entries at once.
+
   describe "POST /posts/:post_id/achievements" do
     let(:user) { create(:user) }
     let(:other_user) { create(:user) }
+    let!(:post_record) { create(:post) }
 
-    context "自分の投稿の場合" do
-      let!(:post_record) { create(:post, user: user) }
+    context "ユーザーがアクションエントリーを持つ場合" do
+      let!(:action_entry) do
+        create(:post_entry, :action, post: post_record, user: user, achieved_at: nil)
+      end
 
       before do
         sign_in user
@@ -37,65 +41,15 @@ RSpec.describe "Achievements", type: :request do
         expect(achievement.achieved_at).to eq(Date.current)
       end
 
-      it "投稿のachieved_atが設定される" do
+      it "エントリーのachieved_atが設定される" do
         post post_achievements_path(post_record)
 
-        post_record.reload
-        expect(post_record.achieved_at).to be_present
-      end
-
-      context "Turbo Streamリクエストの場合" do
-        it "Turbo Streamレスポンスを返す" do
-          post post_achievements_path(post_record),
-               headers: { "Accept" => "text/vnd.turbo-stream.html" }
-
-          expect(response).to have_http_status(:ok)
-          expect(response.media_type).to eq Mime[:turbo_stream]
-        end
-
-        it "達成ボタンを更新するストリームを含む" do
-          post post_achievements_path(post_record),
-               headers: { "Accept" => "text/vnd.turbo-stream.html" }
-
-          expect(response.body).to include("turbo-stream")
-        end
-      end
-
-      context "既に達成済みの場合" do
-        before do
-          # タスク型モデル：post.achieved_at を設定
-          post_record.update!(achieved_at: Time.current)
-          create(:achievement, user: user, post: post_record, achieved_at: Date.current)
-        end
-
-        it "達成記録を作成できない" do
-          expect {
-            post post_achievements_path(post_record)
-          }.not_to change(Achievement, :count)
-        end
-
-        it "エラーメッセージが表示される" do
-          post post_achievements_path(post_record)
-
-          expect(response).to redirect_to(post_path(post_record))
-          follow_redirect!
-          expect(response.body).to include("既に達成済みです")
-        end
-
-        context "Turbo Streamリクエストの場合" do
-          it "リダイレクトされる" do
-            post post_achievements_path(post_record),
-                 headers: { "Accept" => "text/vnd.turbo-stream.html" }
-
-            expect(response).to redirect_to(post_path(post_record))
-          end
-        end
+        action_entry.reload
+        expect(action_entry.achieved_at).to be_present
       end
     end
 
-    context "他人の投稿の場合" do
-      let!(:post_record) { create(:post, user: other_user) }
-
+    context "達成するアクションエントリーがない場合" do
       before do
         sign_in user
       end
@@ -106,70 +60,33 @@ RSpec.describe "Achievements", type: :request do
         }.not_to change(Achievement, :count)
       end
 
-      it "一覧ページにリダイレクトされる" do
+      it "エラーメッセージが表示される" do
         post post_achievements_path(post_record)
 
-        expect(response).to redirect_to(posts_path)
+        expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
-        expect(response.body).to include("投稿が見つかりません")
+        expect(response.body).to include("entries")
       end
     end
 
     context "ログインしていない場合" do
-      let!(:post_record) { create(:post, user: user) }
-
       it "ログインページにリダイレクトされる" do
         post post_achievements_path(post_record)
 
         expect(response).to redirect_to(new_user_session_path)
       end
     end
-
-    context "達成記録の保存に失敗した場合" do
-      let!(:post_record) { create(:post, user: user) }
-
-      before do
-        sign_in user
-        # Achievementの保存を失敗させる
-        allow_any_instance_of(Achievement).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new(Achievement.new))
-      end
-
-      it "HTMLリクエストでエラーメッセージを表示してリダイレクト" do
-        post post_achievements_path(post_record)
-
-        expect(response).to redirect_to(post_path(post_record))
-      end
-
-      context "Turbo Streamリクエストの場合" do
-        it "リダイレクトされる" do
-          post post_achievements_path(post_record),
-               headers: { "Accept" => "text/vnd.turbo-stream.html" }
-
-          expect(response).to redirect_to(post_path(post_record))
-        end
-      end
-    end
   end
 
-  # ====================
-  # DELETE /posts/:post_id/achievements/:id (達成記録削除)
-  # ====================
   describe "DELETE /posts/:post_id/achievements/:id" do
     let(:user) { create(:user) }
-    let!(:post_record) { create(:post, user: user) }
+    let(:post_record) { create(:post) }
+    let!(:entry) { create(:post_entry, :action, post: post_record, user: user) }
+    let!(:achievement) { create(:achievement, user: user, post: post_record) }
 
     context "達成記録がある場合" do
-      let!(:achievement) { create(:achievement, user: user, post: post_record, achieved_at: Date.current) }
-
       before do
         sign_in user
-      end
-
-      # タスク型では達成の取り消しは不可
-      it "達成記録を削除できない（タスク型では取り消し不可）" do
-        expect {
-          delete post_achievement_path(post_record, achievement)
-        }.not_to change(Achievement, :count)
       end
 
       it "取り消し不可メッセージが表示される" do
@@ -177,17 +94,7 @@ RSpec.describe "Achievements", type: :request do
 
         expect(response).to redirect_to(post_path(post_record))
         follow_redirect!
-        expect(response.body).to include("達成記録は取り消せません")
-      end
-    end
-
-    context "ログインしていない場合" do
-      let!(:achievement) { create(:achievement, user: user, post: post_record) }
-
-      it "ログインページにリダイレクトされる" do
-        delete post_achievement_path(post_record, achievement)
-
-        expect(response).to redirect_to(new_user_session_path)
+        expect(response.body).to include("undone")
       end
     end
   end

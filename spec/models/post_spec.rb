@@ -2,7 +2,6 @@ require 'rails_helper'
 
 RSpec.describe Post, type: :model do
   describe "validations" do
-    # action_planはPostEntry経由で管理するため任意になった
     it { should validate_presence_of(:youtube_url) }
     it { should validate_length_of(:action_plan).is_at_most(100) }
 
@@ -12,13 +11,15 @@ RSpec.describe Post, type: :model do
     it { should_not allow_value('https://example.com').for(:youtube_url) }
     it { should_not allow_value('invalid-url').for(:youtube_url) }
   end
+
   describe "associations" do
-    it { should belong_to(:user) }
+    it { should belong_to(:user).optional }
     it { should have_many(:achievements) }
     it { should have_many(:comments) }
     it { should have_many(:cheers) }
     it { should have_many(:post_entries) }
   end
+
   describe "#cheered_by?" do
     let(:user) { create(:user) }
     let(:post) { create(:post) }
@@ -37,6 +38,7 @@ RSpec.describe Post, type: :model do
       end
     end
   end
+
   describe ".recent" do
     it "新しい順に並ぶ" do
       old_post = create(:post, created_at: 3.days.ago)
@@ -44,80 +46,6 @@ RSpec.describe Post, type: :model do
       new_post = create(:post, created_at: Time.current)
 
       expect(Post.recent).to eq([ new_post, middle_post, old_post ])
-    end
-  end
-
-  describe "期日スコープ" do
-    let!(:today_post) { create(:post, deadline: Date.current) }
-    let!(:tomorrow_post) { create(:post, deadline: Date.current + 1.day) }
-    let!(:three_days_post) { create(:post, deadline: Date.current + 3.days) }
-    let!(:four_days_post) { create(:post, deadline: Date.current + 4.days) }
-    let!(:passed_post) { create(:post, deadline: Date.current - 1.day) }
-    let!(:no_deadline_post) { create(:post, deadline: nil) }
-
-    describe ".deadline_near" do
-      it "3日以内の投稿を期日順で返す" do
-        expect(Post.deadline_near).to eq([ today_post, tomorrow_post, three_days_post ])
-      end
-
-      it "期日超過の投稿を含まない" do
-        expect(Post.deadline_near).not_to include(passed_post)
-      end
-
-      it "4日以上先の投稿を含まない" do
-        expect(Post.deadline_near).not_to include(four_days_post)
-      end
-    end
-
-    describe ".deadline_passed" do
-      it "期日超過の投稿を返す" do
-        expect(Post.deadline_passed).to include(passed_post)
-      end
-
-      it "期日内の投稿を含まない" do
-        expect(Post.deadline_passed).not_to include(today_post)
-        expect(Post.deadline_passed).not_to include(tomorrow_post)
-      end
-    end
-
-    describe ".deadline_other" do
-      it "4日以上先の投稿を返す" do
-        expect(Post.deadline_other).to include(four_days_post)
-      end
-
-      it "3日以内の投稿を含まない" do
-        expect(Post.deadline_other).not_to include(today_post)
-        expect(Post.deadline_other).not_to include(three_days_post)
-      end
-    end
-
-    describe ".with_deadline" do
-      it "期日が設定されている投稿を返す" do
-        expect(Post.with_deadline).to include(today_post, passed_post, four_days_post)
-      end
-
-      it "期日が設定されていない投稿を含まない" do
-        expect(Post.with_deadline).not_to include(no_deadline_post)
-      end
-    end
-  end
-
-  describe "達成状況スコープ" do
-    let!(:achieved_post) { create(:post, :achieved) }
-    let!(:not_achieved_post) { create(:post) }
-
-    describe ".achieved" do
-      it "達成済みの投稿を返す" do
-        expect(Post.achieved).to include(achieved_post)
-        expect(Post.achieved).not_to include(not_achieved_post)
-      end
-    end
-
-    describe ".not_achieved" do
-      it "未達成の投稿を返す" do
-        expect(Post.not_achieved).to include(not_achieved_post)
-        expect(Post.not_achieved).not_to include(achieved_post)
-      end
     end
   end
 
@@ -187,144 +115,91 @@ RSpec.describe Post, type: :model do
     end
   end
 
-  describe "#achieved?" do
+  describe "#entry_users" do
     let(:post) { create(:post) }
+    let(:user1) { create(:user) }
+    let(:user2) { create(:user) }
 
-    context "achieved_atが設定されている場合" do
-      before { post.update(achieved_at: Time.current) }
-
-      it "trueを返す" do
-        expect(post.achieved?).to be true
-      end
+    before do
+      create(:post_entry, post: post, user: user1, entry_type: :action, deadline: 1.week.from_now)
+      create(:post_entry, post: post, user: user2, entry_type: :key_point)
     end
 
-    context "achieved_atが設定されていない場合" do
-      it "falseを返す" do
-        expect(post.achieved?).to be false
-      end
+    it "エントリーを持つユーザー一覧を返す" do
+      expect(post.entry_users).to include(user1, user2)
     end
   end
 
-  describe "#achieve!" do
+  describe "#entries_by_user" do
     let(:post) { create(:post) }
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user) }
 
-    context "未達成の場合" do
-      it "achieved_atを設定する" do
-        expect { post.achieve! }.to change { post.achieved_at }.from(nil)
-      end
-
-      it "達成済みになる" do
-        post.achieve!
-        expect(post.achieved?).to be true
-      end
+    before do
+      create(:post_entry, post: post, user: user, entry_type: :action, deadline: 1.week.from_now)
+      create(:post_entry, post: post, user: other_user, entry_type: :key_point)
     end
 
-    context "既に達成済みの場合" do
-      before { post.update(achieved_at: 1.day.ago) }
-
-      it "achieved_atは変更されない" do
-        expect { post.achieve! }.not_to change { post.reload.achieved_at }
-      end
+    it "指定ユーザーのエントリーのみ返す" do
+      entries = post.entries_by_user(user)
+      expect(entries.count).to eq(1)
+      expect(entries.first.user).to eq(user)
     end
   end
 
-  describe "#deadline_near?" do
-    context "期日が3日以内の場合" do
-      it "今日期日の場合trueを返す" do
-        post = build(:post, deadline: Date.current)
-        expect(post.deadline_near?).to be true
-      end
+  describe "#has_entries_by?" do
+    let(:post) { create(:post) }
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user) }
 
-      it "3日後期日の場合trueを返す" do
-        post = build(:post, deadline: Date.current + 3.days)
-        expect(post.deadline_near?).to be true
-      end
+    before do
+      create(:post_entry, post: post, user: user, entry_type: :action, deadline: 1.week.from_now)
     end
 
-    context "期日が4日以上先の場合" do
-      it "falseを返す" do
-        post = build(:post, deadline: Date.current + 4.days)
-        expect(post.deadline_near?).to be false
-      end
+    it "エントリーを持つユーザーの場合trueを返す" do
+      expect(post.has_entries_by?(user)).to be true
     end
 
-    context "期日が過ぎている場合" do
-      it "falseを返す" do
-        post = build(:post, deadline: Date.current - 1.day)
-        expect(post.deadline_near?).to be false
-      end
-    end
-
-    context "期日が設定されていない場合" do
-      it "falseを返す" do
-        post = build(:post, deadline: nil)
-        expect(post.deadline_near?).to be false
-      end
+    it "エントリーを持たないユーザーの場合falseを返す" do
+      expect(post.has_entries_by?(other_user)).to be false
     end
   end
 
-  describe "#deadline_passed?" do
-    context "期日が過ぎている場合" do
-      it "trueを返す" do
-        post = build(:post, deadline: Date.current - 1.day)
-        expect(post.deadline_passed?).to be true
+  describe ".find_or_create_by_video" do
+    let(:youtube_url) { 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+
+    before do
+      allow(YoutubeService).to receive(:fetch_video_info).and_return({
+        title: 'Test Video Title',
+        channel_name: 'Test Channel'
+      })
+    end
+
+    context "新しい動画の場合" do
+      it "新規Postを作成する" do
+        expect {
+          Post.find_or_create_by_video(youtube_url: youtube_url)
+        }.to change(Post, :count).by(1)
       end
     end
 
-    context "期日が今日の場合" do
-      it "falseを返す" do
-        post = build(:post, deadline: Date.current)
-        expect(post.deadline_passed?).to be false
-      end
-    end
+    context "既存の動画の場合" do
+      let!(:existing_post) { create(:post, youtube_url: youtube_url) }
 
-    context "期日が未来の場合" do
-      it "falseを返す" do
-        post = build(:post, deadline: Date.current + 1.day)
-        expect(post.deadline_passed?).to be false
+      it "既存のPostを返す" do
+        post = Post.find_or_create_by_video(youtube_url: youtube_url)
+        expect(post).to eq(existing_post)
       end
-    end
 
-    context "期日が設定されていない場合" do
-      it "falseを返す" do
-        post = build(:post, deadline: nil)
-        expect(post.deadline_passed?).to be false
-      end
-    end
-  end
-
-  describe "#days_until_deadline" do
-    context "期日が未来の場合" do
-      it "正の日数を返す" do
-        post = build(:post, deadline: Date.current + 5.days)
-        expect(post.days_until_deadline).to eq(5)
-      end
-    end
-
-    context "期日が今日の場合" do
-      it "0を返す" do
-        post = build(:post, deadline: Date.current)
-        expect(post.days_until_deadline).to eq(0)
-      end
-    end
-
-    context "期日が過去の場合" do
-      it "負の日数を返す" do
-        post = build(:post, deadline: Date.current - 3.days)
-        expect(post.days_until_deadline).to eq(-3)
-      end
-    end
-
-    context "期日が設定されていない場合" do
-      it "nilを返す" do
-        post = build(:post, deadline: nil)
-        expect(post.days_until_deadline).to be_nil
+      it "新規Postを作成しない" do
+        expect {
+          Post.find_or_create_by_video(youtube_url: youtube_url)
+        }.not_to change(Post, :count)
       end
     end
   end
 
   describe "YouTube情報自動取得" do
-    let(:user) { create(:user) }
     let(:youtube_url) { 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
 
     before do
@@ -336,7 +211,7 @@ RSpec.describe Post, type: :model do
 
     context "新規作成時" do
       it "YouTube情報を自動取得する" do
-        post = create(:post, user: user, youtube_url: youtube_url)
+        post = create(:post, youtube_url: youtube_url)
 
         expect(post.youtube_title).to eq('Test Video Title')
         expect(post.youtube_channel_name).to eq('Test Channel')
@@ -344,7 +219,7 @@ RSpec.describe Post, type: :model do
     end
 
     context "更新時にyoutube_urlが変更された場合" do
-      let(:post) { create(:post, user: user, youtube_url: youtube_url) }
+      let(:post) { create(:post, youtube_url: youtube_url) }
 
       it "YouTube情報を再取得する" do
         allow(YoutubeService).to receive(:fetch_video_info).and_return({
@@ -361,15 +236,13 @@ RSpec.describe Post, type: :model do
 
     context "更新時にyoutube_urlが変更されない場合" do
       it "YouTube情報を再取得しない" do
-        post = create(:post, user: user, youtube_url: youtube_url)
+        post = create(:post, youtube_url: youtube_url)
         expect(post.youtube_title).to eq('Test Video Title')
 
-        # モックをクリアして、呼ばれないことを確認
         expect(YoutubeService).not_to receive(:fetch_video_info)
 
         post.update(action_plan: '新しいアクション')
 
-        # 既存の値がそのまま保持される
         expect(post.youtube_title).to eq('Test Video Title')
       end
     end
@@ -380,7 +253,7 @@ RSpec.describe Post, type: :model do
       end
 
       it "投稿は保存される（YouTube情報はnil）" do
-        post = create(:post, user: user, youtube_url: youtube_url, youtube_title: nil, youtube_channel_name: nil)
+        post = create(:post, youtube_url: youtube_url, youtube_title: nil, youtube_channel_name: nil)
 
         expect(post).to be_persisted
         expect(post.youtube_title).to be_nil

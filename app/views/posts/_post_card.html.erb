@@ -17,23 +17,9 @@
     <%# 右側: コンテンツ（flex-colで縦配置） %>
     <div class="flex-1 min-w-0 flex flex-col">
 
-      <%# 上部: ユーザー情報 + いいね（固定位置） %>
+      <%# 上部: 参加者数 + いいね（固定位置） %>
       <div class="flex items-center justify-between gap-2">
-        <%= link_to user_profile_path(post.user), class: "flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity" do %>
-          <% if post.user.avatar.present? %>
-            <%= image_tag post.user.avatar.url,
-                  alt: display_name(post.user),
-                  class: "w-6 h-6 rounded-full object-cover flex-shrink-0" %>
-          <% else %>
-            <div class="w-6 h-6 bg-accent/10 rounded-full flex items-center justify-center flex-shrink-0">
-              <svg class="w-3.5 h-3.5 text-primary/40" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-            </div>
-          <% end %>
-          <span class="text-sm font-medium text-primary truncate"><%= display_name(post.user) %></span>
-        <% end %>
-
+        <span class="text-sm text-gray-400"><%= post.entry_users.count %> users</span>
         <%# 応援ボタン %>
         <div id="cheer_button_<%= post.id %>" class="flex-shrink-0">
           <%= render 'cheers/cheer_button_minimal', post: post %>
@@ -47,29 +33,11 @@
         </h3>
       <% end %>
 
-      <%# 下部: 達成状況・期日バッジ（mt-autoで下部固定） %>
+      <%# 下部: エントリー数バッジ（mt-autoで下部固定） %>
       <div class="flex items-center gap-2 mt-auto pt-2 flex-wrap">
-        <% if post.achieved? %>
-          <span class="text-xs bg-accent text-white px-2.5 py-1 rounded-full">
-            達成済み
-          </span>
-        <% else %>
-          <%# 期日バッジ %>
-          <% if post.deadline_passed? %>
-            <span class="text-xs bg-primary/10 text-primary/60 px-2.5 py-1 rounded-full">
-              📅 期日超過
-            </span>
-          <% elsif post.deadline_near? %>
-            <span class="text-xs bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full">
-              <% days = post.days_until_deadline %>
-              ⏰ <% if days == 0 %>今日まで<% else %>あと<%= days %>日<% end %>
-            </span>
-          <% else %>
-            <span class="text-xs border border-accent/30 text-primary/50 px-2.5 py-1 rounded-full">
-              みただけ？
-            </span>
-          <% end %>
-        <% end %>
+        <span class="text-xs border border-accent/30 text-primary/50 px-2.5 py-1 rounded-full">
+          <%= post.post_entries.count %> entries
+        </span>
       </div>
 
     </div>

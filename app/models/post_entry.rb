@@ -1,6 +1,7 @@
 # app/models/post_entry.rb
 class PostEntry < ApplicationRecord
   belongs_to :post
+  belongs_to :user
 
   enum :entry_type, {
     key_point: 0,       # 📝 メモ
@@ -30,10 +31,15 @@ class PostEntry < ApplicationRecord
   validates :title, presence: true, if: :blog?
   validates :satisfaction_rating, inclusion: { in: SATISFACTION_RATINGS }, allow_nil: true
 
+  # 種類ごとに1つまで（同一ユーザー + 同一投稿 + 同一種類）
+  validates :entry_type, uniqueness: {
+    scope: [:post_id, :user_id],
+    message: "この種類のエントリーは既に投稿済みです"
+  }, if: -> { user_id.present? }
+
   # 布教バリデーション
   validates :recommendation_level, presence: true, inclusion: { in: RECOMMENDATION_LEVELS }, if: :recommendation?
   validates :recommendation_point, presence: true, if: :recommendation?
-  validate :only_one_recommendation_per_post, if: :recommendation?
 
   # スコープ
   scope :recent, -> { order(created_at: :desc) }
@@ -97,11 +103,18 @@ class PostEntry < ApplicationRecord
     "🔥" * (recommendation_level || 0)
   end
 
-  private
+  # 匿名表示かどうか
+  def display_anonymous?
+    anonymous?
+  end
 
-  # 1投稿につき布教は1件のみ
-  def only_one_recommendation_per_post
-    existing = post.post_entries.recommendation.where.not(id: id).exists?
-    errors.add(:base, "布教は1つの投稿につき1件までです") if existing
+  # 表示用ユーザー名（匿名なら「匿名」を返す）
+  def display_user_name
+    anonymous? ? "匿名" : user&.name
+  end
+
+  # 表示用アバター（匿名ならnilを返す）
+  def display_avatar
+    anonymous? ? nil : user&.avatar
   end
 end

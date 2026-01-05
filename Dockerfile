@@ -22,8 +22,13 @@ RUN apt-get update -qq && \
     imagemagick \
     # PostgreSQL接続用ランタイムライブラリ
     libpq5 \
+    # Python（youtube_transcript_api用）
+    python3 \
+    python3-pip \
     # SSL証明書を更新
     && update-ca-certificates && \
+    # youtube_transcript_apiをインストール
+    pip3 install --break-system-packages youtube-transcript-api && \
     # キャッシュクリア（イメージサイズ削減）
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
