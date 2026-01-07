@@ -48,9 +48,13 @@ class PostsController < ApplicationController
     @post = Post.find_or_create_by_video(youtube_url: youtube_url)
 
     if @post
-      # 新規作成時はAI要約を自動生成
+      # 新規作成時はAI要約を自動生成（ジョブキュー未設定でもエラーにしない）
       if is_new_post && @post.ai_summary.blank?
-        GenerateSummaryJob.perform_later(@post.id)
+        begin
+          GenerateSummaryJob.perform_later(@post.id)
+        rescue StandardError => e
+          Rails.logger.warn("Failed to enqueue GenerateSummaryJob: #{e.message}")
+        end
       end
       render json: { success: true, post_id: @post.id, url: post_path(@post) }
     else
