@@ -209,67 +209,129 @@
 
     <%# ===== アクションプランセクション ===== %>
     <section style="border-top: 1px solid #f3f4f6; padding-top: 32px; margin-bottom: 32px;">
-      <h2 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+      <h2 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
         <span>🎯</span>
-        <span>アクションプラン</span>
+        <span>みんなのアクションプラン</span>
         <span style="font-size: 14px; font-weight: 400; color: #9ca3af;">(<%= @post.post_entries.count %>)</span>
       </h2>
 
       <%# アクションプラン投稿フォーム（ログインユーザーのみ） %>
       <% if user_signed_in? %>
         <% if @post.has_entries_by?(current_user) %>
-          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-            <p style="font-size: 14px; color: #166534; display: flex; align-items: center; gap: 8px;">
-              <span>✅</span>
-              <span>この動画にアクションプランを投稿済みです</span>
-            </p>
+          <%# 投稿済みメッセージ %>
+          <div class="flex gap-3 mb-6">
+            <div class="flex-shrink-0">
+              <% if current_user.avatar.present? %>
+                <%= image_tag current_user.avatar.url, class: "w-10 h-10 rounded-full object-cover border border-gray-100" %>
+              <% else %>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white font-medium text-sm">
+                  <%= current_user.name&.first&.upcase || '?' %>
+                </div>
+              <% end %>
+            </div>
+            <div class="flex-1">
+              <div class="relative">
+                <div class="absolute -left-2 top-3 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-green-50"></div>
+                <div class="bg-green-50 border border-green-100 rounded-2xl rounded-tl-sm p-4">
+                  <p class="text-sm text-green-700 flex items-center gap-2">
+                    <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    この動画にはすでにアクションプランを投稿しています
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         <% else %>
-          <div style="background: #fafafa; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-            <%= form_with url: post_post_entries_path(@post), method: :post, local: true do %>
-              <div style="margin-bottom: 12px;">
-                <textarea name="post_entry[content]" rows="3"
-                          required
-                          placeholder="この動画を見て何をしますか？"
-                          style="width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical;"></textarea>
+          <%# 投稿フォーム（吹き出しスタイル） %>
+          <div class="flex gap-3 mb-6">
+            <div class="flex-shrink-0">
+              <% if current_user.avatar.present? %>
+                <%= image_tag current_user.avatar.url, class: "w-10 h-10 rounded-full object-cover border border-gray-100" %>
+              <% else %>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white font-medium text-sm">
+                  <%= current_user.name&.first&.upcase || '?' %>
+                </div>
+              <% end %>
+            </div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-gray-900 mb-1"><%= current_user.name %></div>
+              <div class="relative">
+                <div class="absolute -left-2 top-3 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-orange-50"></div>
+                <%= form_with url: post_post_entries_path(@post), method: :post, local: true, class: "bg-orange-50 border border-orange-100 rounded-2xl rounded-tl-sm p-4" do %>
+                  <textarea name="post_entry[content]" rows="3"
+                            required
+                            placeholder="この動画を見て、何をしますか？&#10;&#10;例: 毎朝10分の瞑想を始める"
+                            class="w-full p-3 text-[15px] bg-white border border-orange-200 rounded-xl resize-none focus:outline-none focus:border-orange-300 focus:ring-2 focus:ring-orange-100 transition-all"></textarea>
+
+                  <div class="flex items-center justify-between mt-3 pt-3 border-t border-orange-100">
+                    <div class="flex items-center gap-4">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <input type="date" name="post_entry[deadline]"
+                               class="text-sm text-gray-600 bg-transparent border-none p-0 focus:outline-none cursor-pointer"
+                               placeholder="期日">
+                      </div>
+                      <label class="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                        <input type="checkbox" name="post_entry[anonymous]" value="1" class="w-3.5 h-3.5 rounded">
+                        <span>匿名</span>
+                      </label>
+                    </div>
+                    <button type="submit"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-full transition-colors shadow-sm">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                      </svg>
+                      投稿
+                    </button>
+                  </div>
+                <% end %>
               </div>
-              <div style="margin-bottom: 12px;">
-                <label style="display: block; font-size: 13px; color: #6b7280; margin-bottom: 6px;">期日（任意）</label>
-                <input type="date" name="post_entry[deadline]"
-                       style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px;">
-              </div>
-              <div style="display: flex; align-items: center; justify-content: space-between;">
-                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #6b7280; cursor: pointer;">
-                  <input type="checkbox" name="post_entry[anonymous]" value="1" style="width: 16px; height: 16px;">
-                  <span>匿名で投稿</span>
-                </label>
-                <button type="submit"
-                        style="padding: 10px 20px; background: #f97316; color: white; font-size: 14px; font-weight: 500; border-radius: 8px; border: none; cursor: pointer;">
-                  投稿する
-                </button>
-              </div>
-            <% end %>
+            </div>
           </div>
         <% end %>
       <% else %>
-        <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px; margin-bottom: 20px;">
-          <p style="font-size: 14px; color: #4b5563; margin-bottom: 12px;">アクションプランを投稿するにはログインが必要です</p>
-          <%= link_to "ログイン", new_user_session_path,
-                style: "display: inline-block; padding: 10px 20px; background: #f97316; color: white; font-size: 14px; font-weight: 500; border-radius: 8px; text-decoration: none;" %>
+        <%# 未ログイン状態 %>
+        <div class="flex gap-3 mb-6">
+          <div class="flex-shrink-0">
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+              <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="flex-1">
+            <div class="relative">
+              <div class="absolute -left-2 top-3 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-gray-100"></div>
+              <div class="bg-gray-100 border border-gray-200 rounded-2xl rounded-tl-sm p-4 text-center">
+                <p class="text-sm text-gray-600 mb-3">アクションプランを投稿するにはログインが必要です</p>
+                <%= link_to new_user_session_path, class: "inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-full transition-colors" do %>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                  </svg>
+                  ログイン
+                <% end %>
+              </div>
+            </div>
+          </div>
         </div>
       <% end %>
 
       <%# 既存のアクションプラン一覧 %>
       <% if @post.post_entries.any? %>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="space-y-5">
           <% @post.post_entries.recent.each do |entry| %>
             <%= render 'post_entries/entry_card', entry: entry %>
           <% end %>
         </div>
       <% else %>
-        <div style="text-align: center; padding: 32px; background: #f9fafb; border-radius: 12px;">
-          <p style="font-size: 14px; color: #9ca3af;">まだアクションプランがありません</p>
-          <p style="font-size: 13px; color: #d1d5db; margin-top: 4px;">最初のアクションプランを投稿してみましょう！</p>
+        <div class="text-center py-8 px-4 bg-gray-50 rounded-2xl">
+          <div class="text-4xl mb-3 opacity-50">💭</div>
+          <p class="text-sm text-gray-500">まだアクションプランがありません</p>
+          <p class="text-xs text-gray-400 mt-1">最初のアクションプランを投稿してみましょう！</p>
         </div>
       <% end %>
     </section>

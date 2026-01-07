@@ -31,8 +31,8 @@ class PostEntriesController < ApplicationController
         format.turbo_stream do
           render turbo_stream: turbo_stream.replace(
             dom_id(@entry),
-            partial: "post_entries/task_card",
-            locals: { task: @entry }
+            partial: "post_entries/entry_card",
+            locals: { entry: @entry }
           )
         end
         format.html { redirect_to @post, notice: @entry.achieved? ? "達成おめでとうございます！" : "未達成に戻しました" }
