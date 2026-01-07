@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_01_07_040141) do
+ActiveRecord::Schema[7.2].define(version: 2026_01_07_085408) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -119,7 +119,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_01_07_040141) do
     t.boolean "anonymous", default: false, null: false
     t.index ["post_id", "created_at"], name: "index_post_entries_on_post_id_and_created_at"
     t.index ["post_id"], name: "index_post_entries_on_post_id"
-    t.index ["user_id", "post_id", "entry_type"], name: "idx_unique_user_post_entry_type", unique: true
+    t.index ["user_id", "post_id"], name: "idx_post_entries_user_post"
     t.index ["user_id"], name: "index_post_entries_on_user_id"
     t.check_constraint "satisfaction_rating IS NULL OR satisfaction_rating >= 1 AND satisfaction_rating <= 5", name: "satisfaction_rating_range"
   end

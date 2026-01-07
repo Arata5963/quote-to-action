@@ -22,17 +22,17 @@
 
   <%# 吹き出し %>
   <div style="flex: 1; min-width: 0; position: relative;">
-    <%# しっぽ（三角形 + グレー枠） %>
+    <%# しっぽ（三角形 + 黒枠） %>
     <div style="position: absolute; left: -7px; top: 11px;">
-      <%# グレー外枠 %>
-      <div style="width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-right: 7px solid #d1d5db;"></div>
+      <%# 黒い外枠 %>
+      <div style="width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-right: 7px solid #000;"></div>
     </div>
     <div style="position: absolute; left: -5px; top: 12px;">
       <%# 白/緑の内側 %>
       <div style="width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 6px solid <%= entry.achieved? ? '#d1fae5' : '#fff' %>;"></div>
     </div>
 
-    <div style="background: <%= entry.achieved? ? '#d1fae5' : '#fff' %>; border-radius: 14px; border-top-left-radius: 4px; padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #d1d5db;">
+    <div style="background: <%= entry.achieved? ? '#d1fae5' : '#fff' %>; border-radius: 14px; border-top-left-radius: 4px; padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border: 1px solid #000;">
 
       <%# ヘッダー: 名前 + 期限 + メニュー %>
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 6px;">
