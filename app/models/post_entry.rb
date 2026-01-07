@@ -7,12 +7,6 @@ class PostEntry < ApplicationRecord
   # バリデーション
   validates :content, presence: true
 
-  # 種類ごとに1つまで（同一ユーザー + 同一投稿）
-  validates :user_id, uniqueness: {
-    scope: :post_id,
-    message: "この動画にはすでにアクションプランを投稿しています"
-  }
-
   # スコープ
   scope :recent, -> { order(created_at: :desc) }
   scope :not_achieved, -> { where(achieved_at: nil) }
