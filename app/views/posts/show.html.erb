@@ -83,43 +83,6 @@
       </div>
     </div>
 
-    <%# ===== AI学習ガイドセクション ===== %>
-    <div id="ai-summary-container" style="margin-bottom: 24px;">
-      <% if @post.ai_summary.present? %>
-        <div data-controller="disclosure" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-radius: 12px; border: 1px solid #ddd6fe; overflow: hidden;">
-          <button type="button"
-                  data-action="click->disclosure#toggle"
-                  style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: transparent; border: none; cursor: pointer; text-align: left;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <svg style="width: 20px; height: 20px; color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-              </svg>
-              <span style="font-size: 14px; font-weight: 600; color: #5b21b6;">AI学習ガイド</span>
-            </div>
-            <svg data-disclosure-target="icon" style="width: 20px; height: 20px; color: #7c3aed; transition: transform 0.2s ease;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-          </button>
-          <div data-disclosure-target="content" style="display: none; padding: 0 20px 20px 20px; border-top: 1px solid #ddd6fe;">
-            <div class="markdown-content" style="font-size: 14px; color: #374151; line-height: 1.8; padding-top: 16px;">
-              <%= markdown_to_html(@post.ai_summary) %>
-            </div>
-          </div>
-        </div>
-      <% else %>
-        <%= button_to summarize_post_path(@post),
-              method: :post,
-              style: "width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; background: linear-gradient(to right, #8b5cf6, #6366f1); color: white; font-weight: 500; border-radius: 8px; border: none; cursor: pointer; font-size: 14px;",
-              data: { turbo_stream: true },
-              form: { data: { turbo_submits_with: "生成中..." } } do %>
-          <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-          </svg>
-          <span>AI学習ガイドを生成</span>
-        <% end %>
-      <% end %>
-    </div>
-
     <%# ===== クイズ結果セクション ===== %>
     <% if user_signed_in? && @post.quiz&.answered_by?(current_user) %>
       <% latest_answer = @post.quiz.latest_answer_for(current_user) %>
@@ -147,65 +110,6 @@
         </div>
       </div>
     <% end %>
-
-    <%# ===== YouTubeコメント（自動読み込み） ===== %>
-    <div id="youtube-comments-placeholder" style="margin-bottom: 32px;"
-         data-discover-url="<%= discover_comments_post_path(@post) %>">
-      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 20px; color: #6b7280; background: #fafafa; border-radius: 12px;">
-        <div style="width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top-color: #ef4444; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        <span style="font-size: 14px;">コメントを読み込み中...</span>
-      </div>
-    </div>
-
-    <script>
-      (function() {
-        function discoverComments() {
-          const placeholder = document.getElementById('youtube-comments-placeholder');
-          if (!placeholder || placeholder.dataset.loaded === 'true') return;
-
-          const url = placeholder.dataset.discoverUrl;
-          if (!url) return;
-
-          placeholder.dataset.loaded = 'true';
-
-          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-          fetch(url, {
-            method: 'POST',
-            headers: {
-              'Accept': 'text/vnd.turbo-stream.html',
-              'X-CSRF-Token': csrfToken
-            }
-          })
-          .then(response => response.text())
-          .then(html => {
-            Turbo.renderStreamMessage(html);
-          })
-          .catch(error => {
-            console.error('Error discovering comments:', error);
-            placeholder.innerHTML = `
-              <div style="text-align: center; padding: 24px; color: #9ca3af; font-size: 14px; background: #fafafa; border-radius: 12px;">
-                <p>コメントを読み込めませんでした</p>
-                <button onclick="location.reload()" style="margin-top: 8px; padding: 6px 12px; background: #f3f4f6; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                  再試行
-                </button>
-              </div>
-            `;
-          });
-        }
-
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', discoverComments);
-        } else {
-          discoverComments();
-        }
-      })();
-    </script>
-    <style>
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-    </style>
 
     <%# ===== アクションプランセクション ===== %>
     <section style="border-top: 1px solid #f3f4f6; padding-top: 32px; margin-bottom: 32px;">
@@ -337,24 +241,6 @@
     </section>
 
     <%# 下部余白 %>
-    <div style="height: 80px;"></div>
-  </div>
-
-  <%# ===== フローティングアクションバー ===== %>
-  <div style="position: fixed; bottom: 80px; right: 20px; z-index: 50;">
-    <div style="display: flex; align-items: center; gap: 8px; background: white; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #f3f4f6; padding: 8px 16px;">
-      <div id="cheer_button_<%= @post.id %>">
-        <%= render 'cheers/cheer_button_floating', post: @post %>
-      </div>
-      <div style="width: 1px; height: 16px; background: #e5e7eb;"></div>
-      <button type="button"
-              onclick="navigator.share ? navigator.share({title: '<%= j(@post.youtube_title) %>', url: '<%= post_url(@post) %>'}) : navigator.clipboard.writeText('<%= post_url(@post) %>').then(() => alert('URLをコピーしました'))"
-              style="width: 32px; height: 32px; display: flex; align-items: center; justify-center; color: #9ca3af; border-radius: 50%; cursor: pointer;"
-              title="シェア">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-        </svg>
-      </button>
-    </div>
+    <div style="height: 40px;"></div>
   </div>
 </div>
