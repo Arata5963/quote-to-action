@@ -1,6 +1,6 @@
 <%# app/views/posts/show.html.erb %>
-<%# note.com風デザイン %>
-<% content_for :title, @post.action_plan&.truncate(30) || @post.youtube_title&.truncate(30) || "投稿詳細" %>
+<%# 動画詳細ページ（シンプル版） %>
+<% content_for :title, @post.youtube_title&.truncate(30) || "動画詳細" %>
 
 <div class="min-h-screen bg-white">
   <%# ===== メインコンテンツエリア（620px幅・中央配置） ===== %>
@@ -21,15 +21,10 @@
     <%= link_to @post.youtube_url,
           target: "_blank",
           rel: "noopener noreferrer",
-          class: "block relative group mb-8",
-          data: {
-            controller: "recommendation-click",
-            recommendation_click_url_value: track_recommendation_click_post_path(@post),
-            action: "click->recommendation-click#track"
-          } do %>
+          class: "block relative group mb-8" do %>
       <div class="aspect-video w-full rounded-lg overflow-hidden bg-gray-100">
         <%= image_tag @post.youtube_thumbnail_url(size: :hqdefault),
-              alt: @post.youtube_title || @post.action_plan,
+              alt: @post.youtube_title,
               class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
               loading: "lazy",
               onerror: "this.src='#{@post.youtube_thumbnail_url(size: :mqdefault)}'" %>
@@ -53,7 +48,7 @@
 
     <%# ===== タイトル ===== %>
     <h1 style="font-size: 22px; font-weight: 700; color: #1a1a1a; line-height: 1.4; margin-bottom: 12px;">
-      <%= @post.youtube_title.presence || @post.action_plan %>
+      <%= @post.youtube_title %>
     </h1>
 
     <%# ===== チャンネル名 ===== %>
@@ -63,7 +58,7 @@
       </p>
     <% end %>
 
-    <%# ===== いいね数 + ステータス ===== %>
+    <%# ===== いいね数 + ユーザー数 ===== %>
     <div class="flex items-center gap-3 mb-5 flex-wrap">
       <div class="flex items-center gap-1 text-gray-500">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -71,7 +66,7 @@
         </svg>
         <span class="text-sm"><%= @post.cheers.count %></span>
       </div>
-      <span class="text-xs text-gray-400"><%= @post.entry_users.count %> users</span>
+      <span class="text-xs text-gray-400"><%= @post.entry_users.count %> ユーザーがアクションプランを投稿</span>
     </div>
 
     <%# ===== 日時 ===== %>
@@ -80,8 +75,6 @@
         <p style="font-size: 12px; color: #9ca3af;"><%= l(@post.created_at, format: :long) %></p>
         <% if user_signed_in? && @post.has_entries_by?(current_user) %>
           <div class="flex items-center gap-2" style="font-size: 12px;">
-            <%= link_to "編集", edit_post_path(@post), class: "text-gray-400 hover:text-gray-600" %>
-            <span class="text-gray-200">|</span>
             <%= link_to "削除", post_path(@post),
                   data: { turbo_method: :delete, turbo_confirm: "本当に削除しますか？" },
                   class: "text-gray-400 hover:text-red-500" %>
@@ -90,12 +83,10 @@
       </div>
     </div>
 
-    <%# ===== AI学習ガイドセクション（トグル開閉式） ===== %>
+    <%# ===== AI学習ガイドセクション ===== %>
     <div id="ai-summary-container" style="margin-bottom: 24px;">
       <% if @post.ai_summary.present? %>
-        <%# 保存済みの要約を表示（トグル開閉式） %>
         <div data-controller="disclosure" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-radius: 12px; border: 1px solid #ddd6fe; overflow: hidden;">
-          <%# トグルヘッダー %>
           <button type="button"
                   data-action="click->disclosure#toggle"
                   style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: transparent; border: none; cursor: pointer; text-align: left;">
@@ -109,7 +100,6 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
-          <%# コンテンツ（デフォルト非表示） %>
           <div data-disclosure-target="content" style="display: none; padding: 0 20px 20px 20px; border-top: 1px solid #ddd6fe;">
             <div class="markdown-content" style="font-size: 14px; color: #374151; line-height: 1.8; padding-top: 16px;">
               <%= markdown_to_html(@post.ai_summary) %>
@@ -117,7 +107,6 @@
           </div>
         </div>
       <% else %>
-        <%# 要約がない場合はボタンを表示 %>
         <%= button_to summarize_post_path(@post),
               method: :post,
               style: "width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; background: linear-gradient(to right, #8b5cf6, #6366f1); color: white; font-weight: 500; border-radius: 8px; border: none; cursor: pointer; font-size: 14px;",
@@ -134,53 +123,18 @@
     <%# ===== クイズ結果セクション ===== %>
     <% if user_signed_in? && @post.quiz&.answered_by?(current_user) %>
       <% latest_answer = @post.quiz.latest_answer_for(current_user) %>
-      <% if params[:quiz_completed] %>
-        <div class="quiz-result-section" style="margin-bottom: 24px;">
-          <div class="quiz-result-header">
-            <span style="font-size: 24px;">🎉</span>
-            <h3 class="quiz-result-title">クイズ完了！</h3>
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 24px;">✅</span>
+          <div style="flex: 1;">
+            <p style="font-size: 14px; font-weight: 500; color: #166534;">クイズ回答済み</p>
+            <p style="font-size: 13px; color: #15803d;">
+              スコア: <%= latest_answer.score %>/<%= latest_answer.total_questions %> (<%= latest_answer.percentage %>%)
+            </p>
           </div>
-          <div class="quiz-result-score">
-            <div style="text-align: center;">
-              <div class="quiz-result-score-number"><%= latest_answer.score %>/<%= latest_answer.total_questions %></div>
-              <div class="quiz-result-score-label">正解数</div>
-            </div>
-            <div style="text-align: center;">
-              <div class="quiz-result-percentage"><%= latest_answer.percentage %>%</div>
-              <div class="quiz-result-score-label">正答率</div>
-            </div>
-          </div>
-          <% if latest_answer.perfect? %>
-            <p style="text-align: center; color: #059669; font-weight: 500; margin-bottom: 16px;">
-              🏆 パーフェクト！素晴らしい理解度です！
-            </p>
-          <% elsif latest_answer.percentage >= 80 %>
-            <p style="text-align: center; color: #10b981; font-weight: 500; margin-bottom: 16px;">
-              ✨ よくできました！
-            </p>
-          <% elsif latest_answer.percentage >= 60 %>
-            <p style="text-align: center; color: #f59e0b; font-weight: 500; margin-bottom: 16px;">
-              📚 もう一度動画を見て復習しましょう
-            </p>
-          <% else %>
-            <p style="text-align: center; color: #ef4444; font-weight: 500; margin-bottom: 16px;">
-              💪 動画をもう一度見直すことをおすすめします
-            </p>
-          <% end %>
+          <%= link_to "もう一度挑戦", post_quiz_path(@post), style: "padding: 8px 16px; background: white; color: #15803d; font-size: 13px; font-weight: 500; border: 1px solid #bbf7d0; border-radius: 8px; text-decoration: none;" %>
         </div>
-      <% else %>
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 24px;">✅</span>
-            <div style="flex: 1;">
-              <p style="font-size: 14px; font-weight: 500; color: #166534;">クイズ回答済み</p>
-              <p style="font-size: 13px; color: #15803d;">
-                スコア: <%= latest_answer.score %>/<%= latest_answer.total_questions %> (<%= latest_answer.percentage %>%)
-              </p>
-            </div>
-          </div>
-        </div>
-      <% end %>
+      </div>
     <% elsif @post.quiz.present? %>
       <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -189,28 +143,9 @@
             <p style="font-size: 14px; font-weight: 500; color: #92400e;">理解度チェッククイズがあります</p>
             <p style="font-size: 13px; color: #b45309;">この動画の内容をどれだけ理解できたかチェックしましょう</p>
           </div>
-          <button type="button"
-                  onclick="document.querySelector('[data-tab=quiz]').click(); this.closest('div[style]').scrollIntoView({behavior: 'smooth', block: 'center'});"
-                  style="padding: 8px 16px; background: #f59e0b; color: white; font-size: 13px; font-weight: 500; border-radius: 8px; border: none; cursor: pointer; white-space: nowrap;">
-            挑戦する
-          </button>
+          <%= link_to "挑戦する", post_quiz_path(@post), style: "padding: 8px 16px; background: #f59e0b; color: white; font-size: 13px; font-weight: 500; border-radius: 8px; text-decoration: none; white-space: nowrap;" %>
         </div>
       </div>
-    <% end %>
-
-    <%# ===== アクションプラン - 旧機能：非表示 ===== %>
-    <% if false # 旧機能非表示 %>
-    <% if @post.action_plan.present? && @post.action_plan != @post.youtube_title %>
-      <div style="background: #f5f8fa; border-radius: 8px; padding: 16px; margin-bottom: 32px;">
-        <div class="flex items-start gap-3">
-          <span style="font-size: 20px;">🎯</span>
-          <div class="flex-1 min-w-0">
-            <p style="font-size: 12px; font-weight: 500; color: #8B7355; margin-bottom: 4px;">アクションプラン</p>
-            <p style="font-size: 15px; color: #1a1a1a; white-space: pre-line; line-height: 1.6;"><%= @post.action_plan %></p>
-          </div>
-        </div>
-      </div>
-    <% end %>
     <% end %>
 
     <%# ===== YouTubeコメント（自動読み込み） ===== %>
@@ -233,7 +168,6 @@
 
           placeholder.dataset.loaded = 'true';
 
-          // CSRFトークン取得
           const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
           fetch(url, {
@@ -260,7 +194,6 @@
           });
         }
 
-        // ページ読み込み時（通常 & Turbo）
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', discoverComments);
         } else {
@@ -274,1010 +207,69 @@
       }
     </style>
 
-    <%# ===== アウトプット履歴（タブ切り替え式）- 旧機能：非表示 ===== %>
-    <%# 新コンセプト移行により非表示。削除予定。 %>
-    <% if false # 旧機能を非表示化 %>
-    <%
-      key_point_entries = @post.post_entries.where(entry_type: :key_point).recent
-      quote_entries = @post.post_entries.where(entry_type: :quote).recent
-      action_entries = @post.post_entries.where(entry_type: :action).recent
-      blog_entries = @post.post_entries.blogs.recent
-      # 本人以外は公開済みのみ表示
-      blog_entries = blog_entries.published_blogs unless user_signed_in? && @post.has_entries_by?(current_user)
-      # 布教エントリー（1件のみ）
-      recommendation_entry = @post.recommendation_entry
-      recommendation_click_count = @post.recommendation_click_count
-      # 比較数（双方向）
-      comparison_count = @post.outgoing_comparisons.count + @post.incoming_comparisons.count
-      has_entries = @post.post_entries.any?
-      has_comparisons = @post.compared_posts.any? || @post.comparing_posts.any?
-      # 最初に表示するタブを決定（エントリーがあるタブを優先）
-      default_tab = key_point_entries.any? ? "keyPoint" : (quote_entries.any? ? "quote" : (blog_entries.any? ? "blog" : "action"))
-    %>
-    <% if has_entries || has_comparisons || (user_signed_in? && @post.has_entries_by?(current_user)) %>
-      <section style="margin-bottom: 40px;" data-controller="output-tabs" data-output-tabs-active-tab-value="<%= default_tab %>">
-        <%# タブナビゲーション %>
-        <div style="display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch;" class="hide-scrollbar">
-          <button type="button"
-                  data-output-tabs-target="tab"
-                  data-tab="keyPoint"
-                  data-action="click->output-tabs#switch"
-                  class="<%= default_tab == 'keyPoint' ? 'active-tab' : 'inactive-tab' %>"
-                  style="display: flex; align-items: center; gap: 4px; padding: 12px 12px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <span>📝</span>
-            <span>要約</span>
-            <% if key_point_entries.any? %>
-              <span style="font-size: 11px; color: #9ca3af;">(<%= key_point_entries.count %>)</span>
-            <% end %>
-          </button>
-          <button type="button"
-                  data-output-tabs-target="tab"
-                  data-tab="quote"
-                  data-action="click->output-tabs#switch"
-                  class="<%= default_tab == 'quote' ? 'active-tab' : 'inactive-tab' %>"
-                  style="display: flex; align-items: center; gap: 4px; padding: 12px 12px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <span>💬</span>
-            <span>引用</span>
-            <% if quote_entries.any? %>
-              <span style="font-size: 11px; color: #9ca3af;">(<%= quote_entries.count %>)</span>
-            <% end %>
-          </button>
-          <button type="button"
-                  data-output-tabs-target="tab"
-                  data-tab="action"
-                  data-action="click->output-tabs#switch"
-                  class="<%= default_tab == 'action' ? 'active-tab' : 'inactive-tab' %>"
-                  style="display: flex; align-items: center; gap: 4px; padding: 12px 12px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <span>🎯</span>
-            <span>アクション</span>
-            <% if action_entries.any? %>
-              <span style="font-size: 11px; color: #9ca3af;">(<%= action_entries.count %>)</span>
-            <% end %>
-          </button>
-          <button type="button"
-                  data-output-tabs-target="tab"
-                  data-tab="blog"
-                  data-action="click->output-tabs#switch"
-                  class="<%= default_tab == 'blog' ? 'active-tab' : 'inactive-tab' %>"
-                  style="display: flex; align-items: center; gap: 4px; padding: 12px 12px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <span>📰</span>
-            <span>ブログ</span>
-            <% if blog_entries.any? %>
-              <span style="font-size: 11px; color: #9ca3af;">(<%= blog_entries.count %>)</span>
-            <% end %>
-          </button>
-          <button type="button"
-                  data-output-tabs-target="tab"
-                  data-tab="recommendation"
-                  data-action="click->output-tabs#switch"
-                  class="<%= default_tab == 'recommendation' ? 'active-tab' : 'inactive-tab' %>"
-                  style="display: flex; align-items: center; gap: 4px; padding: 12px 12px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <span>📣</span>
-            <span>布教</span>
-            <% if recommendation_entry.present? && recommendation_click_count > 0 %>
-              <span style="font-size: 11px; color: #9ca3af;">(<%= recommendation_click_count %>)</span>
-            <% end %>
-          </button>
-          <button type="button"
-                  data-output-tabs-target="tab"
-                  data-tab="comparison"
-                  data-action="click->output-tabs#switch"
-                  class="<%= default_tab == 'comparison' ? 'active-tab' : 'inactive-tab' %>"
-                  style="display: flex; align-items: center; gap: 4px; padding: 12px 12px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <span>🔗</span>
-            <span>比較</span>
-            <% if comparison_count > 0 %>
-              <span style="font-size: 11px; color: #9ca3af;">(<%= comparison_count %>)</span>
-            <% end %>
-          </button>
-          <button type="button"
-                  data-output-tabs-target="tab"
-                  data-tab="quiz"
-                  data-action="click->output-tabs#switch"
-                  class="inactive-tab"
-                  style="display: flex; align-items: center; gap: 4px; padding: 12px 12px; font-size: 13px; font-weight: 500; background: none; border: none; cursor: pointer; position: relative; transition: color 0.2s; white-space: nowrap; flex-shrink: 0;">
-            <span>🧠</span>
-            <span>クイズ</span>
-            <% if @post.quiz.present? %>
-              <% if @post.quiz.answered_by?(current_user) %>
-                <span style="font-size: 11px; color: #22c55e;">✓</span>
-              <% end %>
-            <% end %>
-          </button>
-        </div>
-
-        <%# タブコンテンツ %>
-        <div id="entries_list">
-          <%# === 要約パネル === %>
-          <div data-output-tabs-target="panel" data-panel="keyPoint" class="<%= default_tab == 'keyPoint' ? '' : 'hidden' %>">
-            <% if key_point_entries.any? %>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <% key_point_entries.each_with_index do |entry, index| %>
-                  <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid #e5e7eb;" data-controller="inline-edit">
-                    <%# 表示モード %>
-                    <div data-inline-edit-target="display">
-                      <div style="display: flex; gap: 12px;">
-                        <div style="flex-shrink: 0; width: 20px; color: #9ca3af; font-size: 14px; font-weight: 500; padding-top: 2px;">
-                          <%= index + 1 %>.
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                          <p style="font-size: 14px; color: #374151; line-height: 1.7; white-space: pre-wrap;"><%= entry.content %></p>
-                          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
-                            <p style="font-size: 12px; color: #9ca3af;"><%= time_ago_in_words(entry.created_at) %>前</p>
-                            <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                              <div style="display: flex; gap: 8px;">
-                                <button type="button" data-action="inline-edit#toggle" style="font-size: 12px; color: #9ca3af; background: none; border: none; cursor: pointer; padding: 2px 6px;">編集</button>
-                                <%= button_to post_post_entry_path(@post, entry), method: :delete, style: "font-size: 12px; color: #ef4444; background: none; border: none; cursor: pointer; padding: 2px 6px;", data: { turbo_confirm: "この要約を削除しますか？" } do %>削除<% end %>
-                              </div>
-                            <% end %>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <%# 編集モード %>
-                    <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                      <div data-inline-edit-target="form" class="hidden">
-                        <%= form_with model: [@post, entry], url: post_post_entry_path(@post, entry), method: :patch, local: true do |f| %>
-                          <%= f.text_area :content, rows: 4, style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 100px;", data: { inline_edit_target: "input" } %>
-                          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
-                            <button type="button" data-action="inline-edit#cancel" style="padding: 6px 12px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">キャンセル</button>
-                            <%= f.submit "保存", style: "padding: 6px 12px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;" %>
-                          </div>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div style="text-align: center; padding: 32px; background: #f9fafb; border-radius: 8px;">
-                <p style="font-size: 14px; color: #9ca3af;">要約はまだありません</p>
-              </div>
-            <% end %>
-
-            <%# 要約追加フォーム（本人のみ） %>
-            <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-              <div style="margin-top: 16px;" data-controller="inline-form" data-inline-form-open-text-value="+ 要約を追加する" data-inline-form-close-text-value="× 閉じる">
-                <button type="button"
-                        data-action="inline-form#toggle"
-                        data-inline-form-target="toggleButton"
-                        style="width: 100%; padding: 12px; border: 1px dashed #d1d5db; border-radius: 8px; color: #9ca3af; font-size: 14px; background: transparent; cursor: pointer;">
-                  + 要約を追加する
-                </button>
-                <div data-inline-form-target="form" class="hidden" style="margin-top: 12px; padding: 16px; background: #f9fafb; border-radius: 12px;">
-                  <%= form_with url: post_post_entries_path(@post), method: :post, local: true do |f| %>
-                    <%= hidden_field_tag "post_entry[entry_type]", "key_point" %>
-                    <div style="margin-bottom: 12px;">
-                      <%= text_area_tag "post_entry[content]", nil,
-                            placeholder: "動画を見て気づいたこと、学んだことを自由に入力...",
-                            rows: 5,
-                            style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 120px;",
-                            data: { controller: "auto-resize", action: "input->auto-resize#resize" } %>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                      <button type="button"
-                              data-action="inline-form#toggle"
-                              style="padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
-                        キャンセル
-                      </button>
-                      <button type="submit"
-                              style="padding: 8px 16px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;">
-                        追加
-                      </button>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-
-          <%# === 引用パネル === %>
-          <div data-output-tabs-target="panel" data-panel="quote" class="<%= default_tab == 'quote' ? '' : 'hidden' %>" data-controller="quote-animation">
-            <% if quote_entries.any? %>
-              <%# ショーケースリンク %>
-              <%= link_to quotes_showcase_post_path(@post),
-                    style: "display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 20px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; text-decoration: none; border-radius: 12px; margin-bottom: 16px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15);",
-                    onmouseover: "this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.2)'",
-                    onmouseout: "this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" do %>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.8;">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                </svg>
-                <span style="font-size: 14px; font-weight: 500;">シアターモードで見る</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                </svg>
-              <% end %>
-
-              <div class="quote-list">
-                <% quote_entries.each do |entry| %>
-                  <div class="quote-bubble" data-quote-animation-target="quote" data-controller="inline-edit">
-                    <%# チャンネルアバター or YouTubeアイコン %>
-                    <% if @post.youtube_channel_thumbnail_url.present? %>
-                      <%= image_tag @post.youtube_channel_thumbnail_url,
-                            alt: @post.youtube_channel_name,
-                            class: "quote-avatar-img",
-                            loading: "lazy" %>
-                    <% else %>
-                      <div class="quote-avatar">
-                        <svg viewBox="0 0 24 24">
-                          <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-                        </svg>
-                      </div>
-                    <% end %>
-                    <%# 吹き出し本体（表示モード） %>
-                    <div class="quote-speech" data-inline-edit-target="display">
-                      <p class="quote-text" data-quote-text><%= entry.content %></p>
-                      <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <p class="quote-time"><%= time_ago_in_words(entry.created_at) %>前</p>
-                        <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                          <div style="display: flex; gap: 8px;">
-                            <button type="button" data-action="inline-edit#toggle" style="font-size: 11px; color: #9ca3af; background: none; border: none; cursor: pointer; padding: 2px 6px;">編集</button>
-                            <%= button_to post_post_entry_path(@post, entry), method: :delete, style: "font-size: 11px; color: #ef4444; background: none; border: none; cursor: pointer; padding: 2px 6px;", data: { turbo_confirm: "この引用を削除しますか？" } do %>削除<% end %>
-                          </div>
-                        <% end %>
-                      </div>
-                    </div>
-                    <%# 編集モード %>
-                    <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                      <div class="quote-speech hidden" data-inline-edit-target="form">
-                        <%= form_with model: [@post, entry], url: post_post_entry_path(@post, entry), method: :patch, local: true do |f| %>
-                          <%= f.text_area :content, rows: 3, style: "width: 100%; padding: 10px; font-size: 14px; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; min-height: 80px; background: white;", data: { inline_edit_target: "input" } %>
-                          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
-                            <button type="button" data-action="inline-edit#cancel" style="padding: 5px 10px; font-size: 12px; color: #6b7280; background: white; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;">キャンセル</button>
-                            <%= f.submit "保存", style: "padding: 5px 10px; font-size: 12px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;" %>
-                          </div>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div class="quote-empty">
-                <div class="quote-empty-icon">💬</div>
-                <p class="quote-empty-text">引用はまだありません</p>
-              </div>
-            <% end %>
-
-            <%# 引用追加フォーム（本人のみ） %>
-            <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-              <div style="margin-top: 16px;" data-controller="inline-form" data-inline-form-open-text-value="+ 引用を追加する" data-inline-form-close-text-value="× 閉じる">
-                <button type="button"
-                        data-action="inline-form#toggle"
-                        data-inline-form-target="toggleButton"
-                        style="width: 100%; padding: 12px; border: 1px dashed #d1d5db; border-radius: 8px; color: #9ca3af; font-size: 14px; background: transparent; cursor: pointer;">
-                  + 引用を追加する
-                </button>
-                <div data-inline-form-target="form" class="hidden" style="margin-top: 12px; padding: 16px; background: #f9fafb; border-radius: 12px;">
-                  <%= form_with url: post_post_entries_path(@post), method: :post, local: true do |f| %>
-                    <%= hidden_field_tag "post_entry[entry_type]", "quote" %>
-                    <div style="margin-bottom: 12px;">
-                      <%= text_area_tag "post_entry[content]", nil,
-                            placeholder: "響いたフレーズを入力...",
-                            rows: 5,
-                            style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 120px;",
-                            data: { controller: "auto-resize", action: "input->auto-resize#resize" } %>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                      <button type="button"
-                              data-action="inline-form#toggle"
-                              style="padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
-                        キャンセル
-                      </button>
-                      <button type="submit"
-                              style="padding: 8px 16px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;">
-                        追加
-                      </button>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-
-          <%# === アクションパネル === %>
-          <div data-output-tabs-target="panel" data-panel="action" class="<%= default_tab == 'action' ? '' : 'hidden' %>">
-            <% if action_entries.any? %>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <% action_entries.each_with_index do |entry, index| %>
-                  <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid #e5e7eb;" data-controller="inline-edit">
-                    <%# 表示モード %>
-                    <div data-inline-edit-target="display">
-                      <div style="display: flex; gap: 12px;">
-                        <%# チェックボックス（機能付き） %>
-                        <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                          <%= button_to achieve_post_post_entry_path(@post, entry), method: :patch, style: "flex-shrink: 0; padding: 0; border: none; background: none; cursor: pointer;" do %>
-                            <% if entry.achieved_at.present? %>
-                              <div style="width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: #22c55e;">
-                                <svg style="width: 14px; height: 14px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                </svg>
-                              </div>
-                            <% else %>
-                              <div style="width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 4px; background: white;"></div>
-                            <% end %>
-                          <% end %>
-                        <% else %>
-                          <div style="flex-shrink: 0;">
-                            <% if entry.achieved_at.present? %>
-                              <div style="width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: #22c55e;">
-                                <svg style="width: 14px; height: 14px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                                </svg>
-                              </div>
-                            <% else %>
-                              <div style="width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 4px; background: white;"></div>
-                            <% end %>
-                          </div>
-                        <% end %>
-                        <div style="flex: 1; min-width: 0;">
-                          <p style="font-size: 14px; color: <%= entry.achieved_at.present? ? '#9ca3af' : '#374151' %>; line-height: 1.7; white-space: pre-wrap; <%= entry.achieved_at.present? ? 'text-decoration: line-through;' : '' %>"><%= entry.content %></p>
-                          <% if entry.deadline.present? %>
-                            <p style="font-size: 12px; color: #f97316; margin-top: 8px;">
-                              期日: <%= l(entry.deadline, format: :short) %>
-                            </p>
-                          <% end %>
-                          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
-                            <p style="font-size: 12px; color: #9ca3af;"><%= time_ago_in_words(entry.created_at) %>前</p>
-                            <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                              <div style="display: flex; gap: 8px;">
-                                <button type="button" data-action="inline-edit#toggle" style="font-size: 12px; color: #9ca3af; background: none; border: none; cursor: pointer; padding: 2px 6px;">編集</button>
-                                <%= button_to post_post_entry_path(@post, entry), method: :delete, style: "font-size: 12px; color: #ef4444; background: none; border: none; cursor: pointer; padding: 2px 6px;", data: { turbo_confirm: "このアクションを削除しますか？" } do %>削除<% end %>
-                              </div>
-                            <% end %>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <%# 編集モード %>
-                    <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                      <div data-inline-edit-target="form" class="hidden">
-                        <%= form_with model: [@post, entry], url: post_post_entry_path(@post, entry), method: :patch, local: true do |f| %>
-                          <div style="margin-bottom: 12px;">
-                            <%= f.text_area :content, rows: 4, style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 100px;", data: { inline_edit_target: "input" } %>
-                          </div>
-                          <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-size: 13px; color: #6b7280; margin-bottom: 6px;">期日（任意）</label>
-                            <%= f.date_field :deadline, value: entry.deadline&.to_date, style: "width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px;" %>
-                          </div>
-                          <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                            <button type="button" data-action="inline-edit#cancel" style="padding: 6px 12px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">キャンセル</button>
-                            <%= f.submit "保存", style: "padding: 6px 12px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;" %>
-                          </div>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <div style="text-align: center; padding: 32px; background: #f9fafb; border-radius: 8px;">
-                <p style="font-size: 14px; color: #9ca3af;">アクションはまだありません</p>
-              </div>
-            <% end %>
-
-            <%# アクション追加フォーム（本人のみ） %>
-            <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-              <div style="margin-top: 16px;" data-controller="inline-form" data-inline-form-open-text-value="+ アクションを追加する" data-inline-form-close-text-value="× 閉じる">
-                <button type="button"
-                        data-action="inline-form#toggle"
-                        data-inline-form-target="toggleButton"
-                        style="width: 100%; padding: 12px; border: 1px dashed #d1d5db; border-radius: 8px; color: #9ca3af; font-size: 14px; background: transparent; cursor: pointer;">
-                  + アクションを追加する
-                </button>
-                <div data-inline-form-target="form" class="hidden" style="margin-top: 12px; padding: 16px; background: #f9fafb; border-radius: 12px;">
-                  <%= form_with url: post_post_entries_path(@post), method: :post, local: true do |f| %>
-                    <%= hidden_field_tag "post_entry[entry_type]", "action" %>
-                    <div style="margin-bottom: 12px;">
-                      <%= text_area_tag "post_entry[content]", nil,
-                            placeholder: "何をしますか？",
-                            rows: 5,
-                            style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 120px;",
-                            data: { controller: "auto-resize", action: "input->auto-resize#resize" } %>
-                    </div>
-                    <div style="margin-bottom: 12px;">
-                      <label style="display: block; font-size: 13px; color: #6b7280; margin-bottom: 6px;">期日（任意）</label>
-                      <%= date_field_tag "post_entry[deadline]", nil,
-                            style: "width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px;" %>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                      <button type="button"
-                              data-action="inline-form#toggle"
-                              style="padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
-                        キャンセル
-                      </button>
-                      <button type="submit"
-                              style="padding: 8px 16px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;">
-                        追加
-                      </button>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-
-          <%# === ブログパネル === %>
-          <div data-output-tabs-target="panel" data-panel="blog" class="<%= default_tab == 'blog' ? '' : 'hidden' %>" data-controller="blog-editor">
-            <%# 既存ブログ一覧 %>
-            <% if blog_entries.any? %>
-              <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px;">
-                <% blog_entries.each do |entry| %>
-                  <div style="background: white; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden;" data-controller="inline-edit">
-                    <%# 表示モード %>
-                    <div data-inline-edit-target="display">
-                      <%# クリック可能なリンク部分 %>
-                      <%= link_to post_post_entry_path(@post, entry), style: "display: block; padding: 20px; text-decoration: none; transition: background 0.2s;", class: "hover:bg-gray-50" do %>
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                          <h3 style="font-size: 16px; font-weight: 600; color: #1a1a1a; line-height: 1.4;">
-                            <%= entry.title.presence || "無題" %>
-                          </h3>
-                          <% if entry.draft? %>
-                            <span class="blog-draft-badge">下書き</span>
-                          <% end %>
-                        </div>
-                        <p style="font-size: 14px; color: #6b7280; line-height: 1.6; margin-bottom: 12px;">
-                          <%= truncate(entry.content.to_s.gsub(/[#*`>\-\[\]()]/, ''), length: 100) %>
-                        </p>
-                        <span style="font-size: 12px; color: #9ca3af;">
-                          <% if entry.published? %>
-                            <%= time_ago_in_words(entry.published_at) %>前に公開
-                          <% else %>
-                            <%= time_ago_in_words(entry.updated_at) %>前に更新
-                          <% end %>
-                        </span>
-                      <% end %>
-                      <%# 編集・削除ボタン（本人のみ） %>
-                      <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                        <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 0 20px 12px; border-top: 1px solid #f3f4f6; padding-top: 12px;">
-                          <button type="button" data-action="inline-edit#toggle" style="font-size: 12px; color: #9ca3af; background: none; border: none; cursor: pointer; padding: 2px 6px;">編集</button>
-                          <%= button_to post_post_entry_path(@post, entry), method: :delete, style: "font-size: 12px; color: #ef4444; background: none; border: none; cursor: pointer; padding: 2px 6px;", data: { turbo_confirm: "このブログを削除しますか？" } do %>削除<% end %>
-                        </div>
-                      <% end %>
-                    </div>
-                    <%# 編集モード %>
-                    <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                      <div data-inline-edit-target="form" class="hidden" data-controller="blog-editor">
-                        <%= form_with model: [@post, entry], url: post_post_entry_path(@post, entry), method: :patch, local: true do |f| %>
-                          <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">タイトル</label>
-                            <%= f.text_field :title, style: "width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px;", placeholder: "ブログのタイトル..." %>
-                          </div>
-                          <div style="margin-bottom: 12px;">
-                            <div style="display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px;">
-                              <button type="button" data-blog-editor-target="editTab" data-action="blog-editor#showEdit" class="active-tab" style="padding: 8px 16px; font-size: 13px; background: none; border: none; cursor: pointer;">✏️ 編集</button>
-                              <button type="button" data-blog-editor-target="previewTab" data-action="blog-editor#showPreview" class="inactive-tab" style="padding: 8px 16px; font-size: 13px; background: none; border: none; cursor: pointer;">👁️ プレビュー</button>
-                            </div>
-                            <div data-blog-editor-target="editor">
-                              <%= f.text_area :content, rows: 10, style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 200px; font-family: monospace;", placeholder: "Markdown記法が使えます...", data: { blog_editor_target: "input" } %>
-                            </div>
-                            <div data-blog-editor-target="preview" class="hidden" style="min-height: 200px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa;">
-                            </div>
-                          </div>
-                          <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <button type="button" data-action="inline-edit#cancel" style="padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">キャンセル</button>
-                            <div style="display: flex; gap: 8px;">
-                              <%= f.submit "下書き保存", style: "padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;" %>
-                              <% if entry.draft? %>
-                                <%= f.submit "公開する", name: "publish", style: "padding: 8px 16px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;" %>
-                              <% else %>
-                                <%= f.submit "更新する", style: "padding: 8px 16px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;" %>
-                              <% end %>
-                            </div>
-                          </div>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <%# ブログがない場合の空状態 %>
-              <% unless user_signed_in? && @post.has_entries_by?(current_user) %>
-                <div style="text-align: center; padding: 40px 20px; background: #f9fafb; border-radius: 8px;">
-                  <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">📰</div>
-                  <p style="font-size: 14px; color: #9ca3af;">ブログ記事はまだありません</p>
-                </div>
-              <% end %>
-            <% end %>
-
-            <%# 新規ブログ作成フォーム（本人のみ） %>
-            <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-              <div style="margin-top: 16px;" data-controller="inline-form" data-inline-form-open-text-value="+ 新しいブログを書く" data-inline-form-close-text-value="× 閉じる">
-                <button type="button"
-                        data-action="inline-form#toggle"
-                        data-inline-form-target="toggleButton"
-                        style="width: 100%; padding: 12px; border: 1px dashed #d1d5db; border-radius: 8px; color: #9ca3af; font-size: 14px; background: transparent; cursor: pointer;">
-                  + 新しいブログを書く
-                </button>
-                <div data-inline-form-target="form" class="hidden" style="margin-top: 12px; padding: 20px; background: #f9fafb; border-radius: 12px;" data-controller="blog-editor">
-                  <%= form_with url: post_post_entries_path(@post), method: :post, local: true do |f| %>
-                    <%= hidden_field_tag "post_entry[entry_type]", "blog" %>
-                    <div style="margin-bottom: 12px;">
-                      <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">タイトル</label>
-                      <%= text_field_tag "post_entry[title]", nil, style: "width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; background: white;", placeholder: "ブログのタイトル..." %>
-                    </div>
-                    <div style="margin-bottom: 12px;">
-                      <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">本文</label>
-                      <div style="display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px;">
-                        <button type="button" data-blog-editor-target="editTab" data-action="blog-editor#showEdit" class="active-tab" style="padding: 8px 16px; font-size: 13px; background: none; border: none; cursor: pointer;">✏️ 編集</button>
-                        <button type="button" data-blog-editor-target="previewTab" data-action="blog-editor#showPreview" class="inactive-tab" style="padding: 8px 16px; font-size: 13px; background: none; border: none; cursor: pointer;">👁️ プレビュー</button>
-                      </div>
-                      <div data-blog-editor-target="editor">
-                        <%= text_area_tag "post_entry[content]", nil, rows: 10, style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 200px; font-family: monospace; background: white;", placeholder: "Markdown記法が使えます...", data: { blog_editor_target: "input" } %>
-                      </div>
-                      <div data-blog-editor-target="preview" class="hidden" style="min-height: 200px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; background: white;">
-                      </div>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                      <button type="button"
-                              data-action="inline-form#toggle"
-                              style="padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
-                        キャンセル
-                      </button>
-                      <button type="submit"
-                              style="padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
-                        下書き保存
-                      </button>
-                      <button type="submit" name="publish" value="true"
-                              style="padding: 8px 16px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;">
-                        公開する
-                      </button>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-
-          <%# === 布教パネル === %>
-          <div data-output-tabs-target="panel" data-panel="recommendation" class="hidden">
-            <% if recommendation_entry.present? %>
-              <%# 布教表示 %>
-              <div style="background: linear-gradient(135deg, #fff5f5 0%, #fffaf0 100%); border-radius: 16px; padding: 24px; border: 1px solid #fed7d7;">
-                <%# ヘッダー（おすすめ度 + クリック数） %>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                  <div style="font-size: 28px; letter-spacing: 2px;">
-                    <%= recommendation_entry.recommendation_fires %>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 4px; color: #6b7280; font-size: 13px;">
-                    <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                    <span><%= recommendation_click_count %>人が見た</span>
-                  </div>
-                </div>
-
-                <%# こんな人に %>
-                <% if recommendation_entry.target_audience.present? %>
-                  <div style="margin-bottom: 16px;">
-                    <p style="font-size: 12px; font-weight: 600; color: #9ca3af; margin-bottom: 6px;">こんな人に</p>
-                    <p style="font-size: 15px; color: #374151; line-height: 1.6;"><%= recommendation_entry.target_audience %></p>
-                  </div>
-                <% end %>
-
-                <%# おすすめポイント %>
-                <div style="margin-bottom: 16px;">
-                  <p style="font-size: 12px; font-weight: 600; color: #9ca3af; margin-bottom: 6px;">おすすめポイント</p>
-                  <p style="font-size: 15px; color: #374151; line-height: 1.6; white-space: pre-wrap;"><%= recommendation_entry.recommendation_point %></p>
-                </div>
-
-                <%# 編集・削除ボタン（本人のみ） %>
-                <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                  <div style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 1px solid #fed7d7;">
-                    <%= link_to "編集", edit_post_post_entry_path(@post, recommendation_entry), style: "font-size: 12px; color: #9ca3af; text-decoration: none;" %>
-                    <%= button_to post_post_entry_path(@post, recommendation_entry), method: :delete, style: "font-size: 12px; color: #ef4444; background: none; border: none; cursor: pointer;", data: { turbo_confirm: "この布教を削除しますか？" } do %>削除<% end %>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <%# 布教がない場合 %>
-              <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                <%# 本人：作成フォーム表示 %>
-              <% else %>
-                <%# 他人：空状態 %>
-                <div style="text-align: center; padding: 40px 20px; background: #f9fafb; border-radius: 8px;">
-                  <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">📣</div>
-                  <p style="font-size: 14px; color: #9ca3af;">布教はまだありません</p>
-                </div>
-              <% end %>
-            <% end %>
-
-            <%# 布教作成フォーム（本人のみ、まだ布教がない場合） %>
-            <% if user_signed_in? && @post.has_entries_by?(current_user) && recommendation_entry.nil? %>
-              <div style="margin-top: 16px;" data-controller="inline-form" data-inline-form-open-text-value="+ この動画を布教する" data-inline-form-close-text-value="× 閉じる">
-                <button type="button"
-                        data-action="inline-form#toggle"
-                        data-inline-form-target="toggleButton"
-                        style="width: 100%; padding: 12px; border: 1px dashed #fed7d7; border-radius: 8px; color: #f87171; font-size: 14px; background: transparent; cursor: pointer;">
-                  + この動画を布教する
-                </button>
-                <div data-inline-form-target="form" class="hidden" style="margin-top: 12px; padding: 20px; background: linear-gradient(135deg, #fff5f5 0%, #fffaf0 100%); border-radius: 12px; border: 1px solid #fed7d7;">
-                  <%= form_with url: post_post_entries_path(@post), method: :post, local: true do |f| %>
-                    <%= hidden_field_tag "post_entry[entry_type]", "recommendation" %>
-
-                    <%# おすすめ度 %>
-                    <div style="margin-bottom: 16px;">
-                      <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 8px;">おすすめ度</label>
-                      <div style="display: flex; gap: 8px;" data-controller="rating" data-rating-value-value="3">
-                        <% (1..5).each do |level| %>
-                          <button type="button"
-                                  data-action="rating#select"
-                                  data-rating-level-param="<%= level %>"
-                                  data-rating-target="button"
-                                  style="font-size: 24px; background: none; border: none; cursor: pointer; opacity: 0.3; transition: opacity 0.2s;"
-                                  data-level="<%= level %>">
-                            🔥
-                          </button>
-                        <% end %>
-                        <input type="hidden" name="post_entry[recommendation_level]" value="3" data-rating-target="input">
-                      </div>
-                    </div>
-
-                    <%# こんな人に %>
-                    <div style="margin-bottom: 16px;">
-                      <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">こんな人に（任意）</label>
-                      <%= text_field_tag "post_entry[target_audience]", nil,
-                            placeholder: "例：プログラミング初心者、独学で挫折した人",
-                            style: "width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; background: white;" %>
-                    </div>
-
-                    <%# おすすめポイント %>
-                    <div style="margin-bottom: 16px;">
-                      <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">おすすめポイント</label>
-                      <%= text_area_tag "post_entry[recommendation_point]", nil,
-                            placeholder: "この動画のどこがすごいか、なぜおすすめか...",
-                            rows: 4,
-                            style: "width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical; min-height: 100px; background: white;" %>
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                      <button type="button"
-                              data-action="inline-form#toggle"
-                              style="padding: 8px 16px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
-                        キャンセル
-                      </button>
-                      <button type="submit"
-                              style="padding: 8px 16px; font-size: 13px; color: white; background: #f87171; border: none; border-radius: 6px; cursor: pointer;">
-                        布教する
-                      </button>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-
-          <%# === 比較パネル === %>
-          <div data-output-tabs-target="panel" data-panel="comparison" class="hidden">
-            <%# === 比較している投稿（A→B: この投稿が比較対象としている） === %>
-            <% if @post.outgoing_comparisons.any? %>
-              <div style="margin-bottom: 20px;">
-                <h3 style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 12px;">
-                  比較している投稿
-                </h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                  <% @post.outgoing_comparisons.includes(:target_post).each do |comparison| %>
-                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f9fafb; border-radius: 8px;">
-                      <%= link_to comparison.target_post, style: "display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-decoration: none;" do %>
-                        <div style="width: 60px; height: 34px; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #e5e7eb;">
-                          <%= image_tag comparison.target_post.youtube_thumbnail_url(size: :mqdefault),
-                                style: "width: 100%; height: 100%; object-fit: cover;",
-                                loading: "lazy" %>
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                          <p style="font-size: 13px; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            <%= comparison.target_post.youtube_title || comparison.target_post.action_plan %>
-                          </p>
-                          <% if comparison.reason.present? %>
-                            <p style="font-size: 11px; color: #9ca3af; margin-top: 2px;">
-                              <%= comparison.reason.truncate(50) %>
-                            </p>
-                          <% end %>
-                        </div>
-                      <% end %>
-                      <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-                        <%= button_to post_post_comparison_path(@post, comparison),
-                              method: :delete,
-                              style: "padding: 4px; color: #9ca3af; background: none; border: none; cursor: pointer;",
-                              title: "比較を解除",
-                              data: { turbo_confirm: "この比較を解除しますか？" } do %>
-                          <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                          </svg>
-                        <% end %>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-
-            <%# === 他の投稿から比較されています === %>
-            <% if @post.incoming_comparisons.any? %>
-              <div style="margin-bottom: 20px;">
-                <h3 style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 12px;">
-                  他の投稿から比較されています
-                </h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                  <% @post.incoming_comparisons.includes(:source_post).each do |comparison| %>
-                    <%= link_to comparison.source_post, style: "display: flex; align-items: center; gap: 10px; padding: 12px; background: #f9fafb; border-radius: 8px; text-decoration: none;" do %>
-                      <div style="width: 60px; height: 34px; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #e5e7eb;">
-                        <%= image_tag comparison.source_post.youtube_thumbnail_url(size: :mqdefault),
-                              style: "width: 100%; height: 100%; object-fit: cover;",
-                              loading: "lazy" %>
-                      </div>
-                      <div style="flex: 1; min-width: 0;">
-                        <p style="font-size: 13px; color: #1a1a1a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                          <%= comparison.source_post.youtube_title || comparison.source_post.action_plan %>
-                        </p>
-                        <% if comparison.reason.present? %>
-                          <p style="font-size: 11px; color: #9ca3af; margin-top: 2px;">
-                            <%= comparison.reason.truncate(50) %>
-                          </p>
-                        <% end %>
-                      </div>
-                    <% end %>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-
-            <%# === 比較がない場合の空状態 === %>
-            <% unless @post.outgoing_comparisons.any? || @post.incoming_comparisons.any? %>
-              <div style="text-align: center; padding: 40px 20px; background: #f9fafb; border-radius: 8px;">
-                <div style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">🔗</div>
-                <p style="font-size: 14px; color: #9ca3af; margin-bottom: 16px;">比較はまだありません</p>
-              </div>
-            <% end %>
-
-            <%# === 比較を追加（本人のみ） === %>
-            <% if user_signed_in? && @post.has_entries_by?(current_user) %>
-              <div data-controller="comparison-form" style="margin-top: 16px;">
-                <button type="button"
-                        data-action="comparison-form#toggle"
-                        data-comparison-form-target="toggleButton"
-                        style="width: 100%; padding: 10px; border: 1px dashed #d1d5db; border-radius: 8px; color: #9ca3af; font-size: 13px; background: transparent; cursor: pointer;">
-                  + 比較対象を追加する
-                </button>
-                <div data-comparison-form-target="form" class="hidden" style="margin-top: 12px; padding: 16px; background: #f9fafb; border-radius: 8px;">
-                  <%= form_with model: [@post, PostComparison.new], local: true do |f| %>
-                    <div style="margin-bottom: 12px;">
-                      <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">
-                        比較対象の投稿を選択
-                      </label>
-                      <%= f.collection_select :target_post_id,
-                            current_user.posts.where.not(id: @post.id).where.not(id: @post.compared_posts.pluck(:id)).recent,
-                            :id,
-                            ->(p) { p.youtube_title.presence || p.action_plan.presence || "投稿 ##{p.id}" },
-                            { prompt: "-- 投稿を選択 --" },
-                            { style: "width: 100%; padding: 8px 10px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 6px; background: white;" } %>
-                    </div>
-                    <div style="margin-bottom: 12px;">
-                      <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">
-                        比較理由（任意）
-                      </label>
-                      <%= f.text_area :reason,
-                            placeholder: "なぜ比較するか、どんな違いがあるか...",
-                            rows: 2,
-                            style: "width: 100%; padding: 8px 10px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 6px; resize: none;" %>
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                      <button type="button"
-                              data-action="comparison-form#toggle"
-                              style="padding: 8px 14px; font-size: 13px; color: #6b7280; background: white; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
-                        キャンセル
-                      </button>
-                      <%= f.submit "追加",
-                            style: "padding: 8px 14px; font-size: 13px; color: white; background: #8B7355; border: none; border-radius: 6px; cursor: pointer;" %>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-
-          <%# === クイズパネル === %>
-          <div data-output-tabs-target="panel" data-panel="quiz" class="hidden">
-            <% if user_signed_in? %>
-              <div data-controller="detail-quiz"
-                   data-detail-quiz-post-id-value="<%= @post.id %>"
-                   data-detail-quiz-has-quiz-value="<%= @post.quiz.present? %>"
-                   data-detail-quiz-answered-value="<%= @post.quiz&.answered_by?(current_user) || false %>">
-
-                <%# ローディング状態 %>
-                <div data-detail-quiz-target="loading" style="display: none;">
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px;">
-                    <div class="quiz-loading-spinner"></div>
-                    <p style="color: #6b7280; margin-top: 16px;">クイズを読み込み中...</p>
-                  </div>
-                </div>
-
-                <%# クイズ未生成状態 %>
-                <div data-detail-quiz-target="empty" style="<%= @post.quiz.present? ? 'display: none;' : 'display: flex;' %>; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; background: #f9fafb; border-radius: 12px;">
-                  <div style="font-size: 48px; margin-bottom: 16px;">🧠</div>
-                  <h3 style="font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">理解度チェッククイズ</h3>
-                  <p style="font-size: 14px; color: #6b7280; text-align: center; margin-bottom: 24px;">
-                    AIがこの動画の内容に基づいて<br>5問のクイズを生成します。
-                  </p>
-                  <button type="button"
-                          data-action="click->detail-quiz#generate"
-                          style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(to right, #8b5cf6, #6366f1); color: white; font-size: 14px; font-weight: 500; border-radius: 8px; border: none; cursor: pointer;">
-                    ✨ クイズを生成
-                  </button>
-                </div>
-
-                <%# 回答済み状態 %>
-                <div data-detail-quiz-target="answered" style="<%= @post.quiz&.answered_by?(current_user) ? 'display: flex;' : 'display: none;' %>; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; background: #f0fdf4; border-radius: 12px;">
-                  <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
-                  <h3 style="font-size: 18px; font-weight: 600; color: #166534; margin-bottom: 8px;">回答済みです</h3>
-                  <% if @post.quiz&.answered_by?(current_user) %>
-                    <% latest = @post.quiz.latest_answer_for(current_user) %>
-                    <p style="font-size: 24px; font-weight: 700; color: #15803d; margin-bottom: 8px;">
-                      <span data-detail-quiz-target="lastScore"><%= latest&.score || '-' %></span>/<span data-detail-quiz-target="lastTotal"><%= latest&.total_questions || '5' %></span>
-                    </p>
-                    <p style="font-size: 14px; color: #6b7280; margin-bottom: 24px;">正解数</p>
-                  <% else %>
-                    <p style="font-size: 24px; font-weight: 700; color: #15803d; margin-bottom: 8px;">
-                      <span data-detail-quiz-target="lastScore">-</span>/<span data-detail-quiz-target="lastTotal">5</span>
-                    </p>
-                    <p style="font-size: 14px; color: #6b7280; margin-bottom: 24px;">正解数</p>
-                  <% end %>
-                  <button type="button"
-                          data-action="click->detail-quiz#retake"
-                          style="padding: 10px 20px; background: white; color: #15803d; font-size: 14px; font-weight: 500; border: 1px solid #bbf7d0; border-radius: 8px; cursor: pointer;">
-                    もう一度挑戦する
-                  </button>
-                </div>
-
-                <%# クイズ問題表示 %>
-                <div data-detail-quiz-target="questions" style="<%= @post.quiz.present? && !@post.quiz.answered_by?(current_user) ? 'display: block;' : 'display: none;' %>;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 12px 16px; background: #f3f4f6; border-radius: 8px;">
-                    <span style="font-size: 14px; font-weight: 500; color: #374151;">
-                      問題 <span data-detail-quiz-target="currentQuestion">1</span> / <span data-detail-quiz-target="totalQuestions">5</span>
-                    </span>
-                  </div>
-
-                  <div data-detail-quiz-target="questionContainer">
-                    <%# 問題が動的に追加される %>
-                  </div>
-
-                  <div style="display: flex; justify-content: space-between; margin-top: 24px;">
-                    <button type="button"
-                            data-action="click->detail-quiz#prevQuestion"
-                            data-detail-quiz-target="prevBtn"
-                            disabled
-                            style="padding: 10px 20px; background: white; color: #6b7280; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer;">
-                      ← 前へ
-                    </button>
-                    <button type="button"
-                            data-action="click->detail-quiz#nextQuestion"
-                            data-detail-quiz-target="nextBtn"
-                            style="padding: 10px 20px; background: #8B7355; color: white; font-size: 14px; border: none; border-radius: 8px; cursor: pointer;">
-                      次へ →
-                    </button>
-                    <button type="button"
-                            data-action="click->detail-quiz#submit"
-                            data-detail-quiz-target="submitBtn"
-                            style="display: none; padding: 10px 20px; background: #22c55e; color: white; font-size: 14px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer;">
-                      回答を送信
-                    </button>
-                  </div>
-                </div>
-
-                <%# エラー状態 %>
-                <div data-detail-quiz-target="error" style="display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; background: #fef2f2; border-radius: 12px;">
-                  <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-                  <p data-detail-quiz-target="errorMessage" style="font-size: 14px; color: #dc2626; text-align: center; margin-bottom: 24px;"></p>
-                  <button type="button"
-                          data-action="click->detail-quiz#retry"
-                          style="padding: 10px 20px; background: white; color: #dc2626; font-size: 14px; border: 1px solid #fecaca; border-radius: 8px; cursor: pointer;">
-                    再試行
-                  </button>
-                </div>
-              </div>
-            <% else %>
-              <%# 未ログイン状態 %>
-              <div style="text-align: center; padding: 40px 20px; background: #f9fafb; border-radius: 12px;">
-                <div style="font-size: 48px; margin-bottom: 16px;">🧠</div>
-                <h3 style="font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px;">理解度チェッククイズ</h3>
-                <p style="font-size: 14px; color: #6b7280; margin-bottom: 24px;">クイズに挑戦するにはログインが必要です</p>
-                <%= link_to "ログイン", new_user_session_path,
-                      style: "display: inline-block; padding: 10px 20px; background: #8B7355; color: white; font-size: 14px; font-weight: 500; border-radius: 8px; text-decoration: none;" %>
-              </div>
-            <% end %>
-          </div>
-        </div>
-
-      </section>
-    <% end %>
-    <% end %> <%# 旧機能非表示ここまで %>
-
-    <%# ===== コメントセクション ===== %>
-    <section style="border-top: 1px solid #f3f4f6; padding-top: 32px;">
-      <h2 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px;">
-        コメント
-        <span style="font-size: 14px; font-weight: 400; color: #9ca3af; margin-left: 4px;">(<%= @post.comments.count %>)</span>
+    <%# ===== アクションプランセクション ===== %>
+    <section style="border-top: 1px solid #f3f4f6; padding-top: 32px; margin-bottom: 32px;">
+      <h2 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <span>🎯</span>
+        <span>アクションプラン</span>
+        <span style="font-size: 14px; font-weight: 400; color: #9ca3af;">(<%= @post.post_entries.count %>)</span>
       </h2>
 
-      <div class="space-y-4 mb-6">
-        <% if @post.comments.any? %>
-          <% @post.comments.recent.each do |comment| %>
-            <div id="comment_<%= comment.id %>" class="flex gap-3 p-3 rounded-lg hover:bg-gray-50">
-              <%= link_to user_profile_path(comment.user), class: "flex-shrink-0" do %>
-                <% if comment.user.avatar.present? %>
-                  <%= image_tag comment.user.avatar.url,
-                        alt: display_name(comment.user),
-                        style: "width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" %>
-                <% else %>
-                  <div style="width: 32px; height: 32px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                    </svg>
-                  </div>
-                <% end %>
-              <% end %>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between mb-0.5">
-                  <div class="flex items-baseline gap-2">
-                    <%= link_to display_name(comment.user), user_profile_path(comment.user),
-                          style: "font-size: 14px; font-weight: 500; color: #1a1a1a;" %>
-                    <span style="font-size: 12px; color: #9ca3af;"><%= time_ago_in_words(comment.created_at) %>前</span>
-                  </div>
-                  <% if user_signed_in? && comment.user == current_user %>
-                    <%= button_to post_comment_path(@post, comment),
-                          method: :delete,
-                          data: { turbo_confirm: "コメントを削除しますか？" },
-                          class: "p-1 text-gray-400 hover:text-red-500 transition-colors",
-                          title: "削除" do %>
-                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                      </svg>
-                    <% end %>
-                  <% end %>
-                </div>
-                <p style="font-size: 14px; color: #374151; line-height: 1.5;"><%= comment.content %></p>
-              </div>
-            </div>
-          <% end %>
-        <% else %>
-          <div style="text-align: center; padding: 24px;">
-            <p style="font-size: 14px; color: #9ca3af;">まだコメントがありません</p>
-          </div>
-        <% end %>
-      </div>
-
+      <%# アクションプラン投稿フォーム（ログインユーザーのみ） %>
       <% if user_signed_in? %>
-        <%= form_with model: [@post, Comment.new], class: "flex items-start gap-3" do |f| %>
-          <% if current_user.avatar.present? %>
-            <%= image_tag current_user.avatar.url,
-                  style: "width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" %>
-          <% else %>
-            <div style="width: 32px; height: 32px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-              <svg class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-            </div>
-          <% end %>
-          <div class="flex-1">
-            <%= f.text_area :content,
-                  placeholder: "コメントを書く...",
-                  rows: 1,
-                  style: "width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: none;",
-                  data: { controller: "auto-resize", action: "input->auto-resize#resize" } %>
-            <div class="flex justify-end mt-2">
-              <button type="submit" style="padding: 8px 16px; background: #8B7355; color: white; font-size: 14px; font-weight: 500; border-radius: 8px; border: none; cursor: pointer;">
-                送信
-              </button>
-            </div>
+        <% if @post.has_entries_by?(current_user) %>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <p style="font-size: 14px; color: #166534; display: flex; align-items: center; gap: 8px;">
+              <span>✅</span>
+              <span>この動画にアクションプランを投稿済みです</span>
+            </p>
+          </div>
+        <% else %>
+          <div style="background: #fafafa; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+            <%= form_with url: post_post_entries_path(@post), method: :post, local: true do %>
+              <div style="margin-bottom: 12px;">
+                <textarea name="post_entry[content]" rows="3"
+                          required
+                          placeholder="この動画を見て何をしますか？"
+                          style="width: 100%; padding: 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px; resize: vertical;"></textarea>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 13px; color: #6b7280; margin-bottom: 6px;">期日（任意）</label>
+                <input type="date" name="post_entry[deadline]"
+                       style="width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #e5e7eb; border-radius: 8px;">
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #6b7280; cursor: pointer;">
+                  <input type="checkbox" name="post_entry[anonymous]" value="1" style="width: 16px; height: 16px;">
+                  <span>匿名で投稿</span>
+                </label>
+                <button type="submit"
+                        style="padding: 10px 20px; background: #f97316; color: white; font-size: 14px; font-weight: 500; border-radius: 8px; border: none; cursor: pointer;">
+                  投稿する
+                </button>
+              </div>
+            <% end %>
           </div>
         <% end %>
       <% else %>
-        <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 8px;">
-          <p style="font-size: 14px; color: #4b5563; margin-bottom: 12px;">コメントするにはログインが必要です</p>
+        <div style="text-align: center; padding: 20px; background: #f9fafb; border-radius: 12px; margin-bottom: 20px;">
+          <p style="font-size: 14px; color: #4b5563; margin-bottom: 12px;">アクションプランを投稿するにはログインが必要です</p>
           <%= link_to "ログイン", new_user_session_path,
-                style: "display: inline-block; padding: 8px 16px; background: #8B7355; color: white; font-size: 14px; font-weight: 500; border-radius: 8px; text-decoration: none;" %>
+                style: "display: inline-block; padding: 10px 20px; background: #f97316; color: white; font-size: 14px; font-weight: 500; border-radius: 8px; text-decoration: none;" %>
+        </div>
+      <% end %>
+
+      <%# 既存のアクションプラン一覧 %>
+      <% if @post.post_entries.any? %>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <% @post.post_entries.recent.each do |entry| %>
+            <%= render 'post_entries/entry_card', entry: entry %>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="text-align: center; padding: 32px; background: #f9fafb; border-radius: 12px;">
+          <p style="font-size: 14px; color: #9ca3af;">まだアクションプランがありません</p>
+          <p style="font-size: 13px; color: #d1d5db; margin-top: 4px;">最初のアクションプランを投稿してみましょう！</p>
         </div>
       <% end %>
     </section>
@@ -1293,16 +285,9 @@
         <%= render 'cheers/cheer_button_floating', post: @post %>
       </div>
       <div style="width: 1px; height: 16px; background: #e5e7eb;"></div>
-      <%# 旧機能：達成ボタン - 非表示 %>
-      <% if false && user_signed_in? && @post.has_entries_by?(current_user) %>
-        <div id="achievement_button_<%= @post.id %>">
-          <%= render "achievements/button_floating", post: @post %>
-        </div>
-        <div style="width: 1px; height: 16px; background: #e5e7eb;"></div>
-      <% end %>
       <button type="button"
-              onclick="navigator.share ? navigator.share({title: '<%= j(@post.youtube_title || @post.action_plan) %>', url: '<%= post_url(@post) %>'}) : navigator.clipboard.writeText('<%= post_url(@post) %>').then(() => alert('URLをコピーしました'))"
-              style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #9ca3af; border-radius: 50%; cursor: pointer;"
+              onclick="navigator.share ? navigator.share({title: '<%= j(@post.youtube_title) %>', url: '<%= post_url(@post) %>'}) : navigator.clipboard.writeText('<%= post_url(@post) %>').then(() => alert('URLをコピーしました'))"
+              style="width: 32px; height: 32px; display: flex; align-items: center; justify-center; color: #9ca3af; border-radius: 50%; cursor: pointer;"
               title="シェア">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>

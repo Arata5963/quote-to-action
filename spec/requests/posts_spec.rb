@@ -150,14 +150,6 @@ RSpec.describe "Posts", type: :request do
         expect(response.body).to include("テスト動画タイトル")
       end
 
-      it "コメントが表示される" do
-        comment = create(:comment, post: post_record, content: "テストコメント")
-
-        get post_path(post_record)
-
-        expect(response.body).to include("テストコメント")
-      end
-
       it "達成回数が表示される" do
         # タスク型: 1投稿1達成
         create(:achievement, post: post_record, user: user, achieved_at: Date.current)
@@ -196,7 +188,7 @@ RSpec.describe "Posts", type: :request do
 
         expect(response).to have_http_status(200)
         expect(response.body).to include("YouTube")
-        expect(response.body).to include("アクションプラン")
+        expect(response.body).to include("動画を記録")
       end
     end
 
@@ -225,14 +217,6 @@ RSpec.describe "Posts", type: :request do
           {
             post: {
               youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            },
-            entries: {
-              action: {
-                "0" => {
-                  content: "新しいアクションプラン",
-                  deadline: (Date.current + 7.days).to_s
-                }
-              }
             }
           }
         end
@@ -247,74 +231,9 @@ RSpec.describe "Posts", type: :request do
           post posts_path, params: valid_params
 
           expect(response).to redirect_to(post_path(Post.last))
-          follow_redirect!
-          expect(response.body).to include("アクション")
-        end
-
-        it "PostEntryがcurrent_userで作成される" do
-          post posts_path, params: valid_params
-
-          expect(PostEntry.last.user).to eq(user)
-        end
-
-        it "PostEntryも作成される" do
-          expect {
-            post posts_path, params: valid_params
-          }.to change(PostEntry, :count).by(1)
-        end
-
-        it "複数タイプのエントリーを作成できる" do
-          multi_params = {
-            post: {
-              youtube_url: "https://www.youtube.com/watch?v=abcde12345f"
-            },
-            entries: {
-              keyPoint: {
-                "0" => { content: "ポイント1" }
-              },
-              quote: {
-                "0" => { content: "引用1" }
-              },
-              action: {
-                "0" => { content: "アクション1", deadline: (Date.current + 7.days).to_s }
-              }
-            }
-          }
-
-          # Post作成と同時にエントリーが作成されることを確認（各タイプ1つずつ = 3件）
-          expect {
-            post posts_path, params: multi_params
-          }.to change(Post, :count).by(1).and change(PostEntry, :count).by(3)
         end
       end
 
-      context "エントリーなしでも投稿できる" do
-        let(:no_entry_params) do
-          {
-            post: {
-              youtube_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            }
-          }
-        end
-
-        it "投稿は作成される" do
-          expect {
-            post posts_path, params: no_entry_params
-          }.to change(Post, :count).by(1)
-        end
-
-        it "PostEntryは作成されない" do
-          expect {
-            post posts_path, params: no_entry_params
-          }.not_to change(PostEntry, :count)
-        end
-
-        it "詳細ページにリダイレクトされる" do
-          post posts_path, params: no_entry_params
-
-          expect(response).to redirect_to(post_path(Post.last))
-        end
-      end
     end
 
     context "ログインしていない場合" do
@@ -344,7 +263,7 @@ RSpec.describe "Posts", type: :request do
         get edit_post_path(post_record)
 
         expect(response).to have_http_status(200)
-        expect(response.body).to include("更新する")
+        expect(response.body).to include("動画を編集")
       end
     end
 
@@ -387,27 +306,11 @@ RSpec.describe "Posts", type: :request do
       end
 
       context "有効なパラメータの場合" do
-        let(:valid_params) do
-          {
-            post: {
-              action_plan: "更新されたアクションプラン"
-            }
-          }
-        end
-
-        it "投稿を更新できる" do
-          patch post_path(post_record), params: valid_params
-
-          post_record.reload
-          expect(post_record.action_plan).to eq("更新されたアクションプラン")
-        end
-
+        # Note: PATCHではyoutube_urlのみ更新可能（シンプル化によりaction_planは非推奨）
         it "詳細ページにリダイレクトされる" do
-          patch post_path(post_record), params: valid_params
+          patch post_path(post_record), params: { post: { youtube_url: post_record.youtube_url } }
 
           expect(response).to redirect_to(post_path(post_record))
-          follow_redirect!
-          expect(response.body).to include("アクションプラン")
         end
       end
 
@@ -431,7 +334,7 @@ RSpec.describe "Posts", type: :request do
           patch post_path(post_record), params: invalid_params
 
           expect(response).to have_http_status(:unprocessable_entity)
-          expect(response.body).to include("更新する")
+          expect(response.body).to include("動画を編集")
         end
       end
     end
@@ -530,15 +433,15 @@ RSpec.describe "Posts", type: :request do
   # GET /posts/autocomplete (オートコンプリート)
   # ====================
   describe "GET /posts/autocomplete" do
-    let!(:post1) { create(:post, action_plan: "Ruby入門") }
-    let!(:post2) { create(:post, action_plan: "Rubyで自動化") }
+    let!(:post1) { create(:post, youtube_title: "Ruby入門講座") }
+    let!(:post2) { create(:post, youtube_title: "Rubyで自動化入門") }
 
     it "検索候補を返す" do
       get autocomplete_posts_path, params: { q: "Ruby" }
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include("Ruby入門")
-      expect(response.body).to include("Rubyで自動化")
+      expect(response.body).to include("Ruby入門講座")
+      expect(response.body).to include("Rubyで自動化入門")
     end
 
     it "2文字未満は空を返す" do
@@ -548,10 +451,9 @@ RSpec.describe "Posts", type: :request do
       expect(response.body).not_to include("Ruby")
     end
 
-    context "YouTube情報での検索" do
+    context "チャンネル名での検索" do
       let!(:post_with_youtube) do
         create(:post,
-               action_plan: "学習を続ける",
                youtube_title: "プログラミング入門講座",
                youtube_channel_name: "Tech Channel")
       end

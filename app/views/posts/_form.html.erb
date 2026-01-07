@@ -1,4 +1,5 @@
 <%# app/views/posts/_form.html.erb %>
+<%# シンプルなYouTube URL入力フォーム %>
 <div class="min-h-screen py-8">
   <div class="max-w-2xl mx-auto px-4">
 
@@ -13,8 +14,11 @@
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 p-6">
+      <h1 class="text-xl font-bold text-gray-900 mb-6">
+        <%= post.persisted? ? "動画を編集" : "動画を記録" %>
+      </h1>
 
-      <%= form_with(model: post, local: true, html: { class: "space-y-6", data: { controller: "multi-entry-form" } }) do |form| %>
+      <%= form_with(model: post, local: true, html: { class: "space-y-6" }) do |form| %>
         <%# エラーメッセージ表示 %>
         <% if post.errors.any? %>
           <div class="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -99,105 +103,9 @@
           </div>
         </div>
 
-        <%# ===== アウトプットセクション（複数追加可能） ===== %>
-        <div class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-900 mb-1">
-              アウトプット
-            </label>
-            <p class="text-xs text-gray-500 mb-4">各カテゴリで複数のアウトプットを追加できます（任意）</p>
-          </div>
-
-          <%# === 要約セクション === %>
-          <div class="bg-blue-50/50 rounded-lg p-4 border border-blue-100">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xl">📝</span>
-              <h3 class="text-sm font-semibold text-gray-800">要約</h3>
-              <span class="text-xs text-gray-500">動画の内容を要約</span>
-            </div>
-            <div data-multi-entry-form-target="keyPointList" class="space-y-2">
-              <%# エントリーはJSで動的に追加 %>
-            </div>
-            <button type="button"
-                    data-action="multi-entry-form#addEntry"
-                    data-entry-type="keyPoint"
-                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-md transition-colors">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-              </svg>
-              要約を追加
-            </button>
-          </div>
-
-          <%# === 引用セクション === %>
-          <div class="bg-purple-50/50 rounded-lg p-4 border border-purple-100">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xl">💬</span>
-              <h3 class="text-sm font-semibold text-gray-800">引用</h3>
-              <span class="text-xs text-gray-500">響いたフレーズ</span>
-            </div>
-            <div data-multi-entry-form-target="quoteList" class="space-y-2">
-              <%# エントリーはJSで動的に追加 %>
-            </div>
-            <button type="button"
-                    data-action="multi-entry-form#addEntry"
-                    data-entry-type="quote"
-                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-purple-600 hover:text-purple-700 hover:bg-purple-100 rounded-md transition-colors">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-              </svg>
-              引用を追加
-            </button>
-          </div>
-
-          <%# === アクションセクション === %>
-          <div class="bg-orange-50/50 rounded-lg p-4 border border-orange-100">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="text-xl">🎯</span>
-              <h3 class="text-sm font-semibold text-gray-800">アクション</h3>
-              <span class="text-xs text-gray-500">具体的にやること</span>
-            </div>
-            <div data-multi-entry-form-target="actionList" class="space-y-2">
-              <%# エントリーはJSで動的に追加 %>
-            </div>
-            <button type="button"
-                    data-action="multi-entry-form#addEntry"
-                    data-entry-type="action"
-                    class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-100 rounded-md transition-colors">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-              </svg>
-              アクションを追加
-            </button>
-          </div>
-        </div>
-
-        <%# 満足度（任意） %>
-        <div class="pt-4 border-t border-gray-100">
-          <label class="block text-sm font-medium text-gray-900 mb-2">
-            この動画の満足度（任意）
-          </label>
-          <div data-controller="rating" class="flex items-center gap-1">
-            <input type="hidden" name="satisfaction_rating" value="" data-rating-target="input">
-            <% (1..5).each do |i| %>
-              <button type="button"
-                      data-rating-target="star"
-                      data-rating="<%= i %>"
-                      data-action="click->rating#select mouseenter->rating#hover mouseleave->rating#leave"
-                      class="text-3xl text-gray-300 hover:scale-110 transition-transform cursor-pointer focus:outline-none"
-                      title="<%= PostEntry::SATISFACTION_LABELS[i] %>">
-                ★
-              </button>
-            <% end %>
-            <button type="button"
-                    data-action="click->rating#select"
-                    data-rating="0"
-                    class="ml-3 text-sm text-gray-400 hover:text-gray-600">
-              クリア
-            </button>
-          </div>
-          <p class="mt-1 text-xs text-gray-500">動画の質や学びの度合いを評価</p>
-        </div>
+        <p class="text-sm text-gray-500">
+          動画を記録すると、詳細ページでアクションプランを投稿できます。
+        </p>
 
         <%# ボタンエリア %>
         <div class="pt-4">

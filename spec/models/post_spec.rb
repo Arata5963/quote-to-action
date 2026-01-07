@@ -15,7 +15,6 @@ RSpec.describe Post, type: :model do
   describe "associations" do
     it { should belong_to(:user).optional }
     it { should have_many(:achievements) }
-    it { should have_many(:comments) }
     it { should have_many(:cheers) }
     it { should have_many(:post_entries) }
   end
@@ -121,8 +120,8 @@ RSpec.describe Post, type: :model do
     let(:user2) { create(:user) }
 
     before do
-      create(:post_entry, post: post, user: user1, entry_type: :action, deadline: 1.week.from_now)
-      create(:post_entry, post: post, user: user2, entry_type: :key_point)
+      create(:post_entry, post: post, user: user1, deadline: 1.week.from_now)
+      create(:post_entry, post: post, user: user2)
     end
 
     it "エントリーを持つユーザー一覧を返す" do
@@ -136,8 +135,8 @@ RSpec.describe Post, type: :model do
     let(:other_user) { create(:user) }
 
     before do
-      create(:post_entry, post: post, user: user, entry_type: :action, deadline: 1.week.from_now)
-      create(:post_entry, post: post, user: other_user, entry_type: :key_point)
+      create(:post_entry, post: post, user: user, deadline: 1.week.from_now)
+      create(:post_entry, post: post, user: other_user)
     end
 
     it "指定ユーザーのエントリーのみ返す" do
@@ -153,7 +152,7 @@ RSpec.describe Post, type: :model do
     let(:other_user) { create(:user) }
 
     before do
-      create(:post_entry, post: post, user: user, entry_type: :action, deadline: 1.week.from_now)
+      create(:post_entry, post: post, user: user, deadline: 1.week.from_now)
     end
 
     it "エントリーを持つユーザーの場合trueを返す" do

@@ -1,6 +1,4 @@
 <%# app/views/posts/edit.html.erb %>
-<% content_for :title, "投稿編集" %>
-<div class="max-w-2xl mx-auto px-4 py-8">
-  <%= render 'shared/error_messages', object: @post %>
-  <%= render 'form', post: @post %>
-</div>
+<% content_for :title, "動画を編集" %>
+
+<%= render 'form', post: @post %>

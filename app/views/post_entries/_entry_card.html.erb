@@ -1,65 +1,38 @@
 <%# app/views/post_entries/_entry_card.html.erb %>
-<%# エントリーカード（note.com風クリーンスタイル） %>
+<%# アクションプランカード %>
 
 <div id="<%= dom_id(entry) %>" class="group">
   <div class="flex gap-4">
-    <%# 左: タイプインジケーター %>
+    <%# 左: アイコン %>
     <div class="flex-shrink-0 pt-1">
-      <% if entry.key_point? %>
-        <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center" title="要約">
-          <span class="text-lg">📝</span>
-        </div>
-      <% elsif entry.quote? %>
-        <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center" title="引用">
-          <span class="text-lg">💬</span>
-        </div>
-      <% elsif entry.action? %>
-        <div class="w-8 h-8 rounded-full <%= entry.achieved? ? 'bg-green-50' : 'bg-orange-50' %> flex items-center justify-center" title="アクション">
-          <span class="text-lg">🎯</span>
-        </div>
-      <% end %>
+      <div class="w-8 h-8 rounded-full <%= entry.achieved? ? 'bg-green-50' : 'bg-orange-50' %> flex items-center justify-center">
+        <span class="text-lg">🎯</span>
+      </div>
     </div>
 
     <%# 中央: コンテンツ %>
     <div class="flex-1 min-w-0 pb-4 border-b border-gray-100 group-last:border-0 group-last:pb-0">
-      <%# タイプラベル + 時間 %>
+      <%# ユーザー情報 + 時間 %>
       <div class="flex items-center gap-2 mb-1">
-        <%
-          label_class = if entry.key_point?
-            'text-blue-600'
-          elsif entry.quote?
-            'text-purple-600'
-          elsif entry.action?
-            entry.achieved? ? 'text-green-600' : 'text-orange-600'
-          else
-            'text-gray-500'
-          end
-
-          label_text = if entry.key_point?
-            '要約'
-          elsif entry.quote?
-            '引用'
-          elsif entry.action?
-            entry.achieved? ? '達成' : 'アクション'
-          else
-            ''
-          end
-        %>
-        <span class="text-xs font-medium <%= label_class %>"><%= label_text %></span>
+        <% if entry.display_anonymous? %>
+          <span class="text-xs text-gray-500">匿名</span>
+        <% else %>
+          <span class="text-xs text-gray-700 font-medium"><%= entry.display_user_name %></span>
+        <% end %>
+        <span class="text-xs <%= entry.achieved? ? 'text-green-600' : 'text-orange-600' %> font-medium">
+          <%= entry.achieved? ? '達成' : 'アクションプラン' %>
+        </span>
         <span class="text-xs text-gray-400"><%= time_ago_in_words(entry.created_at) %>前</span>
       </div>
 
       <%# コンテンツ本文 %>
-      <% if entry.content.present? %>
-        <p class="text-gray-800 text-[15px] leading-relaxed whitespace-pre-line"><%= entry.content %></p>
-      <% else %>
-        <p class="text-gray-400 text-sm italic">内容なし</p>
-      <% end %>
+      <p class="text-gray-800 text-[15px] leading-relaxed whitespace-pre-line <%= 'line-through text-gray-400' if entry.achieved? %>">
+        <%= entry.content %>
+      </p>
 
-      <%# メタ情報 %>
-      <div class="mt-2 flex items-center gap-3 flex-wrap">
-        <%# 期日表示（未達成のactionのみ） %>
-        <% if entry.action? && entry.deadline && !entry.achieved? %>
+      <%# 期日表示（未達成のみ） %>
+      <% if entry.deadline && !entry.achieved? %>
+        <div class="mt-2">
           <span class="inline-flex items-center gap-1 text-xs <%= entry.deadline < Date.current ? 'text-red-500' : 'text-orange-500' %>">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -71,44 +44,42 @@
               <span>(あと<%= (entry.deadline - Date.current).to_i %>日)</span>
             <% end %>
           </span>
-        <% end %>
-
-        <%# 満足度 %>
-        <% if entry.satisfaction_rating.present? %>
-          <span class="inline-flex items-center gap-0.5 text-xs text-yellow-500" title="<%= entry.satisfaction_label %>">
-            <% entry.satisfaction_rating.times do %>
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-              </svg>
-            <% end %>
-          </span>
-        <% end %>
-      </div>
+        </div>
+      <% end %>
     </div>
 
-    <%# 右: チェックボックス（actionタイプのみ） %>
-    <% if entry.action? %>
-      <div class="flex-shrink-0 pt-1">
-        <% if entry.achieved? %>
-          <%# 達成済み %>
+    <%# 右: チェックボックス %>
+    <div class="flex-shrink-0 pt-1">
+      <% if entry.achieved? %>
+        <%# 達成済み %>
+        <% if user_signed_in? && entry.user == current_user %>
+          <%= button_to achieve_post_post_entry_path(entry.post, entry),
+                method: :patch,
+                class: "w-6 h-6 rounded-full flex items-center justify-center cursor-pointer",
+                style: "background-color: #22c55e;",
+                title: "未達成に戻す" do %>
+            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          <% end %>
+        <% else %>
           <div class="w-6 h-6 rounded-full flex items-center justify-center" style="background-color: #22c55e;" title="達成済み">
             <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-        <% elsif user_signed_in? && entry.post.user == current_user %>
-          <%# 未達成（本人） %>
-          <%= button_to achieve_post_post_entry_path(entry.post, entry),
-                method: :patch,
-                class: "w-6 h-6 flex items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-green-500 hover:bg-green-50 transition-colors cursor-pointer",
-                title: "達成にする",
-                data: { turbo_frame: "_top" } do %>
-          <% end %>
-        <% else %>
-          <%# 未達成（他人） %>
-          <div class="w-6 h-6 rounded-full border-2 border-gray-200" title="未達成"></div>
         <% end %>
-      </div>
-    <% end %>
+      <% elsif user_signed_in? && entry.user == current_user %>
+        <%# 未達成（本人） %>
+        <%= button_to achieve_post_post_entry_path(entry.post, entry),
+              method: :patch,
+              class: "w-6 h-6 flex items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-green-500 hover:bg-green-50 transition-colors cursor-pointer",
+              title: "達成にする" do %>
+        <% end %>
+      <% else %>
+        <%# 未達成（他人） %>
+        <div class="w-6 h-6 rounded-full border-2 border-gray-200" title="未達成"></div>
+      <% end %>
+    </div>
   </div>
 </div>
