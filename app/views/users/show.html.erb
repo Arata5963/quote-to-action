@@ -218,41 +218,6 @@
             </div>
           </div>
 
-          <%# アウトプット内訳 %>
-          <div class="mb-10">
-            <h3 class="text-sm font-medium text-gray-500 mb-4">アウトプット内訳</h3>
-            <div class="flex items-center gap-6">
-              <div class="w-20 h-20 flex-shrink-0" data-controller="donut-chart"
-                   data-donut-chart-values-value="<%= [@entry_stats[:memo], @entry_stats[:quote], @entry_stats[:action], @entry_stats[:blog]].to_json %>"
-                   data-donut-chart-labels-value='["要約", "引用", "アクション", "ブログ"]'
-                   data-donut-chart-colors-value='["#60a5fa", "#a78bfa", "#f97316", "#10b981"]'>
-                <canvas></canvas>
-              </div>
-              <div class="flex-1 grid grid-cols-2 gap-3 text-sm">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                  <span class="text-gray-600">要約</span>
-                  <span class="font-medium text-gray-900 ml-auto"><%= @entry_stats[:memo] %></span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-violet-400"></span>
-                  <span class="text-gray-600">引用</span>
-                  <span class="font-medium text-gray-900 ml-auto"><%= @entry_stats[:quote] %></span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
-                  <span class="text-gray-600">アクション</span>
-                  <span class="font-medium text-gray-900 ml-auto"><%= @entry_stats[:action] %></span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                  <span class="text-gray-600">ブログ</span>
-                  <span class="font-medium text-gray-900 ml-auto"><%= @entry_stats[:blog] %></span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <%# 達成カレンダー %>
           <div class="mb-10">
             <h3 class="text-sm font-medium text-gray-500 mb-4">達成カレンダー</h3>
