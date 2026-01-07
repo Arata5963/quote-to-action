@@ -8,7 +8,6 @@ class User < ApplicationRecord
 
   has_many :posts, dependent: :destroy
   has_many :achievements, dependent: :destroy
-  has_many :comments, dependent: :destroy
   has_many :cheers, dependent: :destroy
   has_many :favorite_videos, -> { order(:position) }, dependent: :destroy
   has_many :quiz_answers, dependent: :destroy

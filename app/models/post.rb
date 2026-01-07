@@ -1,26 +1,11 @@
 # app/models/post.rb
 class Post < ApplicationRecord
-  include Recommendable
-
   belongs_to :user, optional: true
   has_many :achievements, dependent: :destroy
-  has_many :comments, dependent: :destroy
   has_many :cheers, dependent: :destroy
   has_many :post_entries, dependent: :destroy
   has_many :youtube_comments, dependent: :destroy
   has_one :quiz, dependent: :destroy
-
-  # 比較機能: A→B の一方向関係
-  # outgoing: この投稿が比較している投稿への関係
-  has_many :outgoing_comparisons, class_name: 'PostComparison', foreign_key: :source_post_id, dependent: :destroy
-  has_many :compared_posts, through: :outgoing_comparisons, source: :target_post
-
-  # incoming: この投稿を比較している他の投稿からの関係
-  has_many :incoming_comparisons, class_name: 'PostComparison', foreign_key: :target_post_id, dependent: :destroy
-  has_many :comparing_posts, through: :incoming_comparisons, source: :source_post
-
-  # 布教クリック
-  has_many :recommendation_clicks, dependent: :destroy
 
   scope :recent, -> { order(created_at: :desc) }
 
@@ -60,29 +45,6 @@ class Post < ApplicationRecord
 
   def has_action_entries?
     post_entries.where(entry_type: :action).exists?
-  end
-
-  # 布教エントリーを取得（1件のみ）
-  def recommendation_entry
-    post_entries.find_by(entry_type: :recommendation)
-  end
-
-  # 布教があるかどうか
-  def has_recommendation?
-    post_entries.exists?(entry_type: :recommendation)
-  end
-
-  # 布教クリック数
-  def recommendation_click_count
-    recommendation_clicks.count
-  end
-
-  # 満足度の平均（評価があるエントリーのみ）
-  def average_satisfaction_rating
-    ratings = post_entries.with_satisfaction.pluck(:satisfaction_rating)
-    return nil if ratings.empty?
-
-    (ratings.sum.to_f / ratings.size).round(1)
   end
 
   # YouTube動画ID取得（保存値優先、なければURLから抽出）

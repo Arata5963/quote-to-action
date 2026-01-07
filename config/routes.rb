@@ -39,31 +39,18 @@ Rails.application.routes.draw do
     collection do
       get :autocomplete
       get :youtube_search
-      get :search_for_comparison
-      post :generate_entry
       post :find_or_create
     end
     member do
-      post :track_recommendation_click
       post :summarize
-      get :quotes_showcase
-      post :suggest_quotes
-      post :add_quotes
       get :youtube_comments
       post :discover_comments
     end
     resources :achievements, only: [ :create, :destroy ]
-    resources :comments, only: [ :create, :destroy ]
     resources :cheers, only: [ :create, :destroy ]
-    resource :recommendation, only: [ :show ]
-    resources :post_entries, only: [ :create, :show, :edit, :update, :destroy ] do
+    resources :post_entries, only: [ :create, :destroy ] do
       patch :achieve, on: :member
-      patch :publish, on: :member
-      patch :unpublish, on: :member
-      post :bulk_create, on: :collection
-      get :new_blog, on: :collection
     end
-    resources :post_comparisons, only: [ :create, :destroy ]
     resource :quiz, only: [ :show ] do
       post :generate
       post :submit
