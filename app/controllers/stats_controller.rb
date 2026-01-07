@@ -11,21 +11,9 @@ class StatsController < ApplicationController
     @total_posts = @posts.count
     @total_entries = @entries.count
 
-    # エントリータイプ別集計
-    @entry_type_counts = @entries.group(:entry_type).count
-    @key_point_count = @entry_type_counts["key_point"] || 0
-    @quote_count = @entry_type_counts["quote"] || 0
-    @action_count = @entry_type_counts["action"] || 0
-
-    # 達成率（actionエントリーのみ）
-    @action_entries = @entries.where(entry_type: :action)
-    @achieved_count = @action_entries.where.not(achieved_at: nil).count
-    @achievement_rate = @action_count.positive? ? (@achieved_count.to_f / @action_count * 100).round(1) : 0
-
-    # 満足度統計
-    @rated_entries = @entries.with_satisfaction
-    @average_satisfaction = @rated_entries.average(:satisfaction_rating)&.round(1) || 0
-    @satisfaction_distribution = @rated_entries.group(:satisfaction_rating).count
+    # 達成率
+    @achieved_count = @entries.where.not(achieved_at: nil).count
+    @achievement_rate = @total_entries.positive? ? (@achieved_count.to_f / @total_entries * 100).round(1) : 0
 
     # 期間別統計（過去30日）
     @recent_entries = @entries.where("post_entries.created_at >= ?", 30.days.ago)

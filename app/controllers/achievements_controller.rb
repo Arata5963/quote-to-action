@@ -7,9 +7,9 @@ class AchievementsController < ApplicationController
   before_action :set_post
 
   def create
-    # Check if user has any unachieved action entries for this post
-    user_action_entries = @post.post_entries.where(user: current_user, entry_type: :action)
-    unachieved_entries = user_action_entries.where(achieved_at: nil)
+    # Check if user has any unachieved entries for this post
+    user_entries = @post.post_entries.where(user: current_user)
+    unachieved_entries = user_entries.where(achieved_at: nil)
 
     if unachieved_entries.empty?
       respond_to do |format|

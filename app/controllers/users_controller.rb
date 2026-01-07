@@ -32,7 +32,7 @@ class UsersController < ApplicationController
       # 他のユーザーの投稿一覧（そのユーザーがエントリーを持つPost）
       user_post_ids = PostEntry.where(user: @user).select(:post_id).distinct
       @user_posts = Post.where(id: user_post_ids)
-                        .includes(:post_entries, :cheers, :comments)
+                        .includes(:post_entries, :cheers)
                         .recent
 
       # すきな動画
@@ -62,7 +62,7 @@ class UsersController < ApplicationController
       # ユーザーの投稿一覧（自分がエントリーを持つPost）
       user_post_ids = PostEntry.where(user: @user).select(:post_id).distinct
       @user_posts = Post.where(id: user_post_ids)
-                        .includes(:post_entries, :cheers, :comments)
+                        .includes(:post_entries, :cheers)
                         .recent
 
       # すきな動画
@@ -70,7 +70,6 @@ class UsersController < ApplicationController
 
       # ===== タスクタブ用データ（PostEntry単位） =====
       action_entries = PostEntry.where(user: @user)
-                                .where(entry_type: :action)
                                 .where.not(deadline: nil)
                                 .includes(:post)
 
@@ -94,15 +93,8 @@ class UsersController < ApplicationController
                                        .order(achieved_at: :desc)
                                        .limit(20)
 
-      # エントリータイプ別統計
-      user_entries = PostEntry.where(user: @user)
-      @entry_stats = {
-        memo: user_entries.where(entry_type: :key_point).count,
-        quote: user_entries.where(entry_type: :quote).count,
-        action: user_entries.where(entry_type: :action).count,
-        blog: user_entries.where(entry_type: :blog).count
-      }
-      @total_entries = @entry_stats.values.sum
+      # エントリー統計
+      @total_entries = PostEntry.where(user: @user).count
 
       # 過去30日間の活動データ（草用）
       @activity_data = PostEntry.where(user: @user)
@@ -112,12 +104,6 @@ class UsersController < ApplicationController
 
       # 連続記録
       @streak = calculate_streak(@user)
-
-      # ブックマークしたコメント（ブックマーク日順）
-      @bookmarked_comments = @user.bookmarked_comments
-                                  .includes(:post)
-                                  .joins(:comment_bookmarks)
-                                  .merge(CommentBookmark.recent)
     end
   end
 
