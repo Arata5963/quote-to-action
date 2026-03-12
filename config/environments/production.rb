@@ -31,7 +31,7 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: "www.mitadake.com" }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    host: "smtp.resend.com",
+    address: "smtp.resend.com",
     port: 465,
     user_name: "resend",
     password: ENV["RESEND_API_KEY"],  # Render.comの環境変数に設定
