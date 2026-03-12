@@ -5,7 +5,7 @@
 
 Devise.setup do |config|
   # メール送信元アドレス
-  config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
+  config.mailer_sender = "noreply@mitadake.com"  # 送信元アドレス
 
   # ORM設定（Active Record使用）
   require "devise/orm/active_record"
