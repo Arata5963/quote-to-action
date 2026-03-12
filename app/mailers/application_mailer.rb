@@ -2,6 +2,6 @@
 # 全てのメーラークラスの親クラス
 
 class ApplicationMailer < ActionMailer::Base
-  default from: "from@example.com"  # 送信元アドレス
+  default from: "noreply@mitadake.com"  # 送信元アドレス
   layout "mailer"                   # メールテンプレートのレイアウト
 end

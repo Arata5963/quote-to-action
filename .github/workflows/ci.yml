@@ -1,97 +1,104 @@
-# CI ワークフロー
-# PR・main push 時にセキュリティスキャン、Lint、テストを実行
+# CI ワークフロー（GitHub Actions）
+# PR作成・mainプッシュ時にセキュリティスキャン、Lint、テストを自動実行
 
-name: CI
+name: CI                                           # GitHub上で表示されるワークフロー名
 
-on:
-  pull_request:
-  push:
-    branches: [ main ]
+on:                                                # ワークフローの実行トリガー
+  pull_request:                                    # PR作成・更新時に実行
+  push:                                            # プッシュ時に実行
+    branches: [ main ]                             # mainブランチのみ対象
 
-jobs:
+jobs:                                              # 実行するジョブ一覧（各ジョブは並列で動く）
+
+  # Rubyセキュリティスキャン
   scan_ruby:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest                         # GitHubが用意するLinux仮想マシンで実行
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6                  # リポジトリのコードをVMにダウンロード
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
+        uses: ruby/setup-ruby@v1                   # Rubyをインストールするアクション
+        with:                                      # アクションに渡すパラメータ
+          ruby-version: .ruby-version              # プロジェクトの.ruby-versionファイルからバージョン指定
+          bundler-cache: true                      # gemをキャッシュして次回以降を高速化
       - name: Scan for common Rails security vulnerabilities using static analysis
-        run: bundle exec brakeman --no-pager || true
+        run: bundle exec brakeman --no-pager || true  # Brakeman実行（|| true: 警告があってもCIを止めない）
 
+  # JavaScript脆弱性スキャン
   scan_js:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest                         # 実行環境
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6                  # コード取得
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@v1                   # importmapコマンドの実行にRubyが必要
         with:
-          ruby-version: .ruby-version
-          bundler-cache: true
+          ruby-version: .ruby-version              # バージョン指定
+          bundler-cache: true                      # キャッシュ有効化
       - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
+        run: bin/importmap audit                    # JSパッケージの既知の脆弱性をチェック
 
+  # コードスタイルチェック
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest                         # 実行環境
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6                  # コード取得
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@v1                   # Ruby環境セットアップ
         with:
-          ruby-version: .ruby-version
-          bundler-cache: true
+          ruby-version: .ruby-version              # バージョン指定
+          bundler-cache: true                      # キャッシュ有効化
       - name: Lint code for consistent style
-        run: bundle exec rubocop -f github
+        run: bundle exec rubocop -f github         # RuboCop実行（-f github: PRのコード上に直接注釈を表示）
 
+  # RSpecテスト
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest                         # 実行環境
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: mitadake_test
+    services:                                      # テスト用のDockerコンテナを起動
+      postgres:                                    # PostgreSQLをサービスとして用意
+        image: postgres:15                         # PostgreSQL 15のDockerイメージを使用
+        env:                                       # コンテナの環境変数（DB接続情報）
+          POSTGRES_USER: postgres                  # DBユーザー名
+          POSTGRES_PASSWORD: password              # DBパスワード（CI専用なので簡易的でOK）
+          POSTGRES_DB: mitadake_test               # テスト用DB名
         ports:
-          - 5432:5432
+          - 5432:5432                              # ホスト:コンテナ のポートマッピング
+        # PostgreSQLが起動完了するまで待機するヘルスチェック設定
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
-    env:
-      RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:password@localhost:5432/mitadake_test
+    env:                                                                             # ジョブ全体で使う環境変数
+      RAILS_ENV: test                                                                # Railsをテストモードで実行
+      DATABASE_URL: postgres://postgres:password@localhost:5432/mitadake_test         # 上のservicesで起動したPostgreSQLに接続
 
     steps:
       - name: Install packages
+        # C拡張gemのビルドに必要なシステムパッケージをインストール（libpq-dev = PostgreSQL用）
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev pkg-config libpq-dev
 
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6                  # コード取得
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@v1                   # Ruby環境セットアップ
         with:
-          ruby-version: .ruby-version
-          bundler-cache: true
+          ruby-version: .ruby-version              # バージョン指定
+          bundler-cache: true                      # キャッシュ有効化
 
       - name: Precompile assets
-        run: bin/rails assets:precompile
+        run: bin/rails assets:precompile           # CSS/JSを事前コンパイル（テスト実行に必要）
 
       - name: Setup test database
-        run: bin/rails db:test:prepare
+        run: bin/rails db:test:prepare             # テストDBにスキーマ（テーブル構造）を作成
 
       - name: Run RSpec tests
-        run: bundle exec rspec
+        run: bundle exec rspec                     # RSpecテスト実行
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v6
-        if: always()
+        uses: actions/upload-artifact@v6           # ファイルをGitHubに保存するアクション
+        if: always()                               # テスト成功・失敗に関わらず必ず実行
         with:
-          name: coverage-report
-          path: coverage/
-          if-no-files-found: ignore
+          name: coverage-report                    # GitHub上での表示名
+          path: coverage/                          # アップロード対象のディレクトリ
+          if-no-files-found: ignore                # ファイルがなくてもエラーにしない

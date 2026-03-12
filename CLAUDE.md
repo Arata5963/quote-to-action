@@ -152,6 +152,21 @@ export default class extends Controller {
 }
 ```
 
+**CSS例:**
+```css
+/* カスタムCSS */
+/* Tailwindのユーティリティクラスでは対応できないスタイルを定義 */
+
+/* Alpine.js クローク */
+[x-cloak] { display: none !important; }
+
+/* スクロールバー非表示 */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+```
+
 **YAML例:**
 ```yaml
 # Render.com インフラ設定（IaC）

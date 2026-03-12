@@ -40,8 +40,9 @@ class User < ApplicationRecord
 
     user = find_by(email: auth.info.email)                                           # 同じメールの既存ユーザーを探す
     if user                                                                          # 見つかった場合
-      user.update!(provider: auth.provider, uid: auth.uid)                           # Google情報を追加
-      user.update!(name: auth.info.name) if user.name.blank? && auth.info.name.present?  # 名前が空ならセット
+      attrs = { provider: auth.provider, uid: auth.uid }                             # Google情報を準備
+      attrs[:name] = auth.info.name if user.name.blank? && auth.info.name.present?   # 名前が空ならセット
+      user.update!(attrs)                                                            # まとめて更新（DB書き込み1回）
       return user                                                                    # ユーザーを返す
     end
 
@@ -64,20 +65,21 @@ class User < ApplicationRecord
     current_action_plan&.post                                                        # アクションプランの元動画
   end
 
-  private
-
   # 期間フィルターを適用
-  def self.apply_period_filter(scope, period)
-    case period.to_sym                                                               # 期間で分岐
-    when :today                                                                      # 今日
-      scope.where(post_entries: { achieved_at: Time.current.beginning_of_day.. })    # 今日の0時以降
-    when :week                                                                       # 今週
-      scope.where(post_entries: { achieved_at: Time.current.beginning_of_week.. })   # 今週の月曜0時以降
-    when :month                                                                      # 今月
-      scope.where(post_entries: { achieved_at: Time.current.beginning_of_month.. })  # 今月の1日0時以降
-    else                                                                             # :allの場合
-      scope                                                                          # フィルターなし
+  class << self                                                                      # クラスメソッドのprivateブロック
+    private
+
+    def apply_period_filter(scope, period)
+      case period.to_sym                                                             # 期間で分岐
+      when :today                                                                    # 今日
+        scope.where(post_entries: { achieved_at: Time.current.beginning_of_day.. })  # 今日の0時以降
+      when :week                                                                     # 今週
+        scope.where(post_entries: { achieved_at: Time.current.beginning_of_week.. }) # 今週の月曜0時以降
+      when :month                                                                    # 今月
+        scope.where(post_entries: { achieved_at: Time.current.beginning_of_month.. })# 今月の1日0時以降
+      else                                                                           # :allの場合
+        scope                                                                        # フィルターなし
+      end
     end
   end
-
 end

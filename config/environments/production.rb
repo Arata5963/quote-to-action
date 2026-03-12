@@ -27,8 +27,17 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # メール設定
+  # メール設定（Resend経由でSMTP送信）
   config.action_mailer.default_url_options = { host: "www.mitadake.com" }
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    host: "smtp.resend.com",
+    port: 465,
+    user_name: "resend",
+    password: ENV["RESEND_API_KEY"],  # Render.comの環境変数に設定
+    authentication: :plain,
+    ssl: true
+  }
 
   config.i18n.fallbacks = true                              # 翻訳フォールバック有効
   config.active_record.dump_schema_after_migration = false  # マイグレーション後のスキーマダンプ無効
