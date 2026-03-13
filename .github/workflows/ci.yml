@@ -96,7 +96,7 @@ jobs:                                              # 実行するジョブ一覧
         run: bundle exec rspec                     # RSpecテスト実行
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v6           # ファイルをGitHubに保存するアクション
+        uses: actions/upload-artifact@v7           # ファイルをGitHubに保存するアクション
         if: always()                               # テスト成功・失敗に関わらず必ず実行
         with:
           name: coverage-report                    # GitHub上での表示名
