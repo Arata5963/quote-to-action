@@ -36,7 +36,14 @@
 
 - **プロジェクト名**: mitadake?（みただけ？）
 - **概要**: YouTube動画から学びを行動に変えるプラットフォーム
-- **技術スタック**: Ruby on Rails 7.2.2 / PostgreSQL / Hotwire / Tailwind CSS
+- **技術スタック**: Ruby 3.3.9 / Rails 7.2.2 / PostgreSQL 15 / Hotwire (Turbo + Stimulus) / Tailwind CSS
+- **認証**: Devise + Google OAuth2 (OmniAuth)
+- **画像ストレージ**: AWS S3 (CarrierWave + fog-aws)
+- **メール**: Resend (SMTP経由)
+- **バックグラウンドジョブ**: Solid Queue
+- **外部API**: YouTube Data API v3, Gemini AI API (Gemfile定義済み)
+- **本番環境**: Render.com (render.yaml でIaC管理)
+- **開発環境**: Docker Compose (web + PostgreSQL 15)
 
 ## クイックリファレンス
 
@@ -209,6 +216,76 @@ databases:
 - Strong Parametersを適切に設定
 - Brakemanの警告をゼロに保つ
 
+## コードベース概要
+
+### モデル構成
+
+| モデル | ファイル | 役割 |
+|--------|---------|------|
+| `User` | `app/models/user.rb` | Devise認証、Googleログイン、プロフィール |
+| `Post` | `app/models/post.rb` | YouTube動画（URL→video_idで重複排除） |
+| `PostEntry` | `app/models/post_entry.rb` | アクションプラン（ユーザーの行動計画） |
+| `EntryLike` | `app/models/entry_like.rb` | いいね機能（user + post_entry の複合ユニーク） |
+
+**主要なアソシエーション:**
+```
+User → has_many :posts, :post_entries, :entry_likes
+Post → has_many :post_entries; belongs_to :user (optional)
+PostEntry → belongs_to :post, :user; has_many :entry_likes
+EntryLike → belongs_to :user, :post_entry
+```
+
+**PostEntryの重要なコールバック:**
+- `before_validation :set_auto_deadline` - 作成時に期限を7日後に自動設定
+- `after_destroy :cleanup_empty_post` - 最後のEntryが削除されたらPostも削除
+- `after_update :cleanup_old_post` - 動画変更時に旧Postの孤立チェック
+
+### コントローラー構成
+
+| コントローラー | 主要アクション |
+|--------------|-------------|
+| `PostsController` | index, show, find_or_create (JSON), create_with_action, youtube_search, autocomplete |
+| `PostEntriesController` | create, edit, update, destroy, achieve (Turbo Stream), toggle_like, show_achievement, update_reflection |
+| `UsersController` | show (マイページ/プロフィール兼用), edit, update, pending_actions, achieved_actions |
+| `PagesController` | home (ゲスト: LP、ログイン済み: フィード), terms, privacy |
+| `Users::OmniauthCallbacksController` | Google OAuth2コールバック |
+| `Api::PresignedUrlsController` | S3プレサインドURL生成 |
+
+### Stimulusコントローラー
+
+| コントローラー | ファイル | 目的 |
+|--------------|---------|------|
+| `achievement_modal` | `achievement_modal_controller.js` | 達成記録モーダル（画像アップロード含む） |
+| `youtube_search` | `youtube_search_controller.js` | リアルタイムYouTube検索 |
+| `post_create` | `post_create_controller.js` | 動画+プラン作成フロー |
+| `post_edit` | `post_edit_controller.js` | 既存投稿の編集フロー |
+| `entry_edit` | `entry_edit_controller.js` | エントリー編集UI |
+| `achievement_card` | `achievement_card_controller.js` | カードインタラクション |
+| `index_search` | `index_search_controller.js` | 投稿一覧フィルタリング |
+| `image_preview` | `image_preview_controller.js` | 画像プレビュー |
+| `horizontal_scroll` | `horizontal_scroll_controller.js` | カルーセルセクション |
+| `hero_video` | `hero_video_controller.js` | 動画プレーヤー |
+| `sidebar` | `sidebar_controller.js` | サイドバートグル |
+| `flash` | `flash_controller.js` | 通知自動消去 |
+| `password_toggle` | `password_toggle_controller.js` | パスワード表示切替 |
+
+**ユーティリティモジュール:** `app/javascript/controllers/utils/` (html_helpers, youtube_helpers, s3_uploader)
+
+### データベース主要テーブル
+
+| テーブル | 重要カラム |
+|---------|-----------|
+| `users` | email, name, avatar, provider, uid, favorite_quote_url |
+| `posts` | youtube_url, youtube_video_id (unique), youtube_title, youtube_channel_name |
+| `post_entries` | content, deadline, achieved_at (nil=未達成), reflection, result_image, thumbnail_url |
+| `entry_likes` | user_id, post_entry_id (複合unique) |
+
+### サービス層
+
+| サービス | ファイル | 役割 |
+|---------|---------|------|
+| `YoutubeService` | `app/services/youtube_service.rb` | YouTube Data API v3連携（検索・動画情報取得） |
+
 ## 頻出コマンド
 
 ```bash
@@ -226,6 +303,9 @@ docker compose exec web rails db:migrate
 
 # コンソール
 docker compose exec web rails c
+
+# Brakeman（セキュリティスキャン）
+docker compose exec web brakeman
 ```
 
 ## 重要ファイルパス
@@ -236,10 +316,15 @@ docker compose exec web rails c
 | モデル | `app/models/` |
 | コントローラー | `app/controllers/` |
 | ビュー | `app/views/` |
+| サービス | `app/services/` |
 | Stimulus | `app/javascript/controllers/` |
+| JSユーティリティ | `app/javascript/controllers/utils/` |
+| 画像アップローダー | `app/uploaders/` |
 | スタイル | `app/assets/stylesheets/` |
 | テスト | `spec/` |
+| テストファクトリ | `spec/factories/` |
 | 国際化 | `config/locales/` |
+| 初期化設定 | `config/initializers/` |
 
 ## 注意事項
 
@@ -247,7 +332,7 @@ docker compose exec web rails c
 - スタイリングは`02_design_system/`のデザイントークン・コンポーネントに従うこと
 - Tailwind CSSのユーティリティクラスを使用すること
 - 新規機能は必ずテストを作成すること
-- セキュリティ関連の実装は`01_technical_design/06_security.md`を必ず参照
+- セキュリティ関連の実装は`.claude/01_development_docs/07_security.md`を必ず参照
 
 ## 機能実装完了時のチェックリスト
 
@@ -273,7 +358,7 @@ docker compose exec web rails c
 <機能名>の実装が完了しました。以下を実行してください：
 1. .claude/ ドキュメントと実際のプロジェクトの整合性をチェック
 2. 必要に応じてドキュメントを更新
-3. 10_git_workflow.md に従ってGitフローを実行
+3. CLAUDE.md のGit運用セクションに従ってGitフローを実行
 ブランチ名: feature/<機能名>
 ```
 
@@ -306,4 +391,4 @@ YouTube埋め込み対応
 
 ---
 
-*最終更新: 2026-01-28（Git運用ルール強化）*
+*最終更新: 2026-03-29（コードベース概要・モデル・コントローラー・Stimulusコントローラー情報を追加）*
