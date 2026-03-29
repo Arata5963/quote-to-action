@@ -52,7 +52,7 @@ group :development, :test do
   gem "brakeman", require: false            # セキュリティチェック
   gem "rubocop-rails-omakase", require: false
   gem "bundler-audit", require: false
-  gem "rspec-rails", "~> 7.1"               # テストフレームワーク
+  gem "rspec-rails", "~> 8.0"               # テストフレームワーク
   gem "factory_bot_rails", "~> 6.4"         # テストデータ作成
   gem "faker", "~> 3.5"                     # ダミーデータ生成
 end
